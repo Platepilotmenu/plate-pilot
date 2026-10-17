@@ -1,0 +1,516 @@
+﻿<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;font-family:'Work Sans',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "tertiary": "#006398", "primary": "#f97316", "inverse-on-surface": "#ffede6", "surface-bright": "#ffffff", "surface-container": "#fff7ed", "inverse-primary": "#ffb690", "on-primary-fixed": "#341100", "border-orange": "#f97316", "tertiary-fixed": "#cde5ff", "outline": "#a1a1aa", "surface-container-highest": "#ffedd5", "tertiary-container": "#00a2f4", "on-primary-fixed-variant": "#783200", "secondary": "#ea580c", "on-secondary": "#ffffff", "surface-container-lowest": "#ffffff", "outline-variant": "#e4e4e7", "text-muted": "#71717A", "surface-tint": "#f97316", "on-error-container": "#93000a", "primary-fixed-dim": "#ffb690", "on-surface-variant": "#52525b", "surface-container-low": "#fafafa", "background": "#ffffff", "error": "#ea580c", "surface-card": "#FFFFFF", "orange-light": "#FFF7ED", "secondary-fixed": "#ffedd5", "error-container": "#ffedd5", "on-tertiary": "#ffffff", "surface-container-high": "#fed7aa", "on-error": "#ffffff", "on-surface": "#18181b", "on-tertiary-fixed-variant": "#004b74", "secondary-container": "#f97316", "on-primary-container": "#ffffff", "orange-vibrant": "#F97316", "on-background": "#18181b", "on-secondary-fixed": "#370e00", "on-secondary-fixed-variant": "#7f2b00", "on-primary": "#ffffff", "secondary-fixed-dim": "#fed7aa", "orange-glow": "#FED7AA", "primary-container": "#f97316", "on-tertiary-container": "#003554", "surface": "#ffffff", "surface-dim": "#f4f4f5", "on-tertiary-fixed": "#001d32", "surface-variant": "#fff7ed", "on-secondary-container": "#ffffff", "primary-fixed": "#ffdbca", "text-on-orange": "#FFFFFF", "inverse-surface": "#18181b", "orange-deep": "#EA580C", "tertiary-fixed-dim": "#93ccff", "text-primary": "#09090B", "surface-canvas": "#FFFFFF", "surface-subtle": "#FAFAFA", "border-subtle": "#E4E4E7" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "margin": "1rem", "space-xs": "0.25rem", "margin-md": "1.25rem", "gutter-lg": "1.25rem", "margin-lg": "1.5rem", "space-lg": "1rem", "space-md": "0.75rem", "gutter-md": "1rem", "space-sm": "0.5rem", "gutter": "0.75rem", "space-xl": "1.5rem" }, "fontFamily": { "headline-sm": ["Space Grotesk"], "headline-md": ["Space Grotesk"], "headline-xl": ["Space Grotesk"], "headline-lg": ["Space Grotesk"], "label-md": ["Space Grotesk"], "label-numeric-lg": ["Space Grotesk"], "body-md": ["Work Sans"], "body-lg": ["Work Sans"], "label-sm": ["Space Grotesk"], "body-sm": ["Work Sans"], "headline-xl-mobile": ["Space Grotesk"], "label-numeric-md": ["Space Grotesk"] }, "fontSize": { "headline-sm": ["16px", { "lineHeight": "22px", "fontWeight": "600" }], "headline-md": ["20px", { "lineHeight": "26px", "fontWeight": "600" }], "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "label-md": ["13px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }], "label-numeric-lg": ["24px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "label-numeric-md": ["16px", { "lineHeight": "20px", "fontWeight": "600" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-xl pt-safe border-b border-border-subtle shadow-sm"><div class="h-16 px-gutter-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="Roast &amp; Cart Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1U06G1I-Bxnnk_avtespKsKoUfR0x8Zr7o1g7JKl8ZAjgziP74CyuKAcDuT_5CNhkxopsXMC5zQ85WBrjyBeY7xxlZ4kp5hU3_5YtCiP8teA8KI9OuuSZkrRCrP-iAbC8y74a6f7GDvyNxh9Ut1ri8wwPJYGO4PC3X9LD2owmIIian_a5o3jJeTgL5ycnMkCWRPyHaC3Q17468GzIeQd86qhS7kfWCPO_XAZDSt7EJ2fmFwAZNjtGoiPg"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary tracking-tight leading-none">Roast &amp; Cart</span><div class="flex items-center gap-1 mt-0.5"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span><span class="font-label-sm text-label-sm text-primary uppercase tracking-wider font-semibold">Online • Cart #01</span></div></div></div><div class="flex items-center gap-space-sm"><div class="flex flex-col items-end text-right hidden sm:flex"><span class="font-label-sm text-label-sm text-on-surface font-semibold">Catalog Menu</span></div><button class="w-12 h-12 flex items-center justify-center rounded-full active:scale-95 transition-transform"><img alt="Profile" class="w-8 h-8 rounded-full object-cover border-2 border-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrT0_ToAY9oG_TQjQRD1ob-f1awFQVvQPS1v2-q2IpHy4AkTK_iYYVoqPj2-X4MZiZHAe73IHTJ6ACF0JKMIK2H79DzxN2ZB6qS1NpV-ypU8ILCzMspNm5YZbqdeUhxkwhRuuvf0Y2127Fgu67v36L4o44JDV65SXR9exws-cGP-YUcJwbHzf1CEn3IRda-IG8snKMN64MDj5QMeyXDjABau3AFt_Agr__kvveencGtzoDQxUuxSJW"/></button></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full px-margin pb-28 gap-space-md">
+<!-- Top Command & Action Bar -->
+<div class="flex items-center justify-between gap-space-sm pt-space-xs">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider font-bold">Catalog &amp; Inventory</span>
+<h1 class="font-headline-md text-headline-md text-on-surface tracking-tight font-bold">Cart Menu</h1>
+</div>
+<!-- Quick Add New Item Trigger -->
+<button class="flex items-center gap-1.5 h-12 px-space-md bg-primary text-white rounded-xl shadow-md active:scale-95 transition-transform cursor-pointer hover:bg-orange-deep" id="addItemBtn">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+<span class="font-label-md text-label-md">Add Item</span>
+</button>
+</div>
+<!-- Search Input Bar -->
+<div class="relative w-full">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="w-full h-12 pl-10 pr-10 bg-white text-on-surface border border-border-subtle rounded-xl shadow-sm font-body-md text-body-md placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" id="itemSearchInput" placeholder="Find menu item..." type="text"/>
+<button class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-outline hover:text-on-surface" id="clearSearch">
+<span class="material-symbols-outlined text-[18px]">cancel</span>
+</button>
+</div>
+<!-- Category Pills Selector -->
+<div class="flex items-center gap-space-xs overflow-x-auto py-0.5 no-scrollbar -mx-margin px-margin">
+<button class="cat-pill flex items-center h-10 px-space-md rounded-full font-label-md text-label-md bg-primary text-white shadow-sm whitespace-nowrap active:scale-95 transition-all" data-cat="all">
+      All
+    </button>
+<button class="cat-pill flex items-center h-10 px-space-md rounded-full font-label-md text-label-md bg-white border border-border-subtle text-on-surface whitespace-nowrap active:scale-95 transition-all" data-cat="espresso">
+      Espresso Bar
+    </button>
+<button class="cat-pill flex items-center h-10 px-space-md rounded-full font-label-md text-label-md bg-white border border-border-subtle text-on-surface whitespace-nowrap active:scale-95 transition-all" data-cat="cold">
+      Cold Drinks
+    </button>
+<button class="cat-pill flex items-center h-10 px-space-md rounded-full font-label-md text-label-md bg-white border border-border-subtle text-on-surface whitespace-nowrap active:scale-95 transition-all" data-cat="pastries">
+      Pastries
+    </button>
+<button class="cat-pill flex items-center h-10 px-space-md rounded-full font-label-md text-label-md bg-white border border-border-subtle text-on-surface whitespace-nowrap active:scale-95 transition-all" data-cat="specials">
+      Specials
+    </button>
+</div>
+<!-- Operational Stock Metrics Banner -->
+<div class="flex items-center justify-between p-space-md bg-orange-light border border-orange-glow/60 rounded-xl shadow-sm">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-primary shadow-sm border border-orange-glow/40">
+<span class="material-symbols-outlined text-[18px]">inventory_2</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold" id="activeCount">24</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Active Items</span>
+</div>
+<span class="font-label-sm text-[11px] text-primary font-semibold" id="stockStatusText">• 2 Items Sold Out</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-lg border border-orange-glow/40 shadow-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+<span class="font-label-sm text-label-sm text-primary font-bold">Live POS Sync</span>
+</div>
+</div>
+<!-- Section Group: Menu Items List -->
+<div class="flex flex-col gap-space-sm" id="itemsListContainer">
+<!-- Item 1: Oat Milk Latte -->
+<div class="item-card flex items-center justify-between p-space-md bg-white border border-border-subtle rounded-xl shadow-sm hover:shadow-md transition-all" data-category="espresso" data-title="Oat Milk Latte">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-orange-light border border-orange-glow/30">
+<img class="w-full h-full object-cover" data-alt="Artisanal silky oat milk latte in an earthenware speckled ceramic cup with intricate rosetta latte art on roasted espresso crema, warm cafe morning lighting, shallow depth of field" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_CM0PeejCTzTx0LgvOwyiFvbyqRcifrrKdkL0txmknwA6KFEnpYpk4-An969oNpZkgTDbqDQB7O5rKBAIUq_yVvnGM_pgE-MYw5ckmTXYVWL-hvPp8GDf4inhOEOlJ39a-Q5ZHoF0L94eNDmjv0GQOEY7MFaXEE4Cr_LYMCFJw-wC3FD8S4u5GBOGk-yuB_34cgdwLM_m0SA8vFh5bSxFclMSH-ry2RvRfyDyQwDI_-qrwcvWo6kf"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate font-semibold">Oat Milk Latte</h2>
+</div>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="font-label-numeric-md text-label-numeric-md text-primary font-bold">₹5.50</span>
+<span class="font-body-sm text-body-sm text-text-muted font-normal">Tax 8.5%</span>
+</div>
+<span class="stock-pill inline-flex items-center mt-1 text-[10px] font-label-sm font-bold text-primary">
+            IN STOCK
+          </span>
+</div>
+</div>
+<div class="flex items-center gap-2 flex-shrink-0">
+<button aria-label="Edit Item" class="w-12 h-12 rounded-xl flex items-center justify-center text-text-muted hover:text-primary hover:bg-orange-light active:scale-90 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<!-- Vibrant Orange Toggle (52px wide) -->
+<button aria-checked="true" class="stock-toggle relative inline-flex h-8 w-14 items-center rounded-full bg-primary p-0.5 transition-colors cursor-pointer active:scale-95" role="switch">
+<span class="toggle-thumb inline-block h-7 w-7 transform rounded-full bg-white shadow-md transition-transform translate-x-6"></span>
+</button>
+</div>
+</div>
+<!-- Item 2: Ethiopian Single Origin Pour Over -->
+<div class="item-card flex items-center justify-between p-space-md bg-white border border-border-subtle rounded-xl shadow-sm hover:shadow-md transition-all" data-category="specials" data-title="Ethiopian Single Origin Pour Over">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-orange-light border border-orange-glow/30">
+<img class="w-full h-full object-cover" data-alt="Specialty light roast Ethiopian pour-over coffee dripping through a clear glass dripper into an amber carafe on a warm rustic barista bar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMHDhQmUVaH8SAtOF9taLsledm5lnUkbN7yBcpMyTESxuvePIXyY65Yj6-ln0xHjCLlBxgoZrQcubKK4XuPGeTJN9NDdmne1oAQoKc-ihVOvW2aBrSZJ9Yx0f2vMEtMoMpGcfhZhHU2IJYaeOK3hOKSkGrMX1xLbKG74CxJ4uYOvufN58DKXxDD5zr_TVk-ypBIj2aKGynrgNdjuqR8lQNimYim_xUz5BjY79aYdRxv_myWwz9Kc6n"/>
+</div>
+<div class="flex flex-col min-w-0">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate font-semibold">Ethiopian Single Origin</h2>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="font-label-numeric-md text-label-numeric-md text-primary font-bold">₹6.00</span>
+<span class="font-body-sm text-body-sm text-text-muted font-normal">Tax 8.5%</span>
+</div>
+<span class="stock-pill inline-flex items-center mt-1 text-[10px] font-label-sm font-bold text-primary">
+            IN STOCK
+          </span>
+</div>
+</div>
+<div class="flex items-center gap-2 flex-shrink-0">
+<button aria-label="Edit Item" class="w-12 h-12 rounded-xl flex items-center justify-center text-text-muted hover:text-primary hover:bg-orange-light active:scale-90 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button aria-checked="true" class="stock-toggle relative inline-flex h-8 w-14 items-center rounded-full bg-primary p-0.5 transition-colors cursor-pointer active:scale-95" role="switch">
+<span class="toggle-thumb inline-block h-7 w-7 transform rounded-full bg-white shadow-md transition-transform translate-x-6"></span>
+</button>
+</div>
+</div>
+<!-- Item 3: Double Espresso -->
+<div class="item-card flex items-center justify-between p-space-md bg-white border border-border-subtle rounded-xl shadow-sm hover:shadow-md transition-all" data-category="espresso" data-title="Double Espresso">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-orange-light border border-orange-glow/30">
+<img class="w-full h-full object-cover" data-alt="Rich double espresso shot served in a compact dark ceramic cup featuring thick hazelnut crema on a wooden espresso cart counter" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCShD8SrAjg9jIRRfqiiUlQSVIK3hx-6BUiIFN8xxbEYVS7_ByGJatV5ElGi_cNKBDPlWGKwhYpyVcJXIUmsymyFjxZBMQ7cgiCJAENm1NdMWsodHDnUzLTbSBFGkeUzjZmqEM2bg5lmPDDrP9KCD_5pAufP6s8Xb1PdB529TzctTS13SRR4TxdlyS00NBjL5n3sy1rqrW_bBi7zCPYRyiTnd-P_m-Uccbg6yymv9Zp2-eLaKDgQfJk"/>
+</div>
+<div class="flex flex-col min-w-0">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate font-semibold">Double Espresso</h2>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="font-label-numeric-md text-label-numeric-md text-primary font-bold">₹3.50</span>
+<span class="font-body-sm text-body-sm text-text-muted font-normal">Tax 8.5%</span>
+</div>
+<span class="stock-pill inline-flex items-center mt-1 text-[10px] font-label-sm font-bold text-primary">
+            IN STOCK
+          </span>
+</div>
+</div>
+<div class="flex items-center gap-2 flex-shrink-0">
+<button aria-label="Edit Item" class="w-12 h-12 rounded-xl flex items-center justify-center text-text-muted hover:text-primary hover:bg-orange-light active:scale-90 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button aria-checked="true" class="stock-toggle relative inline-flex h-8 w-14 items-center rounded-full bg-primary p-0.5 transition-colors cursor-pointer active:scale-95" role="switch">
+<span class="toggle-thumb inline-block h-7 w-7 transform rounded-full bg-white shadow-md transition-transform translate-x-6"></span>
+</button>
+</div>
+</div>
+<!-- Item 4: Cold Brew Nitro 16oz (OUT OF STOCK - Clean Light Neutral on White) -->
+<div class="item-card flex items-center justify-between p-space-md bg-white border border-border-subtle rounded-xl shadow-sm transition-all" data-category="cold" data-title="Cold Brew Nitro 16oz">
+<div class="flex items-center gap-space-md min-w-0 opacity-60">
+<div class="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-surface-subtle border border-border-subtle filter grayscale">
+<img class="w-full h-full object-cover" data-alt="Tall clear glass filled with cascading nitro cold brew coffee with a frothy stout-like head of foam, subtle warm amber reflections" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYXS6328Sc5swd0nnP_s1kDpXOTOt6uQQPCVnffR0r9H-NTS35NBcqGbeSBk7ZQKX17Tjp3iYF0dvMp-7BR2N4FBh-b3nPqqk5gJw9MW_KUcd6s-KwJgs3wkzoByX5vYDrZof1HV2wgOAYTSuGZ7wo2NOfe_Oto_LmV9iAQpicCIJxQ1GkDXzwkdBuPSSgXknvabeLlTX0TKPVTAxApeTKLXsa64-91dZ3h5pVlt_g3INTn8nHHbeH"/>
+<div class="absolute inset-0 bg-white/50 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline text-[20px]">block</span>
+</div>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<h2 class="font-headline-sm text-headline-sm text-outline truncate line-through">Cold Brew Nitro 16oz</h2>
+</div>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="font-label-numeric-md text-label-numeric-md text-outline">₹5.25</span>
+<span class="font-body-sm text-body-sm text-outline font-normal">Tax 8.5%</span>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-surface-subtle border border-border-subtle text-outline font-label-sm text-[10px] font-bold">
+              SOLD OUT
+            </span>
+<button class="quick-restock-btn font-label-sm text-[11px] text-primary font-bold underline active:text-orange-deep cursor-pointer">
+              Restock +10
+            </button>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 flex-shrink-0">
+<button aria-label="Edit Item" class="w-12 h-12 rounded-xl flex items-center justify-center text-outline hover:text-primary hover:bg-orange-light active:scale-90 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button aria-checked="false" class="stock-toggle relative inline-flex h-8 w-14 items-center rounded-full bg-border-subtle p-0.5 transition-colors cursor-pointer active:scale-95" role="switch">
+<span class="toggle-thumb inline-block h-7 w-7 transform rounded-full bg-white shadow-md transition-transform translate-x-0"></span>
+</button>
+</div>
+</div>
+<!-- Item 5: Almond Croissant (LOW STOCK) -->
+<div class="item-card flex items-center justify-between p-space-md bg-white border border-border-subtle rounded-xl shadow-sm hover:shadow-md transition-all" data-category="pastries" data-title="Almond Croissant">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-orange-light border border-orange-glow/30">
+<img class="w-full h-full object-cover" data-alt="Freshly baked golden flaky almond croissant dusted with powdered confectioners sugar and sliced toasted almonds on baking parchment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAG0uwjH8-ysSgaP7TjZks6FZbecqjnUKTp2ApGBYsmJsUFDnrJBHsc0bcTjWGRwSJrWc6U7-BpAzcx9GyUjV4dnBklhe5LHoYAp7EjNzva5rpVXqfYDnmZCeTXYuJEpi2WmT_NwrQcDRmH7wBuU9x1-LH3HMrOyfb89tpLbWeS78zpuhMLr70EXL63cO3GV5-lEuBy6EOcK_vSHo_f5r2OBtVgjRu_OY6AO6X4hAS0G1OpjcYadJx-"/>
+</div>
+<div class="flex flex-col min-w-0">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate font-semibold">Almond Croissant</h2>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="font-label-numeric-md text-label-numeric-md text-primary font-bold">₹4.25</span>
+<span class="font-body-sm text-body-sm text-text-muted font-normal">Tax 8.5%</span>
+</div>
+<span class="inline-flex items-center gap-1 mt-1 font-label-sm text-[10px] font-bold text-primary bg-orange-light border border-orange-glow/40 px-1.5 py-0.5 rounded w-max">
+<span class="material-symbols-outlined text-[12px]">schedule</span> 3 left
+          </span>
+</div>
+</div>
+<div class="flex items-center gap-2 flex-shrink-0">
+<button aria-label="Edit Item" class="w-12 h-12 rounded-xl flex items-center justify-center text-text-muted hover:text-primary hover:bg-orange-light active:scale-90 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button aria-checked="true" class="stock-toggle relative inline-flex h-8 w-14 items-center rounded-full bg-primary p-0.5 transition-colors cursor-pointer active:scale-95" role="switch">
+<span class="toggle-thumb inline-block h-7 w-7 transform rounded-full bg-white shadow-md transition-transform translate-x-6"></span>
+</button>
+</div>
+</div>
+<!-- Item 6: Blueberry Scone (OUT OF STOCK - Clean Light Neutral on White) -->
+<div class="item-card flex items-center justify-between p-space-md bg-white border border-border-subtle rounded-xl shadow-sm transition-all" data-category="pastries" data-title="Blueberry Scone">
+<div class="flex items-center gap-space-md min-w-0 opacity-60">
+<div class="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-surface-subtle border border-border-subtle filter grayscale">
+<img class="w-full h-full object-cover" data-alt="Rustic baked blueberry scone with vanilla bean sugar glaze and dark plump blueberries on warm textured kitchen stone" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAknnrNTcILt8uvDquxqVX4NOs2C9VEg9VOKl_Wah0UCBlPRIIJic9mCEtsz26ptZDJSgTTvMtbQ088GITCu7gzA88r6-kwd9i1FIy5l5T-OTM-U0ia23P7-LX6tS-aws9E--H6L9EmfYty_2NPwKTevcgCi0PBrOCxvTFXrcFOj6L1fUM34mkBbLKHOwh0tGXhW4kS8qcajEQpo2uxRgSccj5SHy8CynqUHqel1SHXcS5Fby9hFTln"/>
+<div class="absolute inset-0 bg-white/50 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline text-[20px]">block</span>
+</div>
+</div>
+<div class="flex flex-col min-w-0">
+<h2 class="font-headline-sm text-headline-sm text-outline truncate line-through">Blueberry Scone</h2>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="font-label-numeric-md text-label-numeric-md text-outline">₹3.75</span>
+<span class="font-body-sm text-body-sm text-outline font-normal">Tax 8.5%</span>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-surface-subtle border border-border-subtle text-outline font-label-sm text-[10px] font-bold">
+              SOLD OUT
+            </span>
+<button class="quick-restock-btn font-label-sm text-[11px] text-primary font-bold underline active:text-orange-deep cursor-pointer">
+              Restock +6
+            </button>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 flex-shrink-0">
+<button aria-label="Edit Item" class="w-12 h-12 rounded-xl flex items-center justify-center text-outline hover:text-primary hover:bg-orange-light active:scale-90 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button aria-checked="false" class="stock-toggle relative inline-flex h-8 w-14 items-center rounded-full bg-border-subtle p-0.5 transition-colors cursor-pointer active:scale-95" role="switch">
+<span class="toggle-thumb inline-block h-7 w-7 transform rounded-full bg-white shadow-md transition-transform translate-x-0"></span>
+</button>
+</div>
+</div>
+<!-- Item 7: Avocado Toast Box -->
+<div class="item-card flex items-center justify-between p-space-md bg-white border border-border-subtle rounded-xl shadow-sm hover:shadow-md transition-all" data-category="specials" data-title="Avocado Toast Box">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-orange-light border border-orange-glow/30">
+<img class="w-full h-full object-cover" data-alt="Gourmet sourdough toast generously topped with crushed Hass avocado, microgreens, chili flakes, and sesame seeds in a recyclable paper to-go box" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1uBzkuviFfYLBKJ1lizXPos3Jby1JDLuXXLW0DUgyzF5XwtbufxZFDFvWMoxLS7-fhzrTZ1N1U4lFXPWoSxDc3OY_cZOzsX3GWQnI-6co3v_isp02xsm5Qq8zQcJjcwWL_k5bkii-YTaDvsOG4BukaoAexsRmy0uDwKMYAAESH1YVff0MJbQz25kB6Ol9O3GpHivgH0I7-V2eRe4QZBYXkGI6CbsYx5oWc-p8ELmQTvWxElk7rlze"/>
+</div>
+<div class="flex flex-col min-w-0">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate font-semibold">Avocado Toast Box</h2>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="font-label-numeric-md text-label-numeric-md text-primary font-bold">₹7.50</span>
+<span class="font-body-sm text-body-sm text-text-muted font-normal">Tax 8.5%</span>
+</div>
+<span class="stock-pill inline-flex items-center mt-1 text-[10px] font-label-sm font-bold text-primary">
+            IN STOCK
+          </span>
+</div>
+</div>
+<div class="flex items-center gap-2 flex-shrink-0">
+<button aria-label="Edit Item" class="w-12 h-12 rounded-xl flex items-center justify-center text-text-muted hover:text-primary hover:bg-orange-light active:scale-90 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button aria-checked="true" class="stock-toggle relative inline-flex h-8 w-14 items-center rounded-full bg-primary p-0.5 transition-colors cursor-pointer active:scale-95" role="switch">
+<span class="toggle-thumb inline-block h-7 w-7 transform rounded-full bg-white shadow-md transition-transform translate-x-6"></span>
+</button>
+</div>
+</div>
+</div>
+<!-- Empty State Search Result (Hidden by default) -->
+<div class="hidden flex flex-col items-center justify-center p-space-xl bg-white border border-border-subtle rounded-xl shadow-sm text-center" id="noResultsState">
+<div class="w-12 h-12 rounded-full bg-orange-light flex items-center justify-center text-primary mb-2">
+<span class="material-symbols-outlined text-[24px]">search_off</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">No Items Found</span>
+<p class="font-body-sm text-body-sm text-text-muted mt-1">Try another keyword or change your category filter.</p>
+</div>
+<!-- Rush-Hour Quick "86 / Out of Stock" Floating Command Strip (Strict Two-Color: Solid Vibrant Orange or Clean White) -->
+<div class="fixed bottom-20 left-4 right-4 z-40 max-w-lg mx-auto">
+<div class="flex items-center justify-between px-space-md py-space-sm bg-primary text-white rounded-2xl shadow-xl border border-primary/20">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined text-[22px]">bolt</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md leading-none text-white font-bold">Rush 86 Mode</span>
+<span class="font-body-sm text-[11px] text-white/90 mt-0.5">Tap item cards to instantly toggle sold out</span>
+</div>
+</div>
+<button class="h-10 px-space-md bg-white text-primary rounded-xl font-label-sm text-label-sm font-bold uppercase tracking-wider active:scale-95 transition-transform cursor-pointer hover:bg-orange-light shadow-sm" id="rush86Toggle">
+        Enable
+      </button>
+</div>
+</div>
+<!-- Slide-Over New Item Modal Drawer (Pure DOM) -->
+<div class="hidden fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm" id="addItemModal">
+<div class="w-full max-w-lg bg-white rounded-t-2xl p-margin flex flex-col gap-space-md border-t border-border-subtle shadow-2xl max-h-[751px] overflow-y-auto">
+<div class="flex items-center justify-between pb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">add_box</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold">Add Menu Item</h2>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-text-muted hover:text-on-surface hover:bg-orange-light active:scale-90" id="closeModalBtn">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex flex-col gap-space-sm">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Item Title</label>
+<input class="w-full h-12 px-space-md bg-white border border-border-subtle text-on-surface rounded-xl font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="e.g. Cardamom Honey Flat White" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="flex flex-col gap-space-sm">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Price (₹)</label>
+<input class="w-full h-12 px-space-md bg-white border border-border-subtle text-on-surface rounded-xl font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="5.75" step="0.25" type="number"/>
+</div>
+<div class="flex flex-col gap-space-sm">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Category</label>
+<select class="w-full h-12 px-space-md bg-white border border-border-subtle text-on-surface rounded-xl font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+<option>Espresso Bar</option>
+<option>Cold Drinks</option>
+<option>Pastries</option>
+<option>Specials</option>
+</select>
+</div>
+</div>
+<div class="flex items-center justify-between p-space-sm bg-orange-light border border-orange-glow/40 rounded-xl mt-1">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Initial Status</span>
+<span class="font-body-sm text-[11px] text-text-muted">Available for purchase now</span>
+</div>
+<button aria-checked="true" class="relative inline-flex h-7 w-12 items-center rounded-full bg-primary p-0.5" role="switch">
+<span class="inline-block h-6 w-6 transform rounded-full bg-white shadow-sm translate-x-5"></span>
+</button>
+</div>
+<div class="flex items-center gap-space-sm pt-2">
+<button class="flex-1 h-12 bg-white border border-border-subtle text-on-surface rounded-xl font-label-md text-label-md active:scale-95 hover:bg-surface-subtle" id="cancelModalBtn">
+          Cancel
+        </button>
+<button class="flex-1 h-12 bg-primary text-white rounded-xl font-headline-sm text-headline-sm shadow-md active:scale-95 hover:bg-orange-deep" id="saveItemBtn">
+          Save Item
+        </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (() => {
+    // Search Filtering
+    const searchInput = document.getElementById('itemSearchInput');
+    const clearSearch = document.getElementById('clearSearch');
+    const itemCards = document.querySelectorAll('.item-card');
+    const noResults = document.getElementById('noResultsState');
+    const catPills = document.querySelectorAll('.cat-pill');
+
+    let currentCategory = 'all';
+
+    function filterItems() {
+      const query = (searchInput.value || '').toLowerCase().trim();
+      let visibleCount = 0;
+
+      itemCards.forEach(card => {
+        const title = card.getAttribute('data-title').toLowerCase();
+        const category = card.getAttribute('data-category');
+        const matchesCat = (currentCategory === 'all' || category === currentCategory);
+        const matchesQuery = title.includes(query);
+
+        if (matchesCat && matchesQuery) {
+          card.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+
+      if (visibleCount === 0) {
+        noResults.classList.remove('hidden');
+      } else {
+        noResults.classList.add('hidden');
+      }
+
+      if (query.length > 0) {
+        clearSearch.classList.remove('hidden');
+      } else {
+        clearSearch.classList.add('hidden');
+      }
+    }
+
+    searchInput?.addEventListener('input', filterItems);
+    clearSearch?.addEventListener('click', () => {
+      searchInput.value = '';
+      filterItems();
+    });
+
+    // Category Selector
+    catPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        catPills.forEach(p => {
+          p.classList.remove('bg-primary', 'text-white');
+          p.classList.add('bg-white', 'text-on-surface', 'border', 'border-border-subtle');
+        });
+        pill.classList.remove('bg-white', 'text-on-surface', 'border', 'border-border-subtle');
+        pill.classList.add('bg-primary', 'text-white');
+        currentCategory = pill.getAttribute('data-cat');
+        filterItems();
+      });
+    });
+
+    // Stock Toggles
+    const toggles = document.querySelectorAll('.stock-toggle');
+    toggles.forEach(toggle => {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isChecked = toggle.getAttribute('aria-checked') === 'true';
+        const card = toggle.closest('.item-card');
+        const thumb = toggle.querySelector('.toggle-thumb');
+        const titleElem = card.querySelector('h2');
+        const contentBlock = card.querySelector('.gap-space-md');
+        const imgContainer = card.querySelector('.relative.w-14');
+
+        if (isChecked) {
+          // Turn OFF / Sold Out
+          toggle.setAttribute('aria-checked', 'false');
+          toggle.classList.remove('bg-primary');
+          toggle.classList.add('bg-border-subtle');
+          thumb.classList.remove('translate-x-6');
+          thumb.classList.add('translate-x-0');
+          
+          contentBlock?.classList.add('opacity-60');
+          titleElem?.classList.add('line-through', 'text-outline');
+          imgContainer?.classList.add('filter', 'grayscale');
+        } else {
+          // Turn ON / In Stock
+          toggle.setAttribute('aria-checked', 'true');
+          toggle.classList.add('bg-primary');
+          toggle.classList.remove('bg-border-subtle');
+          thumb.classList.add('translate-x-6');
+          thumb.classList.remove('translate-x-0');
+
+          contentBlock?.classList.remove('opacity-60');
+          titleElem?.classList.remove('line-through', 'text-outline');
+          imgContainer?.classList.remove('filter', 'grayscale');
+        }
+        updateCounts();
+      });
+    });
+
+    // Quick Restock Buttons
+    document.querySelectorAll('.quick-restock-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const card = btn.closest('.item-card');
+        const toggle = card.querySelector('.stock-toggle');
+        if (toggle && toggle.getAttribute('aria-checked') === 'false') {
+          toggle.click();
+        }
+      });
+    });
+
+    function updateCounts() {
+      let active = 0;
+      let out = 0;
+      toggles.forEach(t => {
+        if (t.getAttribute('aria-checked') === 'true') active++;
+        else out++;
+      });
+      const activeCount = document.getElementById('activeCount');
+      const statusText = document.getElementById('stockStatusText');
+      if (activeCount) activeCount.textContent = (20 + active).toString();
+      if (statusText) statusText.textContent = `• ${out} Items Sold Out`;
+    }
+
+    // Rush 86 Mode Toggle
+    let rushMode = false;
+    const rushBtn = document.getElementById('rush86Toggle');
+    rushBtn?.addEventListener('click', () => {
+      rushMode = !rushMode;
+      if (rushMode) {
+        rushBtn.textContent = 'Active';
+        rushBtn.classList.add('bg-white', 'text-primary', 'ring-2', 'ring-white');
+        itemCards.forEach(c => {
+          c.classList.add('ring-2', 'ring-primary');
+          c.addEventListener('click', handleRushCardClick);
+        });
+      } else {
+        rushBtn.textContent = 'Enable';
+        rushBtn.classList.remove('ring-2', 'ring-white');
+        itemCards.forEach(c => {
+          c.classList.remove('ring-2', 'ring-primary');
+          c.removeEventListener('click', handleRushCardClick);
+        });
+      }
+    });
+
+    function handleRushCardClick(e) {
+      if (!rushMode) return;
+      if (e.target.closest('.stock-toggle') || e.target.closest('button')) return;
+      const toggle = this.querySelector('.stock-toggle');
+      if (toggle) toggle.click();
+    }
+
+    // Modal Drawer logic
+    const modal = document.getElementById('addItemModal');
+    const openBtn = document.getElementById('addItemBtn');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelModalBtn');
+    const saveBtn = document.getElementById('saveItemBtn');
+
+    openBtn?.addEventListener('click', () => modal?.classList.remove('hidden'));
+    [closeBtn, cancelBtn, saveBtn].forEach(b => b?.addEventListener('click', () => modal?.classList.add('hidden')));
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-white/95 backdrop-blur-xl border-t border-border-subtle shadow-[0_-2px_12px_rgba(249,115,22,0.06)]"><div class="flex items-center justify-around h-16 px-space-xs"><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-space-xs rounded-lg text-text-muted hover:text-primary transition-all" data-path="dashboard" href="../PP/code.html"><span class="material-symbols-outlined text-[22px]">dashboard</span><span class="font-label-sm text-[10px] tracking-wide mt-0.5 uppercase">Home</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-space-xs rounded-lg text-text-muted hover:text-primary transition-all" data-path="pos-terminal" href="../PP1/code.html"><span class="material-symbols-outlined text-[22px]">point_of_sale</span><span class="font-label-sm text-[10px] tracking-wide mt-0.5 uppercase">POS</span></a><a class="relative flex flex-col items-center justify-center min-w-[56px] h-12 px-space-xs rounded-lg text-text-muted hover:text-primary transition-all" data-path="live-orders" href="../PP3/code.html"><span class="material-symbols-outlined text-[22px]">receipt_long</span><span class="absolute top-1 right-2.5 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-primary text-white font-label-sm text-[9px] font-bold">4</span><span class="font-label-sm text-[10px] tracking-wide mt-0.5 uppercase">Orders</span></a><a aria-current="page" class="flex flex-col items-center justify-center min-w-[56px] h-12 px-space-xs rounded-lg transition-all bg-orange-light text-primary font-bold" data-path="catalog-menu" href="#"><span class="material-symbols-outlined text-[22px]">local_cafe</span><span class="font-label-sm text-[10px] tracking-wide mt-0.5 uppercase">Menu</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-space-xs rounded-lg text-text-muted hover:text-primary transition-all" data-path="cart-settings" href="../PP2/code.html"><span class="material-symbols-outlined text-[22px]">tune</span><span class="font-label-sm text-[10px] tracking-wide mt-0.5 uppercase">Settings</span></a></div></nav></body></html>

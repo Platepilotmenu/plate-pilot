@@ -1,0 +1,30 @@
+{
+  "name": "plate-pilot-backend",
+  "version": "1.0.0",
+  "description": "Plate Pilot - Smart Restaurant POS, QR Platform & Multi-Outlet SaaS Backend",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node src/config/initDb.js"
+  },
+  "keywords": [
+    "pos",
+    "restaurant",
+    "saas",
+    "qr-ordering",
+    "plate-pilot"
+  ],
+  "author": "Plate Pilot Engineering",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.9.7",
+    "qrcode": "^1.5.4",
+    "sql.js": "^1.11.0"
+  }
+}

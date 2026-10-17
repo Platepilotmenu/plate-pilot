@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;font-family:'Work Sans',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "primary": "#f97316",
+          "secondary": "#ea580c",
+          "secondary-container": "#f97316",
+          "surface-canvas": "#ffffff",
+          "surface-card": "#ffffff",
+          "orange-vibrant": "#f97316",
+          "orange-deep": "#ea580c",
+          "orange-light": "#fff7ed",
+          "orange-glow": "#fed7aa",
+          "border-orange": "#f97316",
+          "text-primary": "#1c1917",
+          "text-muted": "#78716c",
+          "border-subtle": "#fed7aa"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "margin": "1rem",
+          "space-xs": "0.25rem",
+          "margin-md": "1.25rem",
+          "gutter-lg": "1.25rem",
+          "margin-lg": "1.5rem",
+          "space-lg": "1rem",
+          "space-md": "0.75rem",
+          "gutter-md": "1rem",
+          "space-sm": "0.5rem",
+          "gutter": "0.75rem",
+          "space-xl": "1.5rem"
+        },
+        "fontFamily": {
+          "headline-sm": ["Space Grotesk"],
+          "headline-md": ["Space Grotesk"],
+          "headline-xl": ["Space Grotesk"],
+          "headline-lg": ["Space Grotesk"],
+          "label-md": ["Space Grotesk"],
+          "label-numeric-lg": ["Space Grotesk"],
+          "body-md": ["Work Sans"],
+          "body-lg": ["Work Sans"],
+          "label-sm": ["Space Grotesk"],
+          "body-sm": ["Work Sans"],
+          "headline-xl-mobile": ["Space Grotesk"],
+          "label-numeric-md": ["Space Grotesk"]
+        },
+        "fontSize": {
+          "headline-sm": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+          "headline-md": ["20px", { "lineHeight": "26px", "fontWeight": "600" }],
+          "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+          "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+          "label-md": ["13px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+          "label-numeric-lg": ["24px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+          "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+          "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+          "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "700" }],
+          "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+          "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+          "label-numeric-md": ["16px", { "lineHeight": "20px", "fontWeight": "600" }]
+        }
+      }
+    }
+  };
+</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-[#fff7ed] text-[#1c1917] flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-xl pt-safe border-b border-[#fed7aa] shadow-sm"><div class="h-16 px-gutter-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="Roast &amp; Cart Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1U06G1I-Bxnnk_avtespKsKoUfR0x8Zr7o1g7JKl8ZAjgziP74CyuKAcDuT_5CNhkxopsXMC5zQ85WBrjyBeY7xxlZ4kp5hU3_5YtCiP8teA8KI9OuuSZkrRCrP-iAbC8y74a6f7GDvyNxh9Ut1ri8wwPJYGO4PC3X9LD2owmIIian_a5o3jJeTgL5ycnMkCWRPyHaC3Q17468GzIeQd86qhS7kfWCPO_XAZDSt7EJ2fmFwAZNjtGoiPg"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-[#f97316] tracking-tight leading-none">Roast &amp; Cart</span><div class="flex items-center gap-1 mt-0.5"><span class="w-1.5 h-1.5 rounded-full bg-[#f97316] animate-pulse"></span><span class="font-label-sm text-label-sm text-[#ea580c] uppercase tracking-wider font-bold">Online • Cart #01</span></div></div></div><div class="flex items-center gap-space-sm"><div class="flex flex-col items-end text-right hidden sm:flex"><span class="font-label-sm text-label-sm text-[#ea580c] font-bold">Live Orders</span></div><button class="w-10 h-10 flex items-center justify-center rounded-full border-2 border-[#f97316] p-0.5 active:scale-95 transition-transform"><img alt="Profile" class="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrT0_ToAY9oG_TQjQRD1ob-f1awFQVvQPS1v2-q2IpHy4AkTK_iYYVoqPj2-X4MZiZHAe73IHTJ6ACF0JKMIK2H79DzxN2ZB6qS1NpV-ypU8ILCzMspNm5YZbqdeUhxkwhRuuvf0Y2127Fgu67v36L4o44JDV65SXR9exws-cGP-YUcJwbHzf1CEn3IRda-IG8snKMN64MDj5QMeyXDjABau3AFt_Agr__kvveencGtzoDQxUuxSJW"/></button></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 bg-[#fff7ed] min-h-screen"><div class="flex flex-col w-full px-margin-md space-y-space-md pt-space-md">
+<!-- Operational Pulse Banner & Cart Metrics -->
+<div class="flex items-center justify-between bg-white border border-[#fed7aa] p-space-md rounded-xl shadow-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-full bg-[#f97316] flex items-center justify-center text-white shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">timer</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-[#78716c] uppercase tracking-wider">Avg Lead Time</span>
+<div class="flex items-baseline gap-1.5">
+<span class="font-label-numeric-lg text-label-numeric-lg text-[#1c1917] leading-none">3m 42s</span>
+<span class="font-label-sm text-label-sm text-[#f97316] font-bold">Rush Pace ⚡</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="h-10 px-space-md bg-white border border-[#fed7aa] text-[#f97316] rounded-lg font-label-md text-label-md flex items-center gap-1 shadow-sm active:scale-95 transition-transform font-bold" id="btn-sound-toggle">
+<span class="material-symbols-outlined text-[18px]">volume_up</span>
+<span class="hidden sm:inline">Chime</span>
+</button>
+<button class="h-10 w-10 bg-white border border-[#fed7aa] text-[#f97316] rounded-lg flex items-center justify-center shadow-sm active:scale-95 transition-transform" title="Refresh Feed">
+<span class="material-symbols-outlined text-[18px]">sync</span>
+</button>
+</div>
+</div>
+<!-- Search & Filter Bar -->
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#f97316] text-[20px]">search</span>
+<input id="orders-search-input" oninput="onSearchOrders()" class="w-full h-12 pl-11 pr-11 bg-white border border-[#fed7aa] text-[#1c1917] rounded-xl font-body-md text-body-md placeholder:text-[#a8a29e] focus:outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316] transition-all shadow-sm" placeholder="Search order #, customer name, drink..." type="search"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 h-8 px-2.5 rounded-lg bg-[#fff7ed] border border-[#fed7aa] text-[#f97316] font-label-sm text-label-sm flex items-center gap-1 font-bold">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+</button>
+</div>
+<!-- High-Velocity Segmented Status Control -->
+<div class="grid grid-cols-4 gap-1.5 bg-white p-1 rounded-xl border border-[#fed7aa] shadow-sm" id="status-tabs-container">
+<button id="tab-active" onclick="filterStatus('active', this)" class="status-tab-btn flex flex-col items-center justify-center py-2 px-1 rounded-lg bg-[#f97316] text-white shadow-sm transition-all active:scale-95 cursor-pointer">
+<div class="flex items-center gap-1">
+<span class="font-label-md text-label-md font-bold">Active</span>
+<span class="px-1.5 py-0.2 rounded-full bg-white text-[#f97316] font-label-sm text-[10px] font-bold">4</span>
+</div>
+<span class="font-label-sm text-[9px] text-white/90 mt-0.5 font-medium">Queue</span>
+</button>
+<button id="tab-ready" onclick="filterStatus('ready', this)" class="status-tab-btn flex flex-col items-center justify-center py-2 px-1 rounded-lg text-[#78716c] hover:text-[#f97316] transition-all active:scale-95 cursor-pointer">
+<div class="flex items-center gap-1">
+<span class="font-label-md text-label-md font-medium">Ready</span>
+<span class="px-1.5 py-0.2 rounded-full bg-[#fff7ed] text-[#ea580c] border border-[#fed7aa] font-label-sm text-[10px] font-semibold">3</span>
+</div>
+<span class="font-label-sm text-[9px] text-[#a8a29e] mt-0.5">Pickup</span>
+</button>
+<button id="tab-done" onclick="filterStatus('done', this)" class="status-tab-btn flex flex-col items-center justify-center py-2 px-1 rounded-lg text-[#78716c] hover:text-[#f97316] transition-all active:scale-95 cursor-pointer">
+<div class="flex items-center gap-1">
+<span class="font-label-md text-label-md font-medium">Done</span>
+<span class="px-1.5 py-0.2 rounded-full bg-[#fff7ed] text-[#78716c] font-label-sm text-[10px]">48</span>
+</div>
+<span class="font-label-sm text-[9px] text-[#a8a29e] mt-0.5">History</span>
+</button>
+<button id="tab-void" onclick="filterStatus('void', this)" class="status-tab-btn flex flex-col items-center justify-center py-2 px-1 rounded-lg text-[#78716c] hover:text-[#f97316] transition-all active:scale-95 cursor-pointer">
+<div class="flex items-center gap-1">
+<span class="font-label-md text-label-md font-medium">Void</span>
+<span class="px-1.5 py-0.2 rounded-full bg-white border border-[#fed7aa] text-[#f97316] font-label-sm text-[10px]">1</span>
+</div>
+<span class="font-label-sm text-[9px] text-[#a8a29e] mt-0.5">Voided</span>
+</button>
+</div>
+<!-- Live Orders Queue Stream -->
+<div class="flex flex-col space-y-space-md pt-space-xs" id="orders-stream-container">
+<!-- Card 1: Urgent/Active (4 mins elapsed) -->
+<div class="relative bg-white rounded-xl border-2 border-[#f97316] shadow-sm overflow-hidden transition-all flex flex-col">
+<!-- Orange Pulse Status Header Bar -->
+<div class="h-1.5 w-full bg-[#f97316]"></div>
+<div class="p-space-md space-y-space-md">
+<!-- Top Metadata & Dispatch Row -->
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-headline-md text-[#1c1917] tracking-tight">#144</span>
+<span class="px-2.5 py-1 rounded-full bg-[#f97316] text-white font-label-sm text-label-sm uppercase font-bold flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px]">shopping_bag</span>
+                Takeaway
+              </span>
+</div>
+<span class="font-body-sm text-body-sm text-[#78716c] mt-0.5">Received 09:42 AM</span>
+</div>
+<!-- Elapsed Counter with Orange Warning State -->
+<div class="flex items-center gap-1.5 bg-[#fff7ed] border border-[#f97316] px-2.5 py-1 rounded-lg">
+<span class="w-2 h-2 rounded-full bg-[#f97316] animate-ping"></span>
+<span class="font-label-numeric-md text-label-numeric-md text-[#ea580c] font-bold">4m ago</span>
+</div>
+</div>
+<!-- Customer Identity & Crucial Prep Notes -->
+<div class="bg-[#fff7ed] border border-[#fed7aa] rounded-lg p-space-sm space-y-1">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[#f97316] text-[18px]">person</span>
+<span class="font-headline-sm text-headline-sm text-[#1c1917]">Sarah M.</span>
+</div>
+<span class="font-label-sm text-label-sm text-[#ea580c] font-bold uppercase tracking-wider">Pre-Paid (Card)</span>
+</div>
+<!-- Barista Alert Callout -->
+<div class="flex items-center gap-1 text-[#ea580c] font-body-sm text-body-sm bg-white border border-[#fed7aa] px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[15px] text-[#f97316]">priority_high</span>
+<span class="font-bold text-[#f97316]">Note:</span> Extra hot, strictly oat milk only!
+          </div>
+</div>
+<!-- Itemized Prep Breakdown with Recipe Micro-Badges -->
+<div class="space-y-space-sm pt-space-xs">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-start gap-2.5">
+<span class="w-6 h-6 rounded bg-[#f97316] text-white font-label-numeric-md text-[13px] flex items-center justify-center shrink-0 font-bold">2x</span>
+<div class="flex flex-col">
+<span class="font-body-lg text-body-lg text-[#1c1917] font-semibold leading-tight">Oat Milk Flat White</span>
+<div class="flex flex-wrap gap-1 mt-1">
+<span class="px-2 py-0.5 rounded bg-white border border-[#fed7aa] text-[#ea580c] font-label-sm text-[10px] font-semibold">Extra Hot</span>
+<span class="px-2 py-0.5 rounded bg-white border border-[#fed7aa] text-[#ea580c] font-label-sm text-[10px] font-semibold">Minor Figures</span>
+<span class="px-2 py-0.5 rounded bg-white border border-[#fed7aa] text-[#ea580c] font-label-sm text-[10px] font-semibold">Double Ristretto</span>
+</div>
+</div>
+</div>
+<span class="font-label-numeric-md text-label-numeric-md text-[#1c1917] font-bold shrink-0">₹10.50</span>
+</div>
+<div class="flex items-start justify-between gap-space-sm pt-1">
+<div class="flex items-start gap-2.5">
+<span class="w-6 h-6 rounded bg-white border border-[#fed7aa] text-[#f97316] font-label-numeric-md text-[13px] flex items-center justify-center shrink-0 font-bold">1x</span>
+<div class="flex flex-col">
+<span class="font-body-lg text-body-lg text-[#1c1917] font-semibold leading-tight">Warm Almond Croissant</span>
+<span class="text-[#ea580c] font-label-sm text-[10px] mt-0.5 font-medium">Heat in turbo-oven 45s</span>
+</div>
+</div>
+<span class="font-label-numeric-md text-label-numeric-md text-[#1c1917] font-bold shrink-0">₹4.75</span>
+</div>
+</div>
+<!-- Bottom Bill Summary & Kinetic Actions -->
+<div class="pt-space-sm space-y-space-sm">
+<div class="flex items-center justify-between text-[#78716c] font-body-sm text-body-sm">
+<span>Subtotal (3 items)</span>
+<span class="font-label-numeric-md text-label-numeric-md text-[#1c1917] font-bold">₹15.25</span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm pt-1">
+<button class="h-12 bg-white border-2 border-[#f97316] text-[#f97316] rounded-xl font-label-md text-label-md flex items-center justify-center gap-1.5 active:scale-95 transition-transform font-bold">
+<span class="material-symbols-outlined text-[18px]">print</span>
+              Print Slip
+            </button>
+<button class="h-12 bg-[#f97316] text-white rounded-xl font-label-md text-label-md flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-transform font-bold hover:bg-[#ea580c]">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+              Mark Ready
+            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Active (1 min elapsed) -->
+<div class="relative bg-white rounded-xl border border-[#fed7aa] shadow-sm overflow-hidden transition-all flex flex-col">
+<!-- Status Header Strip -->
+<div class="h-1.5 w-full bg-[#f97316]"></div>
+<div class="p-space-md space-y-space-md">
+<!-- Metadata Header Row -->
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-headline-md text-[#1c1917] tracking-tight">#145</span>
+<span class="px-2.5 py-1 rounded-full bg-[#fff7ed] border border-[#fed7aa] text-[#ea580c] font-label-sm text-label-sm uppercase font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">table_restaurant</span>
+                Dine-In • Table 4
+              </span>
+</div>
+<span class="font-body-sm text-body-sm text-[#78716c] mt-0.5">Received 09:45 AM</span>
+</div>
+<div class="flex items-center gap-1.5 bg-[#fff7ed] border border-[#fed7aa] px-2.5 py-1 rounded-lg">
+<span class="w-2 h-2 rounded-full bg-[#f97316]"></span>
+<span class="font-label-numeric-md text-label-numeric-md text-[#ea580c] font-bold">1m ago</span>
+</div>
+</div>
+<!-- Customer Identity -->
+<div class="bg-[#fff7ed] border border-[#fed7aa] rounded-lg p-space-sm flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[#f97316] text-[18px]">person</span>
+<span class="font-headline-sm text-headline-sm text-[#1c1917]">Alex K.</span>
+</div>
+<span class="font-label-sm text-label-sm text-[#ea580c] font-bold uppercase tracking-wider">Paid (QR/UPI)</span>
+</div>
+<!-- Itemized List -->
+<div class="space-y-space-sm pt-space-xs">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-start gap-2.5">
+<span class="w-6 h-6 rounded bg-[#f97316] text-white font-label-numeric-md text-[13px] flex items-center justify-center shrink-0 font-bold">1x</span>
+<div class="flex flex-col">
+<span class="font-body-lg text-body-lg text-[#1c1917] font-semibold leading-tight">Iced Ceremonial Matcha Latte</span>
+<div class="flex flex-wrap gap-1 mt-1">
+<span class="px-2 py-0.5 rounded bg-white border border-[#fed7aa] text-[#ea580c] font-label-sm text-[10px] font-semibold">Less Ice</span>
+<span class="px-2 py-0.5 rounded bg-white border border-[#fed7aa] text-[#ea580c] font-label-sm text-[10px] font-semibold">Vanilla Syrup (1 pump)</span>
+</div>
+</div>
+</div>
+<span class="font-label-numeric-md text-label-numeric-md text-[#1c1917] font-bold shrink-0">₹6.50</span>
+</div>
+<div class="flex items-start justify-between gap-space-sm pt-1">
+<div class="flex items-start gap-2.5">
+<span class="w-6 h-6 rounded bg-white border border-[#fed7aa] text-[#f97316] font-label-numeric-md text-[13px] flex items-center justify-center shrink-0 font-bold">1x</span>
+<div class="flex flex-col">
+<span class="font-body-lg text-body-lg text-[#1c1917] font-semibold leading-tight">Artisan Avocado Toast Box</span>
+<span class="font-label-sm text-[10px] text-[#78716c] mt-0.5">Chili flakes &amp; microgreens on side</span>
+</div>
+</div>
+<span class="font-label-numeric-md text-label-numeric-md text-[#1c1917] font-bold shrink-0">₹7.00</span>
+</div>
+</div>
+<!-- Action Grid -->
+<div class="pt-space-sm space-y-space-sm">
+<div class="flex items-center justify-between text-[#78716c] font-body-sm text-body-sm">
+<span>Subtotal (2 items)</span>
+<span class="font-label-numeric-md text-label-numeric-md text-[#1c1917] font-bold">₹13.50</span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm pt-1">
+<button onclick="printReceiptSlip('#145', 'Alex K.', 'Dine-In Table 4', '₹13.50')" class="h-12 bg-white border-2 border-[#f97316] text-[#f97316] rounded-xl font-label-md text-label-md flex items-center justify-center gap-1.5 active:scale-95 transition-transform font-bold cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">print</span>
+              Print Slip
+            </button>
+<button onclick="advanceOrder(this, '#145')" class="h-12 bg-[#f97316] text-white rounded-xl font-label-md text-label-md flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-transform font-bold hover:bg-[#ea580c] cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+              Mark Ready
+            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 3: Ready for Pickup (Hand-off Pending) -->
+<div class="relative bg-white rounded-xl border-2 border-[#f97316] shadow-sm overflow-hidden transition-all flex flex-col" id="order-card-143">
+<!-- Orange Ready Status Indicator Strip -->
+<div class="h-1.5 w-full bg-[#f97316]"></div>
+<div class="p-space-md space-y-space-md">
+<!-- Header Strip -->
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-headline-md text-[#1c1917] tracking-tight">#143</span>
+<span class="px-2.5 py-1 rounded-full bg-[#f97316] text-white font-label-sm text-label-sm uppercase font-bold flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px]">storefront</span>
+                Counter Pickup
+              </span>
+</div>
+<span class="font-body-sm text-body-sm text-[#78716c] mt-0.5">Ready since 09:38 AM (7m waiting)</span>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-[#fff7ed] border border-[#f97316] text-[#ea580c] font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-[#f97316]">notifications_active</span>
+            Staged
+          </span>
+</div>
+<!-- Customer Identity -->
+<div class="bg-[#fff7ed] border border-[#fed7aa] rounded-lg p-space-sm flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[#f97316] text-[18px]">person</span>
+<span class="font-headline-sm text-headline-sm text-[#1c1917]">David L.</span>
+</div>
+<span class="font-label-sm text-label-sm text-[#ea580c] font-bold">+1 (555) 019-8234</span>
+</div>
+<!-- Items Ready on Counter -->
+<div class="space-y-space-xs pt-space-xs text-[#1c1917]">
+<div class="flex items-center justify-between text-body-md font-body-md">
+<span>• 1x Ethiopian Yirgacheffe Cold Brew (16oz)</span>
+<span class="font-label-sm text-[#f97316] font-bold">Done</span>
+</div>
+<div class="flex items-center justify-between text-body-md font-body-md">
+<span>• 1x Fresh Wild Blueberry Muffin</span>
+<span class="font-label-sm text-[#f97316] font-bold">Done</span>
+</div>
+</div>
+<!-- Staging Actions: SMS Ping & Complete Hand-off -->
+<div class="grid grid-cols-2 gap-space-sm pt-space-xs">
+<button onclick="showToast('SMS dispatched to David L. (+1 555-019-8234)')" class="h-12 bg-white border-2 border-[#f97316] text-[#f97316] rounded-xl font-label-md text-label-md flex items-center justify-center gap-1.5 active:scale-95 transition-transform font-bold cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">sms</span>
+            Notify SMS
+          </button>
+<button onclick="completeOrder(this, '#143')" class="h-12 bg-[#f97316] text-white rounded-xl font-label-md text-label-md flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-transform font-bold hover:bg-[#ea580c] cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">done_all</span>
+            Complete Order ✓
+          </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Operational Delight / Shift Stats Micro-Card -->
+<div class="bg-white border border-[#fed7aa] p-space-md rounded-xl flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-[#f97316] flex items-center justify-center text-white shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">local_fire_department</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-[#1c1917]">Rush Target: 92% On-Time</span>
+<span class="font-body-sm text-body-sm text-[#78716c]">51 total tickets served this morning shift</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[#f97316]">chevron_right</span>
+</div>
+
+<!-- Simple Toast -->
+<div id="toast-pill" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none translate-y-[-10px]">
+  <div class="bg-[#f97316] text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 font-bold font-label-md text-[13px]">
+    <span class="material-symbols-outlined text-[18px]">check_circle</span>
+    <span id="toast-text">Updated</span>
+  </div>
+</div>
+
+</div>
+<script>
+  let toastTimer;
+  function showToast(msg) {
+    const toast = document.getElementById('toast-pill');
+    const txt = document.getElementById('toast-text');
+    if (!toast || !txt) return;
+    txt.textContent = msg;
+    toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+    toast.classList.add('opacity-100', 'translate-y-0');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+      toast.classList.remove('opacity-100', 'translate-y-0');
+    }, 1800);
+  }
+
+  let currentTab = 'active';
+
+  const PP3_ORDERS = [
+    {
+      id: "144",
+      status: "active",
+      type: "Takeaway",
+      timeAgo: "4m ago",
+      receivedTime: "09:42 AM",
+      customer: "Sarah M.",
+      paymentStatus: "Pre-Paid (Card)",
+      note: "Extra hot, strictly oat milk only!",
+      items: [
+        { qty: 2, name: "Oat Milk Flat White", price: "₹10.50", tags: ["Extra Hot", "Minor Figures", "Double Ristretto"] },
+        { qty: 1, name: "Warm Almond Croissant", price: "₹4.75", note: "Heat in turbo-oven 45s" }
+      ],
+      subtotal: "₹15.25"
+    },
+    {
+      id: "145",
+      status: "active",
+      type: "Dine-In • Table 4",
+      timeAgo: "1m ago",
+      receivedTime: "09:45 AM",
+      customer: "Alex K.",
+      paymentStatus: "Paid (QR/UPI)",
+      items: [
+        { qty: 1, name: "Iced Ceremonial Matcha Latte", price: "₹6.50", tags: ["Less Ice", "Vanilla Syrup (1 pump)"] },
+        { qty: 1, name: "Artisan Avocado Toast Box", price: "₹7.00", note: "Chili flakes & microgreens on side" }
+      ],
+      subtotal: "₹13.50"
+    },
+    {
+      id: "143",
+      status: "ready",
+      type: "Counter Pickup",
+      timeAgo: "7m waiting",
+      receivedTime: "09:38 AM",
+      customer: "David L.",
+      paymentStatus: "+1 (555) 019-8234",
+      items: [
+        { qty: 1, name: "Ethiopian Yirgacheffe Cold Brew (16oz)", price: "Done" },
+        { qty: 1, name: "Fresh Wild Blueberry Muffin", price: "Done" }
+      ],
+      subtotal: "₹11.25"
+    },
+    {
+      id: "1042",
+      status: "done",
+      type: "Takeaway",
+      timeAgo: "2m ago",
+      receivedTime: "09:40 AM",
+      customer: "Sarah M.",
+      paymentStatus: "Paid (Card)",
+      items: [
+        { qty: 2, name: "Oat Vanilla Latte", price: "₹11.00", tags: ["Oat Milk", "Vanilla"] },
+        { qty: 1, name: "Almond Croissant", price: "₹5.50" }
+      ],
+      subtotal: "₹16.50"
+    },
+    {
+      id: "1041",
+      status: "done",
+      type: "Dine-In",
+      timeAgo: "8m ago",
+      receivedTime: "09:34 AM",
+      customer: "Alex K.",
+      paymentStatus: "Paid (UPI)",
+      items: [
+        { qty: 1, name: "Cold Brew 16oz", price: "₹5.50" },
+        { qty: 1, name: "Everything Bagel w/ Cream Cheese", price: "₹5.50" }
+      ],
+      subtotal: "₹11.00"
+    },
+    {
+      id: "1040",
+      status: "done",
+      type: "Takeaway",
+      timeAgo: "14m ago",
+      receivedTime: "09:28 AM",
+      customer: "Maya R.",
+      paymentStatus: "Paid (Cash)",
+      items: [
+        { qty: 1, name: "Iced Ceremonial Matcha Latte", price: "₹6.25", tags: ["Oat Milk"] }
+      ],
+      subtotal: "₹6.25"
+    },
+    {
+      id: "1039",
+      status: "done",
+      type: "Dine-In • Table 2",
+      timeAgo: "22m ago",
+      receivedTime: "09:20 AM",
+      customer: "Vikram P.",
+      paymentStatus: "Paid (Card)",
+      items: [
+        { qty: 1, name: "Flat White", price: "₹5.80" },
+        { qty: 1, name: "Avocado Toast Box", price: "₹9.00" }
+      ],
+      subtotal: "₹14.80"
+    },
+    {
+      id: "138",
+      status: "void",
+      type: "Takeaway",
+      timeAgo: "35m ago",
+      receivedTime: "09:05 AM",
+      customer: "Elena S.",
+      paymentStatus: "VOIDED",
+      note: "Customer cancelled: long airport queue",
+      items: [
+        { qty: 1, name: "Caramel Macchiato", price: "₹5.50" },
+        { qty: 1, name: "Choco Chip Cookie", price: "₹2.00" }
+      ],
+      subtotal: "₹7.50"
+    }
+  ];
+
+  function renderPP3OrdersStream(status, filterText = "") {
+    const container = document.getElementById('orders-stream-container');
+    if (!container) return;
+
+    const query = filterText.toLowerCase().trim();
+    const filtered = PP3_ORDERS.filter(o => {
+      const matchStatus = (o.status === status);
+      const matchText = o.id.includes(query) || o.customer.toLowerCase().includes(query) || (o.items || []).some(i => i.name.toLowerCase().includes(query));
+      return matchStatus && matchText;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="py-12 text-center text-neutral-400 space-y-2 bg-white rounded-xl border border-[#fed7aa] p-6 shadow-sm">
+          <span class="material-symbols-outlined text-[36px] text-[#f97316]">receipt_long</span>
+          <p class="font-headline-sm font-semibold text-[14px] text-neutral-800">No ${status.toUpperCase()} orders right now</p>
+          <p class="font-body-sm text-xs text-neutral-400">All customer tickets are fully updated</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = filtered.map(o => `
+      <div class="relative bg-white rounded-xl ${o.status === 'active' ? 'border-2 border-[#f97316]' : 'border border-[#fed7aa]'} shadow-sm overflow-hidden transition-all flex flex-col" id="order-card-${o.id}">
+        <div class="h-1.5 w-full ${o.status === 'done' ? 'bg-[#10b981]' : (o.status === 'void' ? 'bg-neutral-300' : 'bg-[#f97316]')}"></div>
+        <div class="p-space-md space-y-space-md">
+          <div class="flex items-start justify-between gap-space-sm">
+            <div class="flex flex-col">
+              <div class="flex items-center gap-2">
+                <span class="font-headline-md text-headline-md text-[#1c1917] tracking-tight font-bold">#${o.id}</span>
+                <span class="px-2.5 py-1 rounded-full ${o.status === 'done' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-[#f97316] text-white'} font-label-sm text-label-sm uppercase font-bold flex items-center gap-1 shadow-sm">
+                  <span class="material-symbols-outlined text-[14px]">${o.status === 'done' ? 'check_circle' : 'shopping_bag'}</span>
+                  ${o.type}
+                </span>
+              </div>
+              <span class="font-body-sm text-body-sm text-[#78716c] mt-0.5">Received ${o.receivedTime}</span>
+            </div>
+            <div class="flex items-center gap-1.5 ${o.status === 'done' ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : 'bg-[#fff7ed] border border-[#f97316] text-[#ea580c]'} px-2.5 py-1 rounded-lg">
+              <span class="w-2 h-2 rounded-full ${o.status === 'done' ? 'bg-emerald-500' : 'bg-[#f97316] animate-ping'}"></span>
+              <span class="font-label-numeric-md text-label-numeric-md font-bold">${o.timeAgo}</span>
+            </div>
+          </div>
+
+          <div class="${o.status === 'done' ? 'bg-emerald-50/50 border border-emerald-200' : 'bg-[#fff7ed] border border-[#fed7aa]'} rounded-lg p-space-sm space-y-1">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined ${o.status === 'done' ? 'text-emerald-600' : 'text-[#f97316]'} text-[18px]">person</span>
+                <span class="font-headline-sm text-headline-sm text-[#1c1917] font-bold">${o.customer}</span>
+              </div>
+              <span class="font-label-sm text-label-sm ${o.status === 'done' ? 'text-emerald-700 font-bold' : 'text-[#ea580c] font-bold'} uppercase tracking-wider">${o.paymentStatus}</span>
+            </div>
+            ${o.note ? `
+              <div class="flex items-center gap-1 text-[#ea580c] font-body-sm text-body-sm bg-white border border-[#fed7aa] px-2 py-1 rounded">
+                <span class="material-symbols-outlined text-[15px] text-[#f97316]">priority_high</span>
+                <span class="font-bold text-[#f97316]">Note:</span> ${o.note}
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="space-y-space-sm pt-space-xs">
+            ${(o.items || []).map(item => `
+              <div class="flex items-start justify-between gap-space-sm">
+                <div class="flex items-start gap-2.5">
+                  <span class="w-6 h-6 rounded ${o.status === 'done' ? 'bg-emerald-100 text-emerald-700' : 'bg-[#f97316] text-white'} font-label-numeric-md text-[13px] flex items-center justify-center shrink-0 font-bold">${item.qty}x</span>
+                  <div class="flex flex-col">
+                    <span class="font-body-lg text-body-lg text-[#1c1917] font-semibold leading-tight">${item.name}</span>
+                    ${item.tags ? `
+                      <div class="flex flex-wrap gap-1 mt-1">
+                        ${item.tags.map(t => `<span class="px-2 py-0.5 rounded bg-white border border-[#fed7aa] text-[#ea580c] font-label-sm text-[10px] font-semibold">${t}</span>`).join('')}
+                      </div>
+                    ` : ''}
+                    ${item.note ? `<span class="text-[#ea580c] font-label-sm text-[10px] mt-0.5 font-medium">${item.note}</span>` : ''}
+                  </div>
+                </div>
+                <span class="font-label-numeric-md text-label-numeric-md text-[#1c1917] font-bold shrink-0">${item.price}</span>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="pt-space-sm space-y-space-sm border-t border-orange-100">
+            <div class="flex items-center justify-between text-[#78716c] font-body-sm text-body-sm">
+              <span>Subtotal (${(o.items || []).length} items)</span>
+              <span class="font-label-numeric-md text-label-numeric-md text-[#1c1917] font-bold">${o.subtotal}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-space-sm pt-1">
+              <button onclick="printReceiptSlip('#${o.id}', '${o.customer}', '${o.type}', '${o.subtotal}')" class="h-12 bg-white border-2 border-[#f97316] text-[#f97316] rounded-xl font-label-md text-label-md flex items-center justify-center gap-1.5 active:scale-95 transition-transform font-bold cursor-pointer">
+                <span class="material-symbols-outlined text-[18px]">print</span>
+                Print Slip
+              </button>
+              ${o.status === 'active' ? `
+                <button onclick="advanceOrder(this, '#${o.id}')" class="h-12 bg-[#f97316] text-white rounded-xl font-label-md text-label-md flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-transform font-bold hover:bg-[#ea580c] cursor-pointer">
+                  <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                  Mark Ready
+                </button>
+              ` : (o.status === 'ready' ? `
+                <button onclick="completeOrder(this, '#${o.id}')" class="h-12 bg-[#f97316] text-white rounded-xl font-label-md text-label-md flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-transform font-bold hover:bg-[#ea580c] cursor-pointer">
+                  <span class="material-symbols-outlined text-[18px]">done_all</span>
+                  Complete Order ✓
+                </button>
+              ` : `
+                <button onclick="showToast('Order #${o.id} receipt finalized.')" class="h-12 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl font-label-md text-label-md flex items-center justify-center gap-1.5 font-bold cursor-pointer">
+                  <span class="material-symbols-outlined text-[18px]">verified</span>
+                  Completed ✓
+                </button>
+              `)}
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function filterStatus(status, btn) {
+    currentTab = status;
+    document.querySelectorAll('.status-tab-btn').forEach(b => {
+      b.className = 'status-tab-btn flex flex-col items-center justify-center py-2 px-1 rounded-lg text-[#78716c] hover:text-[#f97316] transition-all active:scale-95 cursor-pointer';
+    });
+    if (btn) {
+      btn.className = 'status-tab-btn flex flex-col items-center justify-center py-2 px-1 rounded-lg bg-[#f97316] text-white shadow-sm transition-all active:scale-95 cursor-pointer';
+    }
+    const query = document.getElementById('orders-search-input')?.value || "";
+    renderPP3OrdersStream(status, query);
+    showToast('Showing ' + status.toUpperCase() + ' orders');
+  }
+
+  function onSearchOrders() {
+    const query = document.getElementById('orders-search-input')?.value || "";
+    renderPP3OrdersStream(currentTab, query);
+  }
+
+  function printReceiptSlip(orderId, customer, type, total) {
+    showToast('Printing slip for ' + orderId + ' (' + customer + ')');
+    setTimeout(() => {
+      window.print();
+    }, 400);
+  }
+
+  function advanceOrder(btn, orderId) {
+    const id = orderId.replace('#', '');
+    const o = PP3_ORDERS.find(ord => ord.id === id);
+    if (o) o.status = 'ready';
+    btn.textContent = 'Ready ✓';
+    btn.className = 'h-12 bg-neutral-100 text-neutral-500 rounded-xl font-label-md text-label-md flex items-center justify-center gap-1.5 font-bold cursor-default';
+    showToast('Order ' + orderId + ' marked Ready for pickup!');
+  }
+
+  function completeOrder(btn, orderId) {
+    const id = orderId.replace('#', '');
+    const o = PP3_ORDERS.find(ord => ord.id === id);
+    if (o) o.status = 'done';
+    const card = document.getElementById('order-card-' + id);
+    if (card) {
+      card.style.opacity = '0.5';
+      card.style.pointerEvents = 'none';
+    }
+    showToast('Order ' + orderId + ' completed & handed off!');
+  }
+
+  // Barista chime feedback micro-interaction
+  const soundBtn = document.getElementById('btn-sound-toggle');
+  if (soundBtn) {
+    let muted = false;
+    soundBtn.addEventListener('click', () => {
+      muted = !muted;
+      const icon = soundBtn.querySelector('.material-symbols-outlined');
+      if (icon) {
+        icon.textContent = muted ? 'volume_off' : 'volume_up';
+      }
+      soundBtn.classList.toggle('opacity-60', muted);
+      showToast(muted ? 'Chime muted' : 'Chime active');
+    });
+  }
+
+  // Handle URL query parameter ?tab=done or hash
+  function initTabFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const targetTab = params.get('tab') || (window.location.hash ? window.location.hash.replace('#', '') : 'active');
+    const btn = document.getElementById('tab-' + targetTab) || document.getElementById('tab-active');
+    if (btn) filterStatus(targetTab, btn);
+  }
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', initTabFromUrl);
+  } else {
+    initTabFromUrl();
+  }
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-white border-t border-[#fed7aa] shadow-lg"><div class="flex items-center justify-around h-16 px-space-xs"><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-space-xs rounded-lg text-[#78716c] hover:text-[#f97316] transition-all" data-path="dashboard" href="../PP/code.html"><span class="material-symbols-outlined text-[22px]">dashboard</span><span class="font-label-sm text-[10px] tracking-wide mt-0.5 uppercase">Home</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-space-xs rounded-lg text-[#78716c] hover:text-[#f97316] transition-all" data-path="pos-terminal" href="../PP1/code.html"><span class="material-symbols-outlined text-[22px]">point_of_sale</span><span class="font-label-sm text-[10px] tracking-wide mt-0.5 uppercase">POS</span></a><a aria-current="page" class="relative flex flex-col items-center justify-center min-w-[56px] h-12 px-space-xs rounded-lg transition-all bg-[#fff7ed] text-[#f97316] font-bold border border-[#fed7aa]" data-path="live-orders" href="#"><span class="material-symbols-outlined text-[22px]">receipt_long</span><span class="absolute top-1 right-2.5 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-[#f97316] text-white font-label-sm text-[9px] font-bold">4</span><span class="font-label-sm text-[10px] tracking-wide mt-0.5 uppercase">Orders</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-space-xs rounded-lg text-[#78716c] hover:text-[#f97316] transition-all" data-path="catalog-menu" href="../PP4/code.html"><span class="material-symbols-outlined text-[22px]">local_cafe</span><span class="font-label-sm text-[10px] tracking-wide mt-0.5 uppercase">Menu</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-space-xs rounded-lg text-[#78716c] hover:text-[#f97316] transition-all" data-path="cart-settings" href="../PP2/code.html"><span class="material-symbols-outlined text-[22px]">tune</span><span class="font-label-sm text-[10px] tracking-wide mt-0.5 uppercase">Settings</span></a></div></nav></body></html>

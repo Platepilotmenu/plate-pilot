@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;font-family:'Work Sans',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "primary": "#f97316",
+          "primary-container": "#ea580c",
+          "secondary": "#f97316",
+          "secondary-container": "#fff7ed",
+          "background": "#fff8f6",
+          "surface": "#fff8f6",
+          "surface-card": "#ffffff",
+          "surface-container-lowest": "#ffffff",
+          "surface-container-low": "#fff1eb",
+          "surface-container": "#ffeae0",
+          "surface-container-high": "#fed7aa",
+          "surface-container-highest": "#ffedd5",
+          "on-surface": "#09090b",
+          "on-surface-variant": "#52525b",
+          "text-muted": "#71717a",
+          "outline": "#d4d4d8",
+          "outline-variant": "#f4f4f5",
+          "border-subtle": "#fed7aa",
+          "orange-vibrant": "#f97316",
+          "orange-deep": "#ea580c",
+          "orange-light": "#fff7ed",
+          "orange-glow": "#fed7aa"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "space-xl": "1.5rem",
+          "space-md": "0.75rem",
+          "space-xs": "0.25rem",
+          "margin-md": "1.25rem",
+          "space-lg": "1rem",
+          "margin-lg": "1.5rem",
+          "space-sm": "0.5rem",
+          "gutter-md": "1rem",
+          "gutter": "0.75rem",
+          "gutter-lg": "1.25rem",
+          "margin": "1rem"
+        },
+        "fontFamily": {
+          "headline-xl": ["Space Grotesk"],
+          "body-sm": ["Work Sans"],
+          "label-numeric-md": ["Space Grotesk"],
+          "body-lg": ["Work Sans"],
+          "body-md": ["Work Sans"],
+          "label-numeric-lg": ["Space Grotesk"],
+          "headline-md": ["Space Grotesk"],
+          "label-md": ["Space Grotesk"],
+          "headline-lg": ["Space Grotesk"],
+          "label-sm": ["Space Grotesk"],
+          "headline-sm": ["Space Grotesk"],
+          "headline-xl-mobile": ["Space Grotesk"]
+        },
+        "fontSize": {
+          "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+          "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+          "label-numeric-md": ["16px", { "lineHeight": "20px", "fontWeight": "600" }],
+          "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+          "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+          "label-numeric-lg": ["24px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+          "headline-md": ["20px", { "lineHeight": "26px", "fontWeight": "600" }],
+          "label-md": ["13px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+          "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+          "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "700" }],
+          "headline-sm": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+          "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+        }
+      }
+    }
+  };
+</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-xl pt-safe border-b border-orange-100 shadow-sm"><div class="h-16 px-gutter-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-9 h-9 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-sm shadow-orange-500/30"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">local_cafe</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-neutral-900 tracking-tight leading-none font-bold">Roast &amp; Cart</span><div class="flex items-center gap-1 mt-0.5"><span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span><span class="font-label-sm text-label-sm text-orange-600 uppercase tracking-wider font-bold">Online • Cart #01</span></div></div></div><div class="flex items-center gap-space-sm"><div class="flex flex-col items-end text-right hidden sm:flex"><span class="font-label-sm text-label-sm text-neutral-900 font-semibold">Dashboard</span></div><button class="w-10 h-10 flex items-center justify-center rounded-full ring-2 ring-orange-200 active:scale-95 transition-transform"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrT0_ToAY9oG_TQjQRD1ob-f1awFQVvQPS1v2-q2IpHy4AkTK_iYYVoqPj2-X4MZiZHAe73IHTJ6ACF0JKMIK2H79DzxN2ZB6qS1NpV-ypU8ILCzMspNm5YZbqdeUhxkwhRuuvf0Y2127Fgu67v36L4o44JDV65SXR9exws-cGP-YUcJwbHzf1CEn3IRda-IG8snKMN64MDj5QMeyXDjABau3AFt_Agr__kvveencGtzoDQxUuxSJW"/></button></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full px-margin-md space-y-space-lg pb-10">
+<!-- Sub-header & Time Filter Selector -->
+<section class="flex flex-col space-y-space-sm pt-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs bg-white border border-orange-100 shadow-sm px-space-md py-space-xs rounded-full">
+<span class="material-symbols-outlined text-[16px] text-orange-500">store</span>
+<span class="font-label-md text-label-md text-neutral-900 font-semibold">Station 1 • Main Cart</span>
+<span class="material-symbols-outlined text-[16px] text-neutral-400">expand_more</span>
+</div>
+<div class="flex items-center gap-1.5 bg-orange-50 border border-orange-100 px-space-sm py-1 rounded-full">
+<span class="w-2 h-2 rounded-full bg-orange-500 animate-ping"></span>
+<span class="font-label-sm text-label-sm text-orange-600 uppercase tracking-wider font-bold">Sync Active</span>
+</div>
+</div>
+<!-- Quick Date Range Pills -->
+<div class="flex items-center gap-space-xs overflow-x-auto no-scrollbar py-1" id="date-range-pills">
+<button onclick="selectDateFilter(this, 'today')" class="date-pill px-space-md h-9 rounded-full bg-orange-500 text-white font-label-md text-label-md flex items-center justify-center shadow-sm shadow-orange-500/20 active:scale-95 transition-all font-semibold">
+        Today
+      </button>
+<button onclick="selectDateFilter(this, 'week')" class="date-pill px-space-md h-9 rounded-full bg-white border border-orange-100 text-neutral-700 font-label-md text-label-md hover:bg-orange-50 hover:text-orange-600 active:scale-95 transition-all">
+        This Week
+      </button>
+<button onclick="selectDateFilter(this, 'month')" class="date-pill px-space-md h-9 rounded-full bg-white border border-orange-100 text-neutral-700 font-label-md text-label-md hover:bg-orange-50 hover:text-orange-600 active:scale-95 transition-all">
+        This Month
+      </button>
+<button onclick="openCustomDateModal()" id="custom-date-btn" class="date-pill px-space-md h-9 rounded-full bg-white border border-orange-100 text-neutral-700 font-label-md text-label-md flex items-center gap-1 hover:bg-orange-50 hover:text-orange-600 active:scale-95 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[16px] text-orange-500">calendar_today</span>
+<span id="custom-date-text">Custom</span>
+</button>
+</div>
+</section>
+<!-- Quick Action Command Strip -->
+<section class="grid grid-cols-2 gap-space-sm">
+<button onclick="window.location.href='../PP1/code.html'" class="flex items-center justify-between bg-orange-500 hover:bg-orange-600 text-white h-14 px-space-md rounded-xl shadow-md shadow-orange-500/25 active:translate-y-0.5 active:shadow-sm transition-all group cursor-pointer">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div class="flex flex-col text-left">
+<span class="font-headline-sm text-headline-sm text-white leading-tight font-bold">Quick Sale</span>
+<span class="font-body-sm text-body-sm text-orange-100">New Ticket</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-orange-200 group-hover:translate-x-0.5 transition-transform text-[20px]">chevron_right</span>
+</button>
+<button onclick="window.location.href='../PP3/code.html'" class="flex items-center justify-between bg-white hover:bg-orange-50/50 text-neutral-900 h-14 px-space-md rounded-xl shadow-sm border border-orange-100 active:translate-y-0.5 transition-all group cursor-pointer">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-lg bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-600">
+<span class="material-symbols-outlined text-[20px]">tab</span>
+</div>
+<div class="flex flex-col text-left">
+<span class="font-headline-sm text-headline-sm text-neutral-900 leading-tight font-bold">Open Tabs</span>
+<span class="font-body-sm text-body-sm text-neutral-500">Hold &amp; Tab</span>
+</div>
+</div>
+<div class="flex items-center justify-center w-6 h-6 rounded-full bg-orange-500 text-white font-label-sm text-label-sm font-bold shadow-sm">
+        3
+      </div>
+</button>
+</section>
+<!-- 2x2 Metric Performance Grid -->
+<section class="grid grid-cols-2 gap-space-sm">
+<!-- Revenue -->
+<div class="bg-white p-space-md rounded-xl shadow-sm border border-orange-100 flex flex-col justify-between h-[126px]">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-neutral-500 font-semibold" id="metric-sales-title">Today's Sales</span>
+<div class="w-6 h-6 rounded-md bg-orange-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-orange-500 text-[16px]">trending_up</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-numeric-lg text-label-numeric-lg text-neutral-900 tracking-tight font-bold" id="metric-sales-val">₹1,248.50</span>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="font-label-sm text-label-sm text-orange-600 font-bold" id="metric-sales-trend">+14.2% vs yesterday</span>
+</div>
+</div>
+</div>
+<!-- Orders Completed -->
+<div class="bg-white p-space-md rounded-xl shadow-sm border border-orange-100 flex flex-col justify-between h-[126px]">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-neutral-500 font-semibold">Completed</span>
+<div class="w-6 h-6 rounded-md bg-orange-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-orange-500 text-[16px]">done_all</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-numeric-lg text-label-numeric-lg text-neutral-900 tracking-tight font-bold" id="metric-completed-count">142</span>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[13px] text-orange-500">speed</span>
+<span class="font-body-sm text-body-sm text-neutral-500" id="metric-completed-speed">Avg 3m 40s</span>
+</div>
+</div>
+</div>
+<!-- Average Ticket -->
+<div class="bg-white p-space-md rounded-xl shadow-sm border border-orange-100 flex flex-col justify-between h-[126px]">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-neutral-500 font-semibold">Avg Ticket</span>
+<div class="w-6 h-6 rounded-md bg-orange-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-orange-500 text-[16px]">payments</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-numeric-lg text-label-numeric-lg text-neutral-900 tracking-tight font-bold" id="metric-avg-ticket">₹8.79</span>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="font-label-sm text-label-sm text-orange-600 font-bold" id="metric-avg-ticket-diff">+₹0.85</span>
+<span class="font-body-sm text-body-sm text-neutral-400" id="metric-avg-ticket-target">target ₹8.50</span>
+</div>
+</div>
+</div>
+<!-- Best Seller -->
+<div class="bg-white p-space-md rounded-xl shadow-sm border border-orange-100 flex flex-col justify-between h-[126px] overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-neutral-500 font-semibold">Best Seller</span>
+<span class="material-symbols-outlined text-orange-500 text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-neutral-900 truncate font-bold" id="metric-best-seller-name">Oat Vanilla Latte</span>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="font-label-sm text-label-sm text-orange-600 font-bold" id="metric-best-seller-count">48 sold</span>
+<span class="font-body-sm text-body-sm text-neutral-400 truncate" id="metric-best-seller-share">• 34% share</span>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Item-Wise Sales Report Section -->
+<section class="bg-white p-space-lg rounded-xl shadow-sm border border-orange-100 flex flex-col space-y-space-md">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-headline-sm text-neutral-900 font-bold">Item-Wise Sales</span>
+<span class="bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full font-label-sm text-[10px] font-bold">TOP 5</span>
+</div>
+<span class="font-body-sm text-body-sm text-neutral-500">Volume and revenue breakdown</span>
+</div>
+<span class="font-label-sm text-label-sm text-orange-600 font-bold" id="item-wise-total">₹1,248.50 Total</span>
+</div>
+<div class="space-y-3 pt-1" id="item-wise-list-container">
+<!-- Item 1 -->
+<div class="flex flex-col space-y-1">
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-sm font-bold text-neutral-900">Oat Vanilla Latte</span>
+<span class="text-xs text-neutral-400">• 48 sold</span>
+</div>
+<span class="font-headline-sm text-sm font-bold text-neutral-900">₹264.00 (34%)</span>
+</div>
+<div class="w-full bg-orange-100/60 rounded-full h-2 overflow-hidden">
+<div class="bg-orange-500 h-2 rounded-full" style="width: 34%"></div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex flex-col space-y-1">
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-sm font-bold text-neutral-900">Double Espresso</span>
+<span class="text-xs text-neutral-400">• 36 sold</span>
+</div>
+<span class="font-headline-sm text-sm font-bold text-neutral-900">₹126.00 (22%)</span>
+</div>
+<div class="w-full bg-orange-100/60 rounded-full h-2 overflow-hidden">
+<div class="bg-orange-500 h-2 rounded-full" style="width: 22%"></div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="flex flex-col space-y-1">
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-sm font-bold text-neutral-900">Cold Brew 16oz</span>
+<span class="text-xs text-neutral-400">• 28 sold</span>
+</div>
+<span class="font-headline-sm text-sm font-bold text-neutral-900">₹133.00 (18%)</span>
+</div>
+<div class="w-full bg-orange-100/60 rounded-full h-2 overflow-hidden">
+<div class="bg-orange-500 h-2 rounded-full" style="width: 18%"></div>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="flex flex-col space-y-1">
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-sm font-bold text-neutral-900">Almond Croissant</span>
+<span class="text-xs text-neutral-400">• 22 sold</span>
+</div>
+<span class="font-headline-sm text-sm font-bold text-neutral-900">₹93.50 (14%)</span>
+</div>
+<div class="w-full bg-orange-100/60 rounded-full h-2 overflow-hidden">
+<div class="bg-orange-500 h-2 rounded-full" style="width: 14%"></div>
+</div>
+</div>
+<!-- Item 5 -->
+<div class="flex flex-col space-y-1">
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-sm font-bold text-neutral-900">Avocado Toast Box</span>
+<span class="text-xs text-neutral-400">• 14 sold</span>
+</div>
+<span class="font-headline-sm text-sm font-bold text-neutral-900">₹105.00 (12%)</span>
+</div>
+<div class="w-full bg-orange-100/60 rounded-full h-2 overflow-hidden">
+<div class="bg-orange-500 h-2 rounded-full" style="width: 12%"></div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Hourly Peak Bar Chart Section -->
+<section class="bg-white p-space-lg rounded-xl shadow-sm border border-orange-100 flex flex-col space-y-space-md">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-headline-sm text-neutral-900 font-bold" id="volume-title">Hourly Volume</span>
+<span class="bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full font-label-sm text-[10px] font-bold" id="volume-badge">PEAKS</span>
+</div>
+<span class="font-body-sm text-body-sm text-neutral-500" id="volume-subtitle">Rush hours: 8:00 - 10:00 AM &amp; 1:00 PM</span>
+</div>
+<!-- Interactive Tooltip Pill -->
+<div class="bg-orange-500 text-white px-space-sm py-1 rounded-full flex items-center gap-1 shadow-sm" id="hourly-tooltip">
+<span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+<span class="font-label-sm text-label-sm font-semibold tracking-wide" id="hourly-tooltip-text">₹240 @ 9 AM</span>
+</div>
+</div>
+<!-- Custom CSS/SVG Interactive Bar Chart -->
+<div class="pt-space-sm">
+<div class="h-36 w-full flex items-end justify-between gap-1.5 relative pb-6" id="hourly-bars-container">
+<!-- Background Baseline Guidelines -->
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6 opacity-30">
+<div class="w-full h-px bg-orange-100"></div>
+<div class="w-full h-px bg-orange-100"></div>
+<div class="w-full h-px bg-orange-100"></div>
+</div>
+<!-- 07:00 -->
+<div class="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer">
+<div class="w-full max-w-[24px] bg-orange-100/70 rounded-t group-hover:bg-orange-300 transition-all" style="height: 32%;"></div>
+<span class="absolute bottom-0 font-label-sm text-[10px] text-neutral-400 group-hover:text-orange-500 transition-colors">7a</span>
+</div>
+<!-- 08:00 (Rush) -->
+<div class="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer">
+<div class="w-full max-w-[24px] bg-orange-400 rounded-t shadow-sm group-hover:scale-y-105 origin-bottom transition-all" style="height: 78%;"></div>
+<span class="absolute bottom-0 font-label-sm text-[10px] text-orange-600 font-bold">8a</span>
+</div>
+<!-- 09:00 (Peak of the day) -->
+<div class="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer relative">
+<div class="w-full max-w-[24px] bg-orange-600 rounded-t shadow-sm ring-2 ring-orange-300 group-hover:brightness-110 transition-all" style="height: 98%;"></div>
+<span class="absolute bottom-0 font-label-sm text-[10px] text-orange-600 font-bold">9a</span>
+</div>
+<!-- 10:00 (Rush) -->
+<div class="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer">
+<div class="w-full max-w-[24px] bg-orange-400 rounded-t shadow-sm group-hover:scale-y-105 origin-bottom transition-all" style="height: 65%;"></div>
+<span class="absolute bottom-0 font-label-sm text-[10px] text-orange-600 font-bold">10a</span>
+</div>
+<!-- 11:00 -->
+<div class="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer">
+<div class="w-full max-w-[24px] bg-orange-100/70 rounded-t group-hover:bg-orange-300 transition-all" style="height: 42%;"></div>
+<span class="absolute bottom-0 font-label-sm text-[10px] text-neutral-400 group-hover:text-orange-500 transition-colors">11a</span>
+</div>
+<!-- 12:00 -->
+<div class="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer">
+<div class="w-full max-w-[24px] bg-orange-100/70 rounded-t group-hover:bg-orange-300 transition-all" style="height: 52%;"></div>
+<span class="absolute bottom-0 font-label-sm text-[10px] text-neutral-400 group-hover:text-orange-500 transition-colors">12p</span>
+</div>
+<!-- 13:00 (Lunch Rush) -->
+<div class="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer">
+<div class="w-full max-w-[24px] bg-orange-400 rounded-t shadow-sm group-hover:scale-y-105 origin-bottom transition-all" style="height: 72%;"></div>
+<span class="absolute bottom-0 font-label-sm text-[10px] text-orange-600 font-bold">1p</span>
+</div>
+<!-- 14:00 -->
+<div class="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer">
+<div class="w-full max-w-[24px] bg-orange-100/70 rounded-t group-hover:bg-orange-300 transition-all" style="height: 38%;"></div>
+<span class="absolute bottom-0 font-label-sm text-[10px] text-neutral-400 group-hover:text-orange-500 transition-colors">2p</span>
+</div>
+<!-- 15:00 -->
+<div class="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer">
+<div class="w-full max-w-[24px] bg-orange-100/70 rounded-t group-hover:bg-orange-300 transition-all" style="height: 25%;"></div>
+<span class="absolute bottom-0 font-label-sm text-[10px] text-neutral-400 group-hover:text-orange-500 transition-colors">3p</span>
+</div>
+<!-- 16:00 (Wind down) -->
+<div class="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer">
+<div class="w-full max-w-[24px] bg-orange-100/70 rounded-t group-hover:bg-orange-300 transition-all" style="height: 18%;"></div>
+<span class="absolute bottom-0 font-label-sm text-[10px] text-neutral-400 group-hover:text-orange-500 transition-colors">4p</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Activity Feed -->
+<section class="flex flex-col space-y-space-sm">
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-headline-sm text-neutral-900 font-bold">Recent Orders</span>
+<span class="w-2 h-2 rounded-full bg-orange-500"></span>
+</div>
+<button onclick="window.location.href='../PP3/code.html?tab=done'" class="font-label-sm text-label-sm text-orange-600 font-bold uppercase tracking-wider flex items-center hover:text-orange-700 active:scale-95 transition-all cursor-pointer">
+        View Completed (48)
+        <span class="material-symbols-outlined text-[16px] ml-0.5">arrow_forward</span>
+</button>
+</div>
+<div class="flex flex-col space-y-space-xs">
+<!-- Order 1042 -->
+<div onclick="window.location.href='../PP3/code.html?tab=done'" class="bg-white p-space-md rounded-xl shadow-sm border border-orange-100 flex items-center justify-between active:scale-[0.99] transition-transform cursor-pointer hover:border-orange-300">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-lg bg-orange-50 border border-orange-200 flex flex-col items-center justify-center shrink-0">
+<span class="font-label-sm text-[10px] text-orange-400 font-bold">#</span>
+<span class="font-headline-sm text-headline-sm text-neutral-900 leading-none font-bold">42</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-neutral-900 truncate font-bold">Order #1042</span>
+<span class="bg-orange-100 text-orange-700 px-1.5 py-0.2 rounded font-label-sm text-[10px] font-bold">Paid</span>
+</div>
+<span class="font-body-sm text-body-sm text-neutral-500 truncate">2x Flat White, 1x Croissant</span>
+</div>
+</div>
+<div class="flex flex-col items-end shrink-0 pl-space-sm">
+<span class="font-headline-sm text-headline-sm text-neutral-900 font-bold">₹16.50</span>
+<span class="font-body-sm text-body-sm text-neutral-400">2m ago</span>
+</div>
+</div>
+<!-- Order 1041 -->
+<div onclick="window.location.href='../PP3/code.html?tab=done'" class="bg-white p-space-md rounded-xl shadow-sm border border-orange-100 flex items-center justify-between active:scale-[0.99] transition-transform cursor-pointer hover:border-orange-300">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-lg bg-orange-50 border border-orange-200 flex flex-col items-center justify-center shrink-0">
+<span class="font-label-sm text-[10px] text-orange-400 font-bold">#</span>
+<span class="font-headline-sm text-headline-sm text-neutral-900 leading-none font-bold">41</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-neutral-900 truncate font-bold">Order #1041</span>
+<span class="bg-orange-100 text-orange-700 px-1.5 py-0.2 rounded font-label-sm text-[10px] font-bold">Paid</span>
+</div>
+<span class="font-body-sm text-body-sm text-neutral-500 truncate">1x Cold Brew, 1x Bagel</span>
+</div>
+</div>
+<div class="flex flex-col items-end shrink-0 pl-space-sm">
+<span class="font-headline-sm text-headline-sm text-neutral-900 font-bold">₹11.00</span>
+<span class="font-body-sm text-body-sm text-neutral-400">8m ago</span>
+</div>
+</div>
+<!-- Order 1040 -->
+<div onclick="window.location.href='../PP3/code.html?tab=done'" class="bg-white p-space-md rounded-xl shadow-sm border border-orange-100 flex items-center justify-between active:scale-[0.99] transition-transform cursor-pointer hover:border-orange-300">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-lg bg-orange-50 border border-orange-200 flex flex-col items-center justify-center shrink-0">
+<span class="font-label-sm text-[10px] text-orange-400 font-bold">#</span>
+<span class="font-headline-sm text-headline-sm text-neutral-900 leading-none font-bold">40</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-neutral-900 truncate font-bold">Order #1040</span>
+<span class="bg-orange-100 text-orange-700 px-1.5 py-0.2 rounded font-label-sm text-[10px] font-bold">Paid</span>
+</div>
+<span class="font-body-sm text-body-sm text-neutral-500 truncate">1x Iced Matcha</span>
+</div>
+</div>
+<div class="flex flex-col items-end shrink-0 pl-space-sm">
+<span class="font-headline-sm text-headline-sm text-neutral-900 font-bold">₹6.25</span>
+<span class="font-body-sm text-body-sm text-neutral-400">14m ago</span>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Custom Date Range Modal -->
+<div id="custom-date-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+  <div class="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-5 border border-orange-200 space-y-4">
+    <div class="flex items-center justify-between pb-2 border-b border-orange-100">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-orange-500">calendar_month</span>
+        <h3 class="font-headline-sm font-bold text-neutral-900">Custom Date Range</h3>
+      </div>
+      <button onclick="closeCustomDateModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:bg-neutral-100 cursor-pointer">
+        <span class="material-symbols-outlined text-[18px]">close</span>
+      </button>
+    </div>
+    
+    <!-- Quick Presets -->
+    <div class="space-y-1.5">
+      <label class="font-label-sm uppercase font-bold text-neutral-500 text-[11px]">Quick Presets</label>
+      <div class="grid grid-cols-3 gap-1.5">
+        <button type="button" onclick="setQuickDateRange(7)" class="px-2 py-1.5 text-[11px] font-semibold rounded-lg border border-orange-200 bg-orange-50/60 text-orange-700 hover:bg-orange-100 active:scale-95 transition-all cursor-pointer">Last 7d</button>
+        <button type="button" onclick="setQuickDateRange(14)" class="px-2 py-1.5 text-[11px] font-semibold rounded-lg border border-orange-200 bg-orange-50/60 text-orange-700 hover:bg-orange-100 active:scale-95 transition-all cursor-pointer">Last 14d</button>
+        <button type="button" onclick="setQuickDateRange(30)" class="px-2 py-1.5 text-[11px] font-semibold rounded-lg border border-orange-200 bg-orange-50/60 text-orange-700 hover:bg-orange-100 active:scale-95 transition-all cursor-pointer">Last 30d</button>
+      </div>
+    </div>
+
+    <!-- Date inputs -->
+    <div class="space-y-3">
+      <div>
+        <label class="font-label-sm uppercase font-bold text-neutral-500 text-[11px]">Start Date</label>
+        <input type="date" id="custom-start-date" class="w-full h-11 px-3 mt-1 bg-white border border-neutral-300 rounded-xl font-body text-[14px] text-neutral-900 focus:outline-none focus:border-orange-500"/>
+      </div>
+      <div>
+        <label class="font-label-sm uppercase font-bold text-neutral-500 text-[11px]">End Date</label>
+        <input type="date" id="custom-end-date" class="w-full h-11 px-3 mt-1 bg-white border border-neutral-300 rounded-xl font-body text-[14px] text-neutral-900 focus:outline-none focus:border-orange-500"/>
+      </div>
+    </div>
+
+    <div class="flex gap-2 pt-2 border-t border-orange-100">
+      <button onclick="closeCustomDateModal()" class="flex-1 h-10 border border-neutral-200 rounded-xl font-label-md font-semibold text-neutral-700 hover:bg-neutral-50 cursor-pointer">Cancel</button>
+      <button onclick="applyCustomDateRange()" class="flex-1 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-label-md font-bold shadow-sm shadow-orange-500/20 active:scale-95 transition-all cursor-pointer">Apply Filter</button>
+    </div>
+  </div>
+</div>
+
+<!-- Simple Toast -->
+<div id="toast-pill" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none translate-y-[-10px]">
+  <div class="bg-orange-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 font-bold font-label-md text-[13px]">
+    <span class="material-symbols-outlined text-[18px]">check_circle</span>
+    <span id="toast-text">Updated</span>
+  </div>
+</div>
+
+</div>
+<script>
+  let toastTimer;
+  function showToast(msg) {
+    const toast = document.getElementById('toast-pill');
+    const txt = document.getElementById('toast-text');
+    if (!toast || !txt) return;
+    txt.textContent = msg;
+    toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+    toast.classList.add('opacity-100', 'translate-y-0');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+      toast.classList.remove('opacity-100', 'translate-y-0');
+    }, 1800);
+  }
+
+  const DASHBOARD_TIMELINE_DATA = {
+    today: {
+      salesTitle: "Today's Sales",
+      salesVal: "₹1,248.50",
+      salesTrend: "+14.2% vs yesterday",
+      salesTrendClass: "text-orange-600 font-bold",
+      completedCount: "142",
+      completedSpeed: "Avg 3m 40s",
+      avgTicket: "₹8.79",
+      avgTicketDiff: "+₹0.85",
+      avgTicketTarget: "target ₹8.50",
+      avgTicketDiffClass: "text-orange-600 font-bold",
+      bestSellerName: "Oat Vanilla Latte",
+      bestSellerCount: "48 sold",
+      bestSellerShare: "• 34% share",
+      itemWiseTotal: "₹1,248.50 Total",
+      items: [
+        { name: "Oat Vanilla Latte", sold: "48 sold", revenue: "₹264.00", share: "34%" },
+        { name: "Double Espresso", sold: "36 sold", revenue: "₹126.00", share: "22%" },
+        { name: "Cold Brew 16oz", sold: "28 sold", revenue: "₹133.00", share: "18%" },
+        { name: "Almond Croissant", sold: "22 sold", revenue: "₹93.50", share: "14%" },
+        { name: "Avocado Toast Box", sold: "14 sold", revenue: "₹105.00", share: "12%" }
+      ],
+      volumeTitle: "Hourly Volume",
+      volumeBadge: "PEAKS",
+      volumeSubtitle: "Rush hours: 8:00 - 10:00 AM & 1:00 PM",
+      volumeTooltip: "₹240 @ 9 AM",
+      bars: [
+        { label: "7a", height: "32%", isPeak: false, isRush: false },
+        { label: "8a", height: "78%", isPeak: false, isRush: true },
+        { label: "9a", height: "98%", isPeak: true, isRush: false },
+        { label: "10a", height: "65%", isPeak: false, isRush: true },
+        { label: "11a", height: "42%", isPeak: false, isRush: false },
+        { label: "12p", height: "52%", isPeak: false, isRush: false },
+        { label: "1p", height: "72%", isPeak: false, isRush: true },
+        { label: "2p", height: "38%", isPeak: false, isRush: false },
+        { label: "3p", height: "25%", isPeak: false, isRush: false },
+        { label: "4p", height: "18%", isPeak: false, isRush: false }
+      ]
+    },
+    week: {
+      salesTitle: "This Week's Sales",
+      salesVal: "₹8,420.00",
+      salesTrend: "+9.8% vs last week",
+      salesTrendClass: "text-orange-600 font-bold",
+      completedCount: "948",
+      completedSpeed: "Avg 3m 25s",
+      avgTicket: "₹8.88",
+      avgTicketDiff: "+₹0.38",
+      avgTicketTarget: "target ₹8.50",
+      avgTicketDiffClass: "text-orange-600 font-bold",
+      bestSellerName: "Double Espresso",
+      bestSellerCount: "292 sold",
+      bestSellerShare: "• 31% share",
+      itemWiseTotal: "₹8,420.00 Total",
+      items: [
+        { name: "Double Espresso", sold: "292 sold", revenue: "₹1,022.00", share: "31%" },
+        { name: "Oat Vanilla Latte", sold: "275 sold", revenue: "₹1,512.50", share: "28%" },
+        { name: "Cold Brew 16oz", sold: "210 sold", revenue: "₹997.50", share: "20%" },
+        { name: "Avocado Toast Box", sold: "115 sold", revenue: "₹862.50", share: "12%" },
+        { name: "Almond Croissant", sold: "98 sold", revenue: "₹416.50", share: "9%" }
+      ],
+      volumeTitle: "Daily Volume",
+      volumeBadge: "THIS WEEK",
+      volumeSubtitle: "Peak trading: Saturday & Sunday brunch rush",
+      volumeTooltip: "₹1,620 on Sat",
+      bars: [
+        { label: "Mon", height: "52%", isPeak: false, isRush: false },
+        { label: "Tue", height: "58%", isPeak: false, isRush: false },
+        { label: "Wed", height: "64%", isPeak: false, isRush: false },
+        { label: "Thu", height: "70%", isPeak: false, isRush: true },
+        { label: "Fri", height: "82%", isPeak: false, isRush: true },
+        { label: "Sat", height: "100%", isPeak: true, isRush: false },
+        { label: "Sun", height: "88%", isPeak: false, isRush: true }
+      ]
+    },
+    month: {
+      salesTitle: "This Month's Sales",
+      salesVal: "₹34,850.00",
+      salesTrend: "+18.4% vs last month",
+      salesTrendClass: "text-orange-600 font-bold",
+      completedCount: "3,940",
+      completedSpeed: "Avg 3m 32s",
+      avgTicket: "₹8.84",
+      avgTicketDiff: "+₹0.34",
+      avgTicketTarget: "target ₹8.50",
+      avgTicketDiffClass: "text-orange-600 font-bold",
+      bestSellerName: "Oat Vanilla Latte",
+      bestSellerCount: "1,180 sold",
+      bestSellerShare: "• 33% share",
+      itemWiseTotal: "₹34,850.00 Total",
+      items: [
+        { name: "Oat Vanilla Latte", sold: "1,180 sold", revenue: "₹6,490.00", share: "33%" },
+        { name: "Double Espresso", sold: "1,040 sold", revenue: "₹3,640.00", share: "26%" },
+        { name: "Cold Brew 16oz", sold: "860 sold", revenue: "₹4,085.00", share: "21%" },
+        { name: "Almond Croissant", sold: "520 sold", revenue: "₹2,210.00", share: "11%" },
+        { name: "Avocado Toast Box", sold: "340 sold", revenue: "₹2,550.00", share: "9%" }
+      ],
+      volumeTitle: "Weekly Breakdown",
+      volumeBadge: "OCTOBER",
+      volumeSubtitle: "Highest turnover in Week 2 (Festival Week)",
+      volumeTooltip: "₹9,840 Week 2",
+      bars: [
+        { label: "W1", height: "68%", isPeak: false, isRush: false },
+        { label: "W2", height: "98%", isPeak: true, isRush: false },
+        { label: "W3", height: "84%", isPeak: false, isRush: true },
+        { label: "W4", height: "74%", isPeak: false, isRush: false }
+      ]
+    },
+    custom: {
+      salesTitle: "Custom Range Sales",
+      salesVal: "₹14,820.50",
+      salesTrend: "Filtered Date Range",
+      salesTrendClass: "text-neutral-500 font-medium",
+      completedCount: "1,680",
+      completedSpeed: "Avg 3m 35s",
+      avgTicket: "₹8.82",
+      avgTicketDiff: "+₹0.32",
+      avgTicketTarget: "target ₹8.50",
+      avgTicketDiffClass: "text-orange-600 font-bold",
+      bestSellerName: "Cold Brew 16oz",
+      bestSellerCount: "540 sold",
+      bestSellerShare: "• 29% share",
+      itemWiseTotal: "₹14,820.50 Total",
+      items: [
+        { name: "Cold Brew 16oz", sold: "540 sold", revenue: "₹2,565.00", share: "29%" },
+        { name: "Oat Vanilla Latte", sold: "490 sold", revenue: "₹2,695.00", share: "27%" },
+        { name: "Double Espresso", sold: "380 sold", revenue: "₹1,330.00", share: "21%" },
+        { name: "Avocado Toast Box", sold: "180 sold", revenue: "₹1,350.00", share: "13%" },
+        { name: "Almond Croissant", sold: "150 sold", revenue: "₹637.50", share: "10%" }
+      ],
+      volumeTitle: "Custom Period Volume",
+      volumeBadge: "CUSTOM",
+      volumeSubtitle: "Aggregated sales distribution over period",
+      volumeTooltip: "₹3,420 Peak",
+      bars: [
+        { label: "P1", height: "45%", isPeak: false, isRush: false },
+        { label: "P2", height: "62%", isPeak: false, isRush: false },
+        { label: "P3", height: "94%", isPeak: true, isRush: false },
+        { label: "P4", height: "80%", isRush: true, isPeak: false },
+        { label: "P5", height: "55%", isPeak: false, isRush: false }
+      ]
+    }
+  };
+
+  function selectDateFilter(btn, range) {
+    document.querySelectorAll('.date-pill').forEach(b => {
+      b.className = 'date-pill px-space-md h-9 rounded-full bg-white border border-orange-100 text-neutral-700 font-label-md text-label-md hover:bg-orange-50 hover:text-orange-600 active:scale-95 transition-all cursor-pointer';
+    });
+    btn.className = 'date-pill px-space-md h-9 rounded-full bg-orange-500 text-white font-label-md text-label-md flex items-center justify-center shadow-sm shadow-orange-500/20 active:scale-95 transition-all font-semibold cursor-pointer';
+    
+    const d = DASHBOARD_TIMELINE_DATA[range] || DASHBOARD_TIMELINE_DATA.today;
+
+    // 1. Update 4 Metric Cards
+    const titleEl = document.getElementById('metric-sales-title');
+    if (titleEl) titleEl.textContent = d.salesTitle;
+    const salesEl = document.getElementById('metric-sales-val');
+    if (salesEl) salesEl.textContent = d.salesVal;
+    const trendEl = document.getElementById('metric-sales-trend');
+    if (trendEl) {
+      trendEl.textContent = d.salesTrend;
+      trendEl.className = 'font-label-sm text-label-sm ' + d.salesTrendClass;
+    }
+
+    const countEl = document.getElementById('metric-completed-count');
+    if (countEl) countEl.textContent = d.completedCount;
+    const speedEl = document.getElementById('metric-completed-speed');
+    if (speedEl) speedEl.textContent = d.completedSpeed;
+
+    const avgEl = document.getElementById('metric-avg-ticket');
+    if (avgEl) avgEl.textContent = d.avgTicket;
+    const avgDiffEl = document.getElementById('metric-avg-ticket-diff');
+    if (avgDiffEl) {
+      avgDiffEl.textContent = d.avgTicketDiff;
+      avgDiffEl.className = 'font-label-sm text-label-sm ' + d.avgTicketDiffClass;
+    }
+    const avgTargetEl = document.getElementById('metric-avg-ticket-target');
+    if (avgTargetEl) avgTargetEl.textContent = d.avgTicketTarget;
+
+    const bestNameEl = document.getElementById('metric-best-seller-name');
+    if (bestNameEl) bestNameEl.textContent = d.bestSellerName;
+    const bestCountEl = document.getElementById('metric-best-seller-count');
+    if (bestCountEl) bestCountEl.textContent = d.bestSellerCount;
+    const bestShareEl = document.getElementById('metric-best-seller-share');
+    if (bestShareEl) bestShareEl.textContent = d.bestSellerShare;
+
+    // 2. Update Item-Wise Sales Section
+    const itemTotalEl = document.getElementById('item-wise-total');
+    if (itemTotalEl) itemTotalEl.textContent = d.itemWiseTotal;
+
+    const itemListContainer = document.getElementById('item-wise-list-container');
+    if (itemListContainer && d.items) {
+      itemListContainer.innerHTML = d.items.map(it => `
+        <div class="flex flex-col space-y-1">
+          <div class="flex items-center justify-between text-body-sm">
+            <div class="flex items-center gap-2">
+              <span class="font-headline-sm text-sm font-bold text-neutral-900">${it.name}</span>
+              <span class="text-xs text-neutral-400">• ${it.sold}</span>
+            </div>
+            <span class="font-headline-sm text-sm font-bold text-neutral-900">${it.revenue} (${it.share})</span>
+          </div>
+          <div class="w-full bg-orange-100/60 rounded-full h-2 overflow-hidden">
+            <div class="bg-orange-500 h-2 rounded-full transition-all duration-500" style="width: ${it.share}"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 3. Update Volume Section
+    const volTitle = document.getElementById('volume-title');
+    if (volTitle) volTitle.textContent = d.volumeTitle;
+    const volBadge = document.getElementById('volume-badge');
+    if (volBadge) volBadge.textContent = d.volumeBadge;
+    const volSub = document.getElementById('volume-subtitle');
+    if (volSub) volSub.textContent = d.volumeSubtitle;
+    const volTooltip = document.getElementById('hourly-tooltip-text');
+    if (volTooltip) volTooltip.textContent = d.volumeTooltip;
+
+    const barsContainer = document.getElementById('hourly-bars-container');
+    if (barsContainer && d.bars) {
+      barsContainer.innerHTML = `
+        <div class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6 opacity-30">
+          <div class="w-full h-px bg-orange-100"></div>
+          <div class="w-full h-px bg-orange-100"></div>
+          <div class="w-full h-px bg-orange-100"></div>
+        </div>
+        ${d.bars.map(b => `
+          <div class="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer relative" onclick="showToast('${d.volumeTitle}: ${b.label} (${b.height})')">
+            <div class="w-full max-w-[24px] ${b.isPeak ? 'bg-orange-600 rounded-t shadow-sm ring-2 ring-orange-300 group-hover:brightness-110' : (b.isRush ? 'bg-orange-400 rounded-t shadow-sm group-hover:scale-y-105 origin-bottom' : 'bg-orange-100/70 rounded-t group-hover:bg-orange-300')} transition-all" style="height: ${b.height};"></div>
+            <span class="absolute bottom-0 font-label-sm text-[10px] ${b.isPeak || b.isRush ? 'text-orange-600 font-bold' : 'text-neutral-400 group-hover:text-orange-500'} transition-colors">${b.label}</span>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    showToast('Dashboard updated for ' + range.toUpperCase());
+  }
+
+  function openCustomDateModal() {
+    const today = new Date().toISOString().split('T')[0];
+    const past7 = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+    const startInp = document.getElementById('custom-start-date');
+    const endInp = document.getElementById('custom-end-date');
+    if (startInp && !startInp.value) startInp.value = past7;
+    if (endInp && !endInp.value) endInp.value = today;
+    document.getElementById('custom-date-modal')?.classList.remove('hidden');
+  }
+
+  function closeCustomDateModal() {
+    document.getElementById('custom-date-modal')?.classList.add('hidden');
+  }
+
+  function setQuickDateRange(days) {
+    const today = new Date().toISOString().split('T')[0];
+    const past = new Date(Date.now() - days * 86400000).toISOString().split('T')[0];
+    const startInp = document.getElementById('custom-start-date');
+    const endInp = document.getElementById('custom-end-date');
+    if (startInp) startInp.value = past;
+    if (endInp) endInp.value = today;
+  }
+
+  function applyCustomDateRange() {
+    const startVal = document.getElementById('custom-start-date')?.value;
+    const endVal = document.getElementById('custom-end-date')?.value;
+    if (!startVal || !endVal) {
+      showToast('Please select valid start and end dates');
+      return;
+    }
+    const btn = document.getElementById('custom-date-btn');
+    if (btn) {
+      btn.innerHTML = `
+        <span class="material-symbols-outlined text-[16px] mr-1">date_range</span>
+        ${startVal.slice(5)} - ${endVal.slice(5)}
+      `;
+      selectDateFilter(btn, 'custom');
+    }
+    closeCustomDateModal();
+  }
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-white/95 backdrop-blur-xl border-t border-orange-100 shadow-[0_-4px_16px_rgba(249,115,22,0.06)]"><div class="flex items-center justify-around h-16 px-space-xs"><a aria-current="page" class="flex flex-col items-center justify-center min-w-[56px] h-12 px-space-xs rounded-xl transition-all bg-orange-50 text-orange-600 font-bold border border-orange-200" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[22px]">dashboard</span><span class="font-label-sm text-[10px] tracking-wide mt-0.5 uppercase">Home</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-space-xs rounded-lg text-neutral-500 hover:text-orange-600 transition-all" data-path="pos-terminal" href="../PP1/code.html"><span class="material-symbols-outlined text-[22px]">point_of_sale</span><span class="font-label-sm text-[10px] tracking-wide mt-0.5 uppercase">POS</span></a><a class="relative flex flex-col items-center justify-center min-w-[56px] h-12 px-space-xs rounded-lg text-neutral-500 hover:text-orange-600 transition-all" data-path="live-orders" href="../PP3/code.html"><span class="material-symbols-outlined text-[22px]">receipt_long</span><span class="absolute top-1 right-2.5 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-orange-500 text-white font-label-sm text-[9px] font-bold">4</span><span class="font-label-sm text-[10px] tracking-wide mt-0.5 uppercase">Orders</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-space-xs rounded-lg text-neutral-500 hover:text-orange-600 transition-all" data-path="catalog-menu" href="../PP4/code.html"><span class="material-symbols-outlined text-[22px]">local_cafe</span><span class="font-label-sm text-[10px] tracking-wide mt-0.5 uppercase">Menu</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-space-xs rounded-lg text-neutral-500 hover:text-orange-600 transition-all" data-path="cart-settings" href="../PP2/code.html"><span class="material-symbols-outlined text-[22px]">tune</span><span class="font-label-sm text-[10px] tracking-wide mt-0.5 uppercase">Settings</span></a></div></nav></body></html>
