@@ -19,6 +19,12 @@ yarn-debug.log*
 yarn-error.log*
 .cache/
 
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+server/data/*.db
+
 # Test Browser Profiles & Scratch
 edge_test_profile_*
 edge_verify_profile_*
