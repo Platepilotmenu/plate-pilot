@@ -9,6 +9,18 @@
   <meta name="apple-mobile-web-app-title" content="Plate Pilot"/>
   <title>Plate Pilot - Smart Restaurant POS &amp; QR Platform</title>
 
+  <!-- PWA & Android Standalone App Manifest -->
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"/>
+  <link rel="apple-touch-icon" href="icon-192.png"/>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
+  </script>
+
   <!-- Google Fonts: Space Grotesk & Work Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>

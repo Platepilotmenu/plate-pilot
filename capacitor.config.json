@@ -1,0 +1,13 @@
+{
+  "appId": "com.platepilot.pos",
+  "appName": "Plate Pilot",
+  "webDir": ".",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "plate-pilot",
+  "version": "1.0.0",
+  "description": "Plate Pilot - Restaurant POS & Real-Time QR Dining System",
+  "main": "server/src/server.js",
+  "scripts": {
+    "start": "node server/src/server.js",
+    "build:apk": "npx cap sync && cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/cli": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  },
+  "keywords": [
+    "pos",
+    "restaurant",
+    "point-of-sale",
+    "qr-dining",
+    "supabase",
+    "android",
+    "apk"
+  ],
+  "author": "Plate Pilot",
+  "license": "MIT"
+}
