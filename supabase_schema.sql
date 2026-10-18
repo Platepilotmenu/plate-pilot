@@ -228,56 +228,73 @@ ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.qr_settings ENABLE ROW LEVEL SECURITY;
 
 -- 4.1 Public Customer Access (For QR Menu Ordering without login)
+DROP POLICY IF EXISTS "Public read active restaurants" ON public.restaurants;
 CREATE POLICY "Public read active restaurants" ON public.restaurants
     FOR SELECT USING (status = 'active');
 
+DROP POLICY IF EXISTS "Public read menu categories" ON public.menu_categories;
 CREATE POLICY "Public read menu categories" ON public.menu_categories
     FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Public read menu items" ON public.menu_items;
 CREATE POLICY "Public read menu items" ON public.menu_items
     FOR SELECT USING (in_stock = true);
 
+DROP POLICY IF EXISTS "Public read active offers" ON public.offers;
 CREATE POLICY "Public read active offers" ON public.offers
     FOR SELECT USING (active = true);
 
+DROP POLICY IF EXISTS "Public read qr settings" ON public.qr_settings;
 CREATE POLICY "Public read qr settings" ON public.qr_settings
     FOR SELECT USING (enabled = true);
 
+DROP POLICY IF EXISTS "Public insert orders from QR menu" ON public.orders;
 CREATE POLICY "Public insert orders from QR menu" ON public.orders
     FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Public select their own placed orders" ON public.orders;
 CREATE POLICY "Public select their own placed orders" ON public.orders
     FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Public insert order items" ON public.order_items;
 CREATE POLICY "Public insert order items" ON public.order_items
     FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Public select order items" ON public.order_items;
 CREATE POLICY "Public select order items" ON public.order_items
     FOR SELECT USING (true);
 
 -- 4.2 Staff & Merchant POS Operations
+DROP POLICY IF EXISTS "Staff read their restaurant orders" ON public.orders;
 CREATE POLICY "Staff read their restaurant orders" ON public.orders
     FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Staff update their restaurant orders" ON public.orders;
 CREATE POLICY "Staff update their restaurant orders" ON public.orders
     FOR UPDATE USING (true);
 
+DROP POLICY IF EXISTS "Staff manage menu items" ON public.menu_items;
 CREATE POLICY "Staff manage menu items" ON public.menu_items
     FOR ALL USING (true);
 
+DROP POLICY IF EXISTS "Staff manage categories" ON public.menu_categories;
 CREATE POLICY "Staff manage categories" ON public.menu_categories
     FOR ALL USING (true);
 
+DROP POLICY IF EXISTS "Staff manage offers" ON public.offers;
 CREATE POLICY "Staff manage offers" ON public.offers
     FOR ALL USING (true);
 
+DROP POLICY IF EXISTS "Staff manage qr settings" ON public.qr_settings;
 CREATE POLICY "Staff manage qr settings" ON public.qr_settings
     FOR ALL USING (true);
 
+DROP POLICY IF EXISTS "Staff manage staff users" ON public.staff_users;
 CREATE POLICY "Staff manage staff users" ON public.staff_users
     FOR ALL USING (true);
 
 -- 4.3 Super Admin Universal Access (Phone 9911193569 / PIN 5959)
+DROP POLICY IF EXISTS "Super Admin manage all restaurants" ON public.restaurants;
 CREATE POLICY "Super Admin manage all restaurants" ON public.restaurants
     FOR ALL USING (true);
 
@@ -285,7 +302,7 @@ CREATE POLICY "Super Admin manage all restaurants" ON public.restaurants
 -- 5. REALTIME REPLICATION (Instant WebSocket Push to POS & QR Menu)
 -- =============================================================================
 
--- Enable Realtime publication for instant cross-device updates
+-- Enable Realtime publication for instant cross-device updates safely
 DO $$
 BEGIN
     IF NOT EXISTS (
@@ -293,12 +310,35 @@ BEGIN
     ) THEN
         CREATE PUBLICATION supabase_realtime;
     END IF;
-END $$;
 
-ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.order_items;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.menu_items;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.restaurants;
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables 
+        WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'orders'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables 
+        WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'order_items'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.order_items;
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables 
+        WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'menu_items'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.menu_items;
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables 
+        WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'restaurants'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.restaurants;
+    END IF;
+END $$;
 
 -- Set replica identity to FULL so realtime listeners receive complete old and new records
 ALTER TABLE public.orders REPLICA IDENTITY FULL;
