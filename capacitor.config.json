@@ -1,7 +1,7 @@
 {
   "appId": "com.platepilot.pos",
   "appName": "Plate Pilot",
-  "webDir": ".",
+  "webDir": "dist",
   "bundledWebRuntime": false,
   "server": {
     "androidScheme": "https",

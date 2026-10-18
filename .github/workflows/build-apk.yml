@@ -28,8 +28,19 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Prepare Web Assets in dist/
+        run: |
+          mkdir -p dist
+          cp index.html dist/
+          cp qr-menu.html dist/
+          cp api.js dist/
+          cp supabase-client.js dist/
+          cp supabase-schema.js dist/
+          cp manifest.json dist/
+          cp sw.js dist/
+          cp icon-192.png dist/
+          cp icon-512.png dist/
+          ls -la dist/
 
       - name: Install Dependencies
         run: |
@@ -37,7 +48,6 @@ jobs:
 
       - name: Initialize & Sync Capacitor Android
         run: |
-          # Ensure Capacitor Android structure exists
           npx cap add android || true
           npx cap sync android
 
