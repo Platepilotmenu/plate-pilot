@@ -91,6 +91,7 @@
 
   <!-- Supabase Cloud Engine & Realtime Sync Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-schema.js"></script>
   <script src="supabase-client.js"></script>
 </head>
 
@@ -1500,41 +1501,55 @@
           </div>
         </div>
 
-        <!-- Schema & Architecture Guide Card -->
-        <div class="bg-indigo-50/50 rounded-2xl border border-indigo-100 p-5 space-y-3">
-          <div class="flex items-center gap-2 text-indigo-900">
-            <span class="material-symbols-outlined text-[20px] text-indigo-600">database</span>
-            <h4 class="font-headline font-bold text-sm">Supabase Database Tables Required</h4>
+        <!-- Schema & Architecture Setup Card -->
+        <div class="bg-indigo-50/50 rounded-2xl border border-indigo-100 p-5 space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-3">
+            <div class="flex items-center gap-3 text-indigo-900">
+              <div class="w-10 h-10 rounded-xl bg-indigo-600/10 flex items-center justify-center text-indigo-600 shrink-0">
+                <span class="material-symbols-outlined text-[22px]">database</span>
+              </div>
+              <div>
+                <h4 class="font-headline font-bold text-sm text-neutral-900">Database Schema &amp; Migration</h4>
+                <p class="text-xs text-neutral-500">Run the SQL migration in your Supabase project to enable real-time order sync</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="copyFullSupabaseSchema()" class="h-9 px-3.5 rounded-xl bg-white hover:bg-neutral-100 text-indigo-700 font-headline font-bold text-xs flex items-center gap-1.5 border border-indigo-200 shadow-xs cursor-pointer transition-all active:scale-95">
+                <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                <span>Copy SQL Migration</span>
+              </button>
+              <a href="https://supabase.com/dashboard/project/_/sql" target="_blank" rel="noopener" class="h-9 px-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-headline font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-all active:scale-95">
+                <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+                <span>Open Supabase SQL Editor</span>
+              </a>
+            </div>
           </div>
-          <p class="text-xs text-neutral-600 leading-relaxed">
-            Plate Pilot uses PostgreSQL tables to sync orders and menu catalog in real-time. Execute this SQL script in your Supabase SQL Editor:
-          </p>
-          <div class="bg-slate-900 text-slate-100 p-3.5 rounded-xl font-mono text-[11px] leading-relaxed overflow-x-auto">
-            <pre>CREATE TABLE IF NOT EXISTS restaurants (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  cuisine TEXT,
-  owner_name TEXT,
-  owner_phone TEXT,
-  tables_count INT DEFAULT 6,
-  status TEXT DEFAULT 'active',
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
 
-CREATE TABLE IF NOT EXISTS orders (
-  id TEXT PRIMARY KEY,
-  restaurant_id TEXT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
-  order_type TEXT DEFAULT 'Dine-in',
-  customer_name TEXT,
-  table_number INT,
-  subtotal NUMERIC DEFAULT 0,
-  total NUMERIC DEFAULT 0,
-  payment_status TEXT DEFAULT 'PAID',
-  status TEXT DEFAULT 'active',
-  needs_acceptance BOOLEAN DEFAULT false,
-  items JSONB DEFAULT '[]'::jsonb,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);</pre>
+          <!-- Clean 3-Step Setup Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+            <div class="bg-white p-4 rounded-xl border border-indigo-100 shadow-2xs space-y-1.5">
+              <div class="flex items-center gap-2 font-headline text-xs font-bold text-indigo-900">
+                <span class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[11px] font-bold">1</span>
+                <span>Copy SQL Migration</span>
+              </div>
+              <p class="text-[12px] text-neutral-500 leading-relaxed">Click &ldquo;Copy SQL Migration&rdquo; above to copy all tables, RLS policies &amp; real-time triggers to your clipboard.</p>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-indigo-100 shadow-2xs space-y-1.5">
+              <div class="flex items-center gap-2 font-headline text-xs font-bold text-indigo-900">
+                <span class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[11px] font-bold">2</span>
+                <span>Execute in Supabase</span>
+              </div>
+              <p class="text-[12px] text-neutral-500 leading-relaxed">Open your Supabase Project &rarr; SQL Editor, click &ldquo;+ New Query&rdquo;, paste the script, and press &ldquo;Run&rdquo;.</p>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-indigo-100 shadow-2xs space-y-1.5">
+              <div class="flex items-center gap-2 font-headline text-xs font-bold text-indigo-900">
+                <span class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[11px] font-bold">3</span>
+                <span>Connect &amp; Activate</span>
+              </div>
+              <p class="text-[12px] text-neutral-500 leading-relaxed">Paste your Project URL &amp; Anon Key into the form above, click &ldquo;Test Connection&rdquo;, then &ldquo;Save &amp; Activate&rdquo;.</p>
+            </div>
           </div>
         </div>
 
@@ -7273,6 +7288,28 @@ CREATE TABLE IF NOT EXISTS orders (
       }
     }
 
+    async function copyFullSupabaseSchema() {
+      try {
+        const res = await fetch("supabase_schema.sql");
+        if (res.ok) {
+          const sql = await res.text();
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(sql);
+            showToast("Complete SQL schema copied to clipboard!", "content_copy");
+            return;
+          }
+        }
+      } catch (e) {}
+
+      if (window.PLATEPILOT_SCHEMA_SQL && navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(window.PLATEPILOT_SCHEMA_SQL);
+        showToast("Complete SQL schema copied to clipboard!", "content_copy");
+        return;
+      }
+
+      copySupabaseSchemaInfo();
+    }
+
     function copySupabaseSchemaInfo() {
       const guide = `--- PlatePilot Supabase Setup Quick Guide ---
 1. Open your Supabase Dashboard -> SQL Editor
@@ -7718,6 +7755,10 @@ CREATE TABLE IF NOT EXISTS orders (
       } else if (tab === "supabase") {
         updateSupabaseCloudUI();
       }
+
+      try {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (e) {}
     }
 
     function renderAdminSaaSMetrics() {
