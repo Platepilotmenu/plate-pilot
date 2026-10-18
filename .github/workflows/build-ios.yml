@@ -1,0 +1,80 @@
+name: Build Plate Pilot iOS App
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-ios:
+    name: Compile iOS App & Package IPA
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Prepare Web Assets in dist/
+        run: |
+          mkdir -p dist
+          cp index.html dist/
+          cp qr-menu.html dist/
+          cp api.js dist/
+          cp supabase-client.js dist/
+          cp supabase-schema.js dist/
+          cp manifest.json dist/
+          cp sw.js dist/
+          cp icon-192.png dist/
+          cp icon-512.png dist/
+          ls -la dist/
+
+      - name: Install Dependencies
+        run: |
+          npm install
+
+      - name: Initialize & Sync Capacitor iOS
+        run: |
+          npx cap add ios || true
+          npx cap sync ios
+
+      - name: Build iOS Application with xcodebuild
+        run: |
+          cd ios/App
+          # Build generic iOS device target without signing restrictions
+          xcodebuild clean build \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+          # Package Payload for IPA
+          mkdir -p ../../build-output/Payload
+          cp -r build/Build/Products/Release-iphoneos/App.app ../../build-output/Payload/
+          cd ../../build-output
+          zip -r plate-pilot.ipa Payload/
+          ls -lh plate-pilot.ipa
+
+      - name: Archive Complete Xcode Project
+        run: |
+          zip -r build-output/PlatePilot-Xcode-Workspace.zip ios/
+
+      - name: Upload iOS IPA & Xcode Workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: plate-pilot-ios-package
+          path: |
+            build-output/plate-pilot.ipa
+            build-output/PlatePilot-Xcode-Workspace.zip
+          retention-days: 30

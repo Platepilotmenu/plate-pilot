@@ -5,12 +5,14 @@
   "main": "server/src/server.js",
   "scripts": {
     "start": "node server/src/server.js",
-    "build:apk": "npx cap sync && cd android && ./gradlew assembleDebug"
+    "build:apk": "npx cap sync && cd android && ./gradlew assembleDebug",
+    "build:ios": "npx cap sync ios"
   },
   "dependencies": {
     "@capacitor/android": "^6.1.2",
     "@capacitor/cli": "^6.1.2",
-    "@capacitor/core": "^6.1.2"
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/ios": "^6.1.2"
   },
   "keywords": [
     "pos",

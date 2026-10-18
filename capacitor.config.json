@@ -5,9 +5,14 @@
   "bundledWebRuntime": false,
   "server": {
     "androidScheme": "https",
+    "iosScheme": "platepilot",
     "cleartext": true
   },
   "android": {
     "allowMixedContent": true
+  },
+  "ios": {
+    "contentInset": "always",
+    "preferredContentMode": "mobile"
   }
 }
