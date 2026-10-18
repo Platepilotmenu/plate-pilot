@@ -17,10 +17,18 @@
   <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png"/>
   <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png"/>
   <script>
+    // Only register Service Worker in browser PWA mode; avoid intercepting local assets in native Capacitor
+    const isCapacitorNative = Boolean(window.Capacitor && typeof window.Capacitor.isNativePlatform === "function" && window.Capacitor.isNativePlatform());
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js").catch(() => {});
-      });
+      if (isCapacitorNative) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          for (const reg of registrations) reg.unregister();
+        }).catch(() => {});
+      } else {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js").catch(() => {});
+        });
+      }
     }
   </script>
 
