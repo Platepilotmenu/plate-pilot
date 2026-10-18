@@ -1511,7 +1511,11 @@
               <span class="text-neutral-500">Not tested yet</span>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center flex-wrap gap-2">
+              <button id="btn-sync-cloud" type="button" onclick="triggerCloudSync(true)" class="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-headline font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs transition-all active:scale-95">
+                <span class="material-symbols-outlined text-[16px]">sync</span>
+                <span>Sync Cloud Data</span>
+              </button>
               <button type="button" onclick="testSupabaseCloudConnection()" class="h-10 px-4 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-headline font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95">
                 <span class="material-symbols-outlined text-[16px]">sync_alt</span>
                 <span>Test Connection</span>
@@ -1521,6 +1525,29 @@
                 <span>Save &amp; Activate Live Sync</span>
               </button>
             </div>
+          </div>
+        </div>
+
+        <!-- Quick Connect for Tablets & Other Devices -->
+        <div class="bg-white rounded-2xl border border-neutral-200 shadow-xs p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <span class="material-symbols-outlined text-[18px]">tablet_android</span>
+              </div>
+              <div>
+                <h4 class="font-headline font-bold text-sm text-neutral-900">Tablet &amp; Mobile Quick-Connect</h4>
+                <p class="text-[11px] text-neutral-500">Sync all restaurants and data to your Android tablet with 0 typing</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-headline font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">Auto-Config</span>
+          </div>
+          <div class="flex items-center gap-2 pt-1">
+            <input id="quick-connect-url-preview" readonly class="flex-1 h-10 px-3.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs font-mono text-neutral-600 select-all" value="" placeholder="Save Supabase credentials above to generate instant tablet link..."/>
+            <button type="button" onclick="copyQuickConnectUrl()" class="h-10 px-4 rounded-xl bg-neutral-900 hover:bg-black text-white font-headline font-bold text-xs flex items-center gap-1.5 shrink-0 transition-all active:scale-95 cursor-pointer">
+              <span class="material-symbols-outlined text-[15px]">content_copy</span>
+              <span>Copy Link</span>
+            </button>
           </div>
         </div>
 
@@ -5442,6 +5469,12 @@
       }
 
       saveState();
+
+      if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG.isConfigured) {
+        const itemObj = editingItemId ? appState.menuItems.find(i => i.id === editingItemId) : appState.menuItems[0];
+        if (itemObj) window.PlatePilotCloud.upsertMenuItem(appState.activeRestaurantId, itemObj);
+      }
+
       closeMenuItemModal();
       renderCategoryPills();
       renderMenuList();
@@ -7201,6 +7234,7 @@
       const urlInput = document.getElementById("setting-supabase-url");
       const keyInput = document.getElementById("setting-supabase-key");
       const badge = document.getElementById("supabase-cloud-badge");
+      const quickUrlInput = document.getElementById("quick-connect-url-preview");
 
       if (urlInput && window.PlatePilotCloud) {
         urlInput.value = window.PlatePilotCloud.CONFIG.url || "";
@@ -7211,16 +7245,148 @@
 
       if (badge) {
         if (isConfigured) {
-          badge.textContent = "Cloud Connected";
+          badge.textContent = "Cloud Live";
           badge.className = "px-2 py-0.5 rounded-full text-[10px] font-headline font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
         } else {
           badge.textContent = "Offline / Local Mode";
           badge.className = "px-2 py-0.5 rounded-full text-[10px] font-headline font-bold bg-neutral-100 text-neutral-600 border border-neutral-300";
         }
       }
+
+      if (quickUrlInput && window.PlatePilotCloud && isConfigured) {
+        const base = window.location.origin + window.location.pathname;
+        quickUrlInput.value = `${base}?sb_url=${encodeURIComponent(window.PlatePilotCloud.CONFIG.url)}&sb_key=${encodeURIComponent(window.PlatePilotCloud.CONFIG.anonKey)}`;
+      }
     }
 
-    function saveSupabaseCloudSettings() {
+    function copyQuickConnectUrl() {
+      const quickUrlInput = document.getElementById("quick-connect-url-preview");
+      if (!quickUrlInput || !quickUrlInput.value) {
+        showToast("Please save your Supabase credentials above first.", "warning");
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(quickUrlInput.value).then(() => {
+          showToast("Tablet Quick-Connect Link copied! Open on your tablet to sync.", "check_circle");
+        });
+      } else {
+        quickUrlInput.select();
+        document.execCommand("copy");
+        showToast("Tablet Quick-Connect Link copied!", "check_circle");
+      }
+    }
+
+    function setupCloudRealtime() {
+      if (!window.PlatePilotCloud || !window.PlatePilotCloud.CONFIG.isConfigured) return;
+
+      window.PlatePilotCloud.subscribeToCloud(appState.activeRestaurantId, {
+        onOrderInsert: (newOrder) => {
+          const exists = (appState.orders || []).some(o => o.id === newOrder.id);
+          if (!exists) {
+            const formattedOrder = {
+              id: newOrder.id,
+              type: newOrder.order_type || "Dine-in",
+              timeAgo: "Just now",
+              receivedTime: new Date(newOrder.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              customer: newOrder.customer_name || "Guest",
+              customerPhone: newOrder.customer_phone || "",
+              paymentMethod: newOrder.payment_method || "UPI",
+              paymentStatus: newOrder.payment_status || "PAID",
+              items: [],
+              subtotal: parseFloat(newOrder.total || newOrder.subtotal || 0),
+              status: newOrder.status || "active",
+              notes: newOrder.notes || "",
+              needsAcceptance: Boolean(newOrder.needs_acceptance)
+            };
+            appState.orders.unshift(formattedOrder);
+            saveState();
+            renderOrdersStream();
+            renderHomeOrders();
+            renderHomeDashboardMetrics();
+            updateBadges();
+            playNotificationSound();
+            showToast(`New Cloud Order #${newOrder.id} received!`);
+          }
+        },
+        onOrderUpdate: (updatedOrder) => {
+          const ord = (appState.orders || []).find(o => o.id === updatedOrder.id);
+          if (ord) {
+            ord.status = updatedOrder.status;
+            saveState();
+            renderOrdersStream();
+            renderHomeOrders();
+            renderHomeDashboardMetrics();
+            updateBadges();
+          }
+        },
+        onRestaurantChange: async () => {
+          console.log("[PlatePilot] Realtime restaurant update received from Supabase Cloud!");
+          const cloudRests = await window.PlatePilotCloud.fetchRestaurants();
+          if (cloudRests && cloudRests.length > 0) {
+            appState.onboardedRestaurants = cloudRests;
+            saveState();
+            renderAdminRestaurantsList();
+            renderAdminSaaSMetrics();
+            renderOutletSwitcherList();
+          }
+        }
+      });
+    }
+
+    async function triggerCloudSync(showUserToast = true) {
+      if (!window.PlatePilotCloud) return;
+
+      if (!window.PlatePilotCloud.CONFIG.isConfigured) {
+        if (showUserToast) {
+          showToast("Supabase is not configured yet. Enter credentials in Admin Panel.", "info");
+        }
+        return;
+      }
+
+      const syncBtn = document.getElementById("btn-sync-cloud");
+      if (syncBtn) {
+        syncBtn.disabled = true;
+        syncBtn.innerHTML = `<span class="material-symbols-outlined text-[16px] animate-spin">sync</span><span>Syncing...</span>`;
+      }
+
+      try {
+        const res = await window.PlatePilotCloud.syncAllData(appState.activeRestaurantId);
+        if (res && res.success) {
+          loadOutletData(appState.activeRestaurantId);
+          renderCategoryPills();
+          renderPosGrid();
+          renderOrdersStream();
+          renderHomeOrders();
+          renderHomeDashboardMetrics();
+          renderMenuList();
+          updateCartUI();
+          updateBadges();
+          renderTableQrCards();
+          renderOffersList();
+          renderStaffList();
+          renderAdminRestaurantsList();
+          renderAdminSaaSMetrics();
+          renderOutletSwitcherList();
+          updateSupabaseCloudUI();
+
+          if (showUserToast) {
+            showToast(`Synced ${res.restaurantsSynced || 0} outlets & ${res.menuItemsSynced || 0} menu items with Cloud!`, "cloud_done");
+          }
+        } else if (showUserToast) {
+          showToast(`Cloud Sync: ${res.error || res.reason || "Complete"}`, "warning");
+        }
+      } catch (err) {
+        console.error("PlatePilot: Cloud Sync error:", err);
+        if (showUserToast) showToast("Cloud Sync error: " + err.message, "error");
+      } finally {
+        if (syncBtn) {
+          syncBtn.disabled = false;
+          syncBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">sync</span><span>Sync Cloud Data</span>`;
+        }
+      }
+    }
+
+    async function saveSupabaseCloudSettings() {
       const url = (document.getElementById("setting-supabase-url")?.value || "").trim();
       const key = (document.getElementById("setting-supabase-key")?.value || "").trim();
 
@@ -7237,50 +7403,9 @@
       if (window.PlatePilotCloud) {
         window.PlatePilotCloud.configure(url, key);
         updateSupabaseCloudUI();
-
-        // Connect realtime stream
-        window.PlatePilotCloud.subscribeToOrders(appState.activeRestaurantId, {
-          onInsert: (newOrder) => {
-            const exists = (appState.orders || []).some(o => o.id === newOrder.id);
-            if (!exists) {
-              const formattedOrder = {
-                id: newOrder.id,
-                type: newOrder.order_type || "Dine-in",
-                timeAgo: "Just now",
-                receivedTime: new Date(newOrder.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                customer: newOrder.customer_name || "Guest",
-                paymentStatus: newOrder.payment_status || "PAID",
-                items: [],
-                subtotal: parseFloat(newOrder.total || newOrder.subtotal || 0),
-                status: newOrder.status || "active",
-                notes: newOrder.notes || "",
-                needsAcceptance: Boolean(newOrder.needs_acceptance)
-              };
-              appState.orders.unshift(formattedOrder);
-              saveState();
-              renderOrdersStream();
-              renderHomeOrders();
-              renderHomeDashboardMetrics();
-              updateBadges();
-              playNotificationSound();
-              showToast(`New Cloud Order #${newOrder.id} received!`);
-            }
-          },
-          onUpdate: (updatedOrder) => {
-            const ord = (appState.orders || []).find(o => o.id === updatedOrder.id);
-            if (ord) {
-              ord.status = updatedOrder.status;
-              saveState();
-              renderOrdersStream();
-              renderHomeOrders();
-              renderHomeDashboardMetrics();
-              updateBadges();
-            }
-          }
-        });
-
+        setupCloudRealtime();
         testSupabaseCloudConnection();
-        showToast("Supabase Cloud credentials saved! Live sync active.", "cloud_done");
+        await triggerCloudSync(true);
       }
     }
 
@@ -8464,6 +8589,13 @@
       }
 
       saveState();
+
+      // Immediately sync restaurant to Supabase Cloud if configured
+      if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG.isConfigured) {
+        const targetObj = id ? (appState.onboardedRestaurants || []).find(x => x.id === id) : newRest;
+        if (targetObj) window.PlatePilotCloud.upsertRestaurant(targetObj);
+      }
+
       renderAdminRestaurantsList();
       renderAdminSaaSMetrics();
       renderOutletSwitcherList();
@@ -8482,6 +8614,11 @@
 
       r.status = r.status === "active" ? "suspended" : "active";
       saveState();
+
+      if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG.isConfigured) {
+        window.PlatePilotCloud.upsertRestaurant(r);
+      }
+
       renderAdminRestaurantsList();
       renderAdminSaaSMetrics();
       renderOutletSwitcherList();
@@ -8511,6 +8648,11 @@
         }
 
         saveState();
+
+        if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG.isConfigured) {
+          window.PlatePilotCloud.deleteRestaurant(restId);
+        }
+
         renderAdminRestaurantsList();
         renderAdminSaaSMetrics();
         renderOutletSwitcherList();
@@ -8796,48 +8938,11 @@
       renderOutletSwitcherList();
       updateSupabaseCloudUI();
 
-      // Connect to Supabase Cloud Realtime if configured
+      // Connect to Supabase Cloud & perform initial bi-directional sync
       if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG.isConfigured) {
-        console.log("PlatePilot: Initializing Supabase Cloud Realtime Subscription...");
-        window.PlatePilotCloud.subscribeToOrders(appState.activeRestaurantId, {
-          onInsert: (newOrder) => {
-            const exists = (appState.orders || []).some(o => o.id === newOrder.id);
-            if (!exists) {
-              const formattedOrder = {
-                id: newOrder.id,
-                type: newOrder.order_type || "Dine-in",
-                timeAgo: "Just now",
-                receivedTime: new Date(newOrder.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                customer: newOrder.customer_name || "Guest",
-                paymentStatus: newOrder.payment_status || "PAID",
-                items: [],
-                subtotal: parseFloat(newOrder.total || newOrder.subtotal || 0),
-                status: newOrder.status || "active",
-                notes: newOrder.notes || "",
-                needsAcceptance: Boolean(newOrder.needs_acceptance)
-              };
-              appState.orders.unshift(formattedOrder);
-              saveState();
-              renderOrdersStream();
-              renderHomeOrders();
-              renderHomeDashboardMetrics();
-              updateBadges();
-              playNotificationSound();
-              showToast(`New Cloud Order #${newOrder.id} received!`);
-            }
-          },
-          onUpdate: (updatedOrder) => {
-            const ord = (appState.orders || []).find(o => o.id === updatedOrder.id);
-            if (ord) {
-              ord.status = updatedOrder.status;
-              saveState();
-              renderOrdersStream();
-              renderHomeOrders();
-              renderHomeDashboardMetrics();
-              updateBadges();
-            }
-          }
-        });
+        console.log("PlatePilot: Initializing Supabase Cloud Sync & Realtime Stream...");
+        triggerCloudSync(false);
+        setupCloudRealtime();
       }
     }
 
