@@ -214,9 +214,23 @@ CREATE TRIGGER trigger_sync_restaurant_gmv
     FOR EACH ROW EXECUTE FUNCTION public.sync_restaurant_gmv_on_order();
 
 -- =============================================================================
--- 4. ROW LEVEL SECURITY (RLS) POLICIES
+-- 4. TABLE PERMISSIONS & ROW LEVEL SECURITY (RLS)
 -- =============================================================================
 
+-- 4.0 Grant Schema & Table Privileges to Supabase API Roles
+-- Required: In Supabase, the API client connects as role 'anon' or 'authenticated'.
+-- Without explicit GRANT USAGE and GRANT ALL, PostgreSQL blocks queries with "permission denied for table ...".
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL ROUTINES IN SCHEMA public TO anon, authenticated, service_role;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON ROUTINES TO anon, authenticated, service_role;
+
+-- Enable Row Level Security on all tables
 ALTER TABLE public.restaurants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.staff_users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.restaurant_tables ENABLE ROW LEVEL SECURITY;
@@ -227,75 +241,77 @@ ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.qr_settings ENABLE ROW LEVEL SECURITY;
 
--- 4.1 Public Customer Access (For QR Menu Ordering without login)
+-- 4.1 Restaurants Policies
 DROP POLICY IF EXISTS "Public read active restaurants" ON public.restaurants;
-CREATE POLICY "Public read active restaurants" ON public.restaurants
-    FOR SELECT USING (status = 'active');
+DROP POLICY IF EXISTS "Public read restaurants" ON public.restaurants;
+CREATE POLICY "Public read restaurants" ON public.restaurants
+    FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Super Admin manage all restaurants" ON public.restaurants;
+DROP POLICY IF EXISTS "Staff and Admin manage restaurants" ON public.restaurants;
+CREATE POLICY "Staff and Admin manage restaurants" ON public.restaurants
+    FOR ALL USING (true);
+
+-- 4.2 Menu Categories Policies
 DROP POLICY IF EXISTS "Public read menu categories" ON public.menu_categories;
 CREATE POLICY "Public read menu categories" ON public.menu_categories
     FOR SELECT USING (true);
-
-DROP POLICY IF EXISTS "Public read menu items" ON public.menu_items;
-CREATE POLICY "Public read menu items" ON public.menu_items
-    FOR SELECT USING (in_stock = true);
-
-DROP POLICY IF EXISTS "Public read active offers" ON public.offers;
-CREATE POLICY "Public read active offers" ON public.offers
-    FOR SELECT USING (active = true);
-
-DROP POLICY IF EXISTS "Public read qr settings" ON public.qr_settings;
-CREATE POLICY "Public read qr settings" ON public.qr_settings
-    FOR SELECT USING (enabled = true);
-
-DROP POLICY IF EXISTS "Public insert orders from QR menu" ON public.orders;
-CREATE POLICY "Public insert orders from QR menu" ON public.orders
-    FOR INSERT WITH CHECK (true);
-
-DROP POLICY IF EXISTS "Public select their own placed orders" ON public.orders;
-CREATE POLICY "Public select their own placed orders" ON public.orders
-    FOR SELECT USING (true);
-
-DROP POLICY IF EXISTS "Public insert order items" ON public.order_items;
-CREATE POLICY "Public insert order items" ON public.order_items
-    FOR INSERT WITH CHECK (true);
-
-DROP POLICY IF EXISTS "Public select order items" ON public.order_items;
-CREATE POLICY "Public select order items" ON public.order_items
-    FOR SELECT USING (true);
-
--- 4.2 Staff & Merchant POS Operations
-DROP POLICY IF EXISTS "Staff read their restaurant orders" ON public.orders;
-CREATE POLICY "Staff read their restaurant orders" ON public.orders
-    FOR SELECT USING (true);
-
-DROP POLICY IF EXISTS "Staff update their restaurant orders" ON public.orders;
-CREATE POLICY "Staff update their restaurant orders" ON public.orders
-    FOR UPDATE USING (true);
-
-DROP POLICY IF EXISTS "Staff manage menu items" ON public.menu_items;
-CREATE POLICY "Staff manage menu items" ON public.menu_items
-    FOR ALL USING (true);
 
 DROP POLICY IF EXISTS "Staff manage categories" ON public.menu_categories;
 CREATE POLICY "Staff manage categories" ON public.menu_categories
     FOR ALL USING (true);
 
+-- 4.3 Menu Items Policies
+DROP POLICY IF EXISTS "Public read menu items" ON public.menu_items;
+CREATE POLICY "Public read menu items" ON public.menu_items
+    FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Staff manage menu items" ON public.menu_items;
+CREATE POLICY "Staff manage menu items" ON public.menu_items
+    FOR ALL USING (true);
+
+-- 4.4 Offers & Discounts Policies
+DROP POLICY IF EXISTS "Public read active offers" ON public.offers;
+CREATE POLICY "Public read active offers" ON public.offers
+    FOR SELECT USING (true);
+
 DROP POLICY IF EXISTS "Staff manage offers" ON public.offers;
 CREATE POLICY "Staff manage offers" ON public.offers
     FOR ALL USING (true);
+
+-- 4.5 QR Settings Policies
+DROP POLICY IF EXISTS "Public read qr settings" ON public.qr_settings;
+CREATE POLICY "Public read qr settings" ON public.qr_settings
+    FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "Staff manage qr settings" ON public.qr_settings;
 CREATE POLICY "Staff manage qr settings" ON public.qr_settings
     FOR ALL USING (true);
 
-DROP POLICY IF EXISTS "Staff manage staff users" ON public.staff_users;
-CREATE POLICY "Staff manage staff users" ON public.staff_users
+-- 4.6 Orders & Line Items Policies (POS & QR Dining)
+DROP POLICY IF EXISTS "Public insert orders from QR menu" ON public.orders;
+DROP POLICY IF EXISTS "Public select their own placed orders" ON public.orders;
+DROP POLICY IF EXISTS "Staff read their restaurant orders" ON public.orders;
+DROP POLICY IF EXISTS "Staff update their restaurant orders" ON public.orders;
+DROP POLICY IF EXISTS "Universal access to orders" ON public.orders;
+CREATE POLICY "Universal access to orders" ON public.orders
     FOR ALL USING (true);
 
--- 4.3 Super Admin Universal Access (Phone 9911193569 / PIN 5959)
-DROP POLICY IF EXISTS "Super Admin manage all restaurants" ON public.restaurants;
-CREATE POLICY "Super Admin manage all restaurants" ON public.restaurants
+DROP POLICY IF EXISTS "Public insert order items" ON public.order_items;
+DROP POLICY IF EXISTS "Public select order items" ON public.order_items;
+DROP POLICY IF EXISTS "Universal access to order items" ON public.order_items;
+CREATE POLICY "Universal access to order items" ON public.order_items
+    FOR ALL USING (true);
+
+-- 4.7 Restaurant Tables Policies
+DROP POLICY IF EXISTS "Universal access to restaurant tables" ON public.restaurant_tables;
+CREATE POLICY "Universal access to restaurant tables" ON public.restaurant_tables
+    FOR ALL USING (true);
+
+-- 4.8 Staff Users Policies
+DROP POLICY IF EXISTS "Staff manage staff users" ON public.staff_users;
+DROP POLICY IF EXISTS "Universal access to staff users" ON public.staff_users;
+CREATE POLICY "Universal access to staff users" ON public.staff_users
     FOR ALL USING (true);
 
 -- =============================================================================
