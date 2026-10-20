@@ -2686,8 +2686,8 @@
   <div id="modal-app-login" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 text-white overflow-y-auto">
     <div class="w-full max-w-md bg-neutral-900 border border-neutral-700/80 rounded-3xl p-6 shadow-2xl flex flex-col space-y-4 relative">
       
-      <!-- Close Button (if session already active) -->
-      <button type="button" onclick="closeLoginModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all cursor-pointer" title="Close">
+      <!-- Close Button (only displayed if a user session is already active) -->
+      <button id="login-modal-close-btn" type="button" onclick="closeLoginModal()" class="hidden absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all cursor-pointer" title="Close">
         <span class="material-symbols-outlined text-[20px]">close</span>
       </button>
 
@@ -2710,7 +2710,7 @@
           </label>
           <div class="relative">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] font-bold text-neutral-400 font-numeric">+91</span>
-            <input type="tel" id="login-phone-input" placeholder="Enter 10-digit mobile" maxlength="10" class="w-full h-11 pl-12 pr-3.5 bg-neutral-800 border border-neutral-700 rounded-xl text-[14px] text-white focus:outline-none focus:border-orange-500 font-numeric font-bold tracking-wider placeholder:text-neutral-500 placeholder:font-normal"/>
+            <input type="tel" id="login-phone-input" onkeydown="if(event.key==='Enter')handlePhonePasswordLogin()" placeholder="Enter 10-digit mobile" maxlength="10" class="w-full h-11 pl-12 pr-3.5 bg-neutral-800 border border-neutral-700 rounded-xl text-[14px] text-white focus:outline-none focus:border-orange-500 font-numeric font-bold tracking-wider placeholder:text-neutral-500 placeholder:font-normal"/>
           </div>
         </div>
 
@@ -2719,7 +2719,7 @@
             4-Digit Security PIN / Password
           </label>
           <div class="relative">
-            <input type="password" id="login-password-input" placeholder="Enter 4-digit PIN" class="w-full h-11 pl-3.5 pr-10 bg-neutral-800 border border-neutral-700 rounded-xl text-[14px] text-white focus:outline-none focus:border-orange-500 font-body placeholder:text-neutral-500"/>
+            <input type="password" id="login-password-input" onkeydown="if(event.key==='Enter')handlePhonePasswordLogin()" placeholder="Enter 4-digit PIN" class="w-full h-11 pl-3.5 pr-10 bg-neutral-800 border border-neutral-700 rounded-xl text-[14px] text-white focus:outline-none focus:border-orange-500 font-body placeholder:text-neutral-500"/>
             <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-200 cursor-pointer">
               <span class="material-symbols-outlined text-[18px]" id="pwd-eye-icon">visibility</span>
             </button>
@@ -3151,9 +3151,9 @@
         id: "rest-1",
         name: "Roast & Cart Speciality",
         cuisine: "Specialty Coffee & Bakery",
-        ownerName: "Plate Pilot Admin",
-        ownerPhone: "9911193569",
-        ownerPassword: "5959",
+        ownerName: "Roast & Cart Manager",
+        ownerPhone: "9876543210",
+        ownerPassword: "1234",
         orderPrefix: "RC-",
         address: "Shop 4, Connaught Place, New Delhi",
         tablesCount: 6,
@@ -3173,7 +3173,8 @@
         menuItems: DEFAULT_MENU_ITEMS,
         orders: [],
         staff: [
-          { id: "st-1", name: "Plate Pilot Admin", role: "Platform Super Admin", phone: "9911193569", password: "5959", pin: "5959", permissions: ["all"], avatar: "SA", isAppAdmin: true }
+          { id: "st-1", name: "Store Manager", role: "Store Manager", phone: "9876543210", password: "1234", pin: "1234", permissions: ["all"], avatar: "SM", isAppAdmin: false },
+          { id: "st-2", name: "Staff Cashier", role: "POS Cashier", phone: "9876543211", password: "1234", pin: "1234", permissions: ["pos"], avatar: "SC", isAppAdmin: false }
         ],
         offers: [
           { id: "off-1", code: "WELCOME20", title: "Flat 20% Off Welcome Treat", discountType: "pct", value: 20, minOrder: 150, description: "Get 20% off on your first dine-in QR order.", active: true },
@@ -3267,11 +3268,7 @@
       qrOrdering: { enabled: true, tableCount: 6 },
       offers: [],
       staff: [],
-      currentUser: (() => {
-        const saved = JSON.parse(localStorage.getItem("roast_current_user") || "null");
-        if (saved && saved.id) return saved;
-        return null;
-      })(),
+      currentUser: null,
       authTargetStaffId: null,
       authPinInput: "",
       customerCart: [],
@@ -7569,12 +7566,31 @@
     }
 
     function updateUserSessionUI() {
-      const user = appState.currentUser || appState.staff[0];
-      if (!user) return;
-
+      const user = appState.currentUser;
       const hdrAvatar = document.getElementById("header-user-avatar");
       const hdrName = document.getElementById("header-user-name");
       const hdrRole = document.getElementById("header-user-role");
+
+      if (!user) {
+        if (hdrAvatar) hdrAvatar.innerHTML = `<span class="material-symbols-outlined text-[15px]">lock</span>`;
+        if (hdrName) hdrName.textContent = "Sign In";
+        if (hdrRole) hdrRole.textContent = "Tap to login";
+
+        const sesStatus = document.getElementById("session-login-status");
+        const sesAvatar = document.getElementById("session-user-avatar");
+        const sesName = document.getElementById("session-user-name");
+        const sesRole = document.getElementById("session-user-role");
+        const sesPerms = document.getElementById("session-user-perms");
+
+        if (sesStatus) sesStatus.textContent = "Not Signed In";
+        if (sesAvatar) sesAvatar.innerHTML = `<span class="material-symbols-outlined text-[18px]">lock</span>`;
+        if (sesName) sesName.textContent = "Sign In";
+        if (sesRole) sesRole.textContent = "Staff & Manager Access";
+        if (sesPerms) {
+          sesPerms.innerHTML = `<span class="px-2 py-0.5 rounded-full text-[10px] font-headline font-bold bg-neutral-100 text-neutral-600 border border-neutral-300">Sign in to unlock terminal</span>`;
+        }
+        return;
+      }
 
       if (hdrAvatar) hdrAvatar.textContent = user.avatar || user.name.substring(0, 2).toUpperCase();
       if (hdrName) hdrName.textContent = user.name;
@@ -7685,12 +7701,18 @@
       const name = appState.currentUser?.name || "User";
       appState.currentUser = null;
       appState.adminImpersonating = false;
+      appState.adminOriginalUser = null;
+      appState.activeTab = "dashboard";
       localStorage.removeItem("roast_current_user");
       localStorage.removeItem("platepilot_impersonating");
       localStorage.removeItem("platepilot_original_admin");
 
+      document.getElementById("screen-admin-panel")?.classList.add("hidden");
+      document.getElementById("screen-home")?.classList.remove("hidden");
+
       renderAdminImpersonationBar();
       updateNavigationPermissionsUI();
+      updateUserSessionUI();
       showLoginModal();
       showToast(`${name} logged out. Please sign in.`);
     }
@@ -7702,10 +7724,23 @@
       if (phoneInput) phoneInput.value = "";
       if (pwdInput) pwdInput.value = "";
 
+      // Close button is only shown if a user is ALREADY signed in (canceling switch user)
+      const closeBtn = document.getElementById("login-modal-close-btn");
+      if (closeBtn) {
+        closeBtn.classList.toggle("hidden", !appState.currentUser);
+      }
+
       document.getElementById("modal-app-login")?.classList.remove("hidden");
+      setTimeout(() => {
+        phoneInput?.focus();
+      }, 100);
     }
 
     function closeLoginModal() {
+      if (!appState.currentUser) {
+        showLoginError("Please enter your registered mobile number and PIN to sign in.");
+        return;
+      }
       document.getElementById("modal-app-login")?.classList.add("hidden");
     }
 
@@ -8821,7 +8856,7 @@
     // --- INITIAL BOOTSTRAP ---
     function initApp() {
       // Clear legacy demo data cache if present
-      const CLEAN_DATA_KEY = "platepilot_clean_superadmin_v1";
+      const CLEAN_DATA_KEY = "platepilot_clean_superadmin_v2";
       if (localStorage.getItem(CLEAN_DATA_KEY) !== "true") {
         try {
           localStorage.removeItem("roast_orders");
@@ -8833,9 +8868,22 @@
           localStorage.removeItem("platepilot_rest-1_staff");
           localStorage.removeItem("roast_staff");
           localStorage.removeItem("roast_current_user");
+          localStorage.removeItem("platepilot_impersonating");
+          localStorage.removeItem("platepilot_original_admin");
           localStorage.setItem(CLEAN_DATA_KEY, "true");
         } catch (e) {}
       }
+
+      // Enforce clean unauthenticated start: App always starts with the Login screen
+      appState.currentUser = null;
+      appState.adminImpersonating = false;
+      appState.adminOriginalUser = null;
+      appState.activeTab = "dashboard";
+      try {
+        localStorage.removeItem("roast_current_user");
+        localStorage.removeItem("platepilot_impersonating");
+        localStorage.removeItem("platepilot_original_admin");
+      } catch (e) {}
 
       // 0. Parse URL parameters for direct Table QR Menu or restaurant switching
       let isQrLaunch = false;
@@ -8862,45 +8910,22 @@
           return;
         }
 
-        // Switch active outlet context if rest or store is specified (Admin only or unauthenticated QR launch)
-        const canSwitchViaUrl = !appState.currentUser || appState.currentUser.isAppAdmin || appState.adminImpersonating;
-        if (canSwitchViaUrl) {
-          if (urlRestId) {
-            const match = (appState.onboardedRestaurants || []).find(r => r.id === urlRestId);
-            if (match) {
-              appState.activeRestaurantId = match.id;
-            }
-          } else if (urlStore) {
-            const match = (appState.onboardedRestaurants || []).find(r => r.name.toLowerCase() === decodeURIComponent(urlStore).toLowerCase());
-            if (match) {
-              appState.activeRestaurantId = match.id;
-            }
+        if (urlRestId) {
+          const match = (appState.onboardedRestaurants || []).find(r => r.id === urlRestId);
+          if (match) {
+            appState.activeRestaurantId = match.id;
+          }
+        } else if (urlStore) {
+          const match = (appState.onboardedRestaurants || []).find(r => r.name.toLowerCase() === decodeURIComponent(urlStore).toLowerCase());
+          if (match) {
+            appState.activeRestaurantId = match.id;
           }
         }
       } catch (err) {
         console.warn("PlatePilot: Error parsing URL search params:", err);
       }
 
-      // 1. Restore impersonation session if active
-      if (localStorage.getItem("platepilot_impersonating") === "true") {
-        appState.adminImpersonating = true;
-        try {
-          appState.adminOriginalUser = JSON.parse(localStorage.getItem("platepilot_original_admin") || "null") || PLATFORM_SUPER_ADMIN;
-        } catch (e) {
-          appState.adminOriginalUser = PLATFORM_SUPER_ADMIN;
-        }
-      }
-
-      // Multi-tenant Security Check: If a non-admin restaurant owner or staff is logged in,
-      // strictly lock activeRestaurantId to their currentUser.restaurantId
-      if (appState.currentUser && !appState.currentUser.isAppAdmin && !appState.adminImpersonating) {
-        if (!appState.currentUser.restaurantId) {
-          appState.currentUser.restaurantId = appState.activeRestaurantId || "rest-1";
-        }
-        appState.activeRestaurantId = appState.currentUser.restaurantId;
-      }
-
-      // 2. Sync and hydrate active restaurant data
+      // 1. Sync and hydrate active restaurant data
       loadOutletData(appState.activeRestaurantId);
 
       const activeRest = (appState.onboardedRestaurants || []).find(r => r.id === appState.activeRestaurantId);
@@ -8910,11 +8935,6 @@
 
         const homeStationBadge = document.getElementById("home-station-badge");
         if (homeStationBadge) homeStationBadge.innerHTML = `Station 1 &bull; ${activeRest.name}`;
-      }
-
-      if (!appState.currentUser && appState.staff && appState.staff.length > 0) {
-        appState.currentUser = { ...appState.staff[0], restaurantId: appState.activeRestaurantId, isAppAdmin: false };
-        saveState();
       }
 
       loadRestaurantProfile();
@@ -8937,6 +8957,9 @@
       renderAdminSaaSMetrics();
       renderOutletSwitcherList();
       updateSupabaseCloudUI();
+
+      // Always launch the Login Screen on startup
+      showLoginModal();
 
       // Connect to Supabase Cloud & perform initial bi-directional sync
       if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG.isConfigured) {
