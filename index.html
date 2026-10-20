@@ -193,6 +193,14 @@
     <!-- ------------------------------------------------------------- -->
     <div id="screen-home" class="w-full max-w-3xl mx-auto px-4 pt-3 space-y-4">
 
+      <!-- Native Pull-To-Refresh Visual Indicator Container -->
+      <div id="home-ptr-container" class="w-full flex items-center justify-center overflow-hidden transition-all duration-200 ease-out max-h-0 opacity-0 pointer-events-none select-none">
+        <div id="home-ptr-badge" class="py-2 px-4 rounded-full bg-white border border-orange-200 shadow-md flex items-center gap-2 text-neutral-800">
+          <span id="home-ptr-icon" class="material-symbols-outlined text-[18px] text-orange-500 transition-transform duration-200">arrow_downward</span>
+          <span id="home-ptr-text" class="font-headline font-bold text-xs text-neutral-700">Pull down to sync data</span>
+        </div>
+      </div>
+
       <!-- Sub-header & Station Sync Row -->
       <section class="flex items-center justify-between gap-2">
         <div id="home-station-trigger" class="flex items-center gap-1.5 bg-white border border-orange-100 shadow-sm px-3.5 py-1.5 rounded-full select-none" onclick="handleHomeStationClick()">
@@ -200,7 +208,7 @@
           <span class="font-headline text-[13px] text-neutral-900 font-semibold" id="home-station-badge">Station 1 &bull; Roast &amp; Cart</span>
           <span id="home-station-arrow" class="hidden material-symbols-outlined text-[17px] text-neutral-400">expand_more</span>
         </div>
-        <div id="home-sync-pill" class="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 px-3 py-1.5 rounded-full transition-colors duration-200 select-none cursor-default shadow-xs" title="Live Cloud Sync Active (Online)">
+        <div id="home-sync-pill" onclick="performDashboardPullSync()" class="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 px-3 py-1.5 rounded-full transition-colors duration-200 select-none cursor-pointer hover:opacity-90 active:scale-95 shadow-xs" title="Tap to sync dashboard data with cloud">
           <span id="home-sync-dot" class="relative flex h-2 w-2">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -2812,6 +2820,15 @@
           </div>
         </div>
 
+        <!-- Remember Me / Keep Me Signed In Checkbox -->
+        <div class="flex items-center justify-between pt-0.5 select-none">
+          <label class="flex items-center gap-2 cursor-pointer group">
+            <input type="checkbox" id="login-remember-me" checked class="w-4 h-4 rounded border-neutral-700 bg-neutral-800 text-orange-500 focus:ring-orange-500/30 focus:ring-offset-0 cursor-pointer accent-orange-500"/>
+            <span class="text-xs font-headline font-medium text-neutral-300 group-hover:text-white transition-colors">Keep me signed in</span>
+          </label>
+          <span class="text-[11px] text-neutral-500">Auto-login next time</span>
+        </div>
+
         <div id="login-error-msg" class="hidden p-2.5 rounded-xl bg-red-950/80 border border-red-800 text-red-200 text-xs flex items-center gap-2">
           <span class="material-symbols-outlined text-[16px] text-red-400">error</span>
           <span id="login-error-text">Invalid mobile number or security PIN</span>
@@ -5145,28 +5162,263 @@
     // SECTION: LIVE SYNC NETWORK INDICATOR & DOWNLOAD REPORTS CONTROLLER
     // =========================================================================
 
-    function updateLiveSyncIndicator() {
+    // --- REACTIVE NETWORK CONNECTIVITY STREAM & SYNC INDICATOR ---
+    let isTrueNetworkOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
+    let networkProbeTimer = null;
+
+    async function probeNetworkConnectivity() {
+      // 1. Check navigator.onLine
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        setNetworkOnlineState(false);
+        return false;
+      }
+
+      // 2. Check Capacitor Native Network Plugin if running inside native app
+      if (window.Capacitor?.Plugins?.Network) {
+        try {
+          const capStatus = await window.Capacitor.Plugins.Network.getStatus();
+          if (capStatus && capStatus.connected === false) {
+            setNetworkOnlineState(false);
+            return false;
+          }
+        } catch (e) {}
+      }
+
+      // 3. Active true reachable internet probe (verifies Wi-Fi AND Cellular route)
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2200);
+
+        const probeTarget = (window.PlatePilotCloud?.CONFIG?.isConfigured && window.PlatePilotCloud?.CONFIG?.url)
+          ? `${window.PlatePilotCloud.CONFIG.url}/rest/v1/?apikey=${window.PlatePilotCloud.CONFIG.anonKey}`
+          : `manifest.json?_t=${Date.now()}`;
+
+        const res = await fetch(probeTarget, {
+          method: "HEAD",
+          cache: "no-store",
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        const reachable = res.status >= 200 && res.status < 500;
+        setNetworkOnlineState(reachable);
+        return reachable;
+      } catch (err) {
+        setNetworkOnlineState(false);
+        return false;
+      }
+    }
+
+    function setNetworkOnlineState(isOnline) {
+      const changed = isTrueNetworkOnline !== isOnline;
+      isTrueNetworkOnline = isOnline;
+      updateLiveSyncIndicatorUI(isOnline);
+      if (changed) {
+        if (isOnline) {
+          showToast("Online: Cloud sync active", "cloud_done");
+          if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG?.isConfigured) {
+            window.PlatePilotCloud.syncAllData(appState.activeRestaurantId).catch(console.warn);
+          }
+        } else {
+          showToast("Offline: Working from local cache", "cloud_off");
+        }
+      }
+    }
+
+    function updateLiveSyncIndicatorUI(isOnline = isTrueNetworkOnline) {
       const pill = document.getElementById("home-sync-pill");
       const dot = document.getElementById("home-sync-dot");
       const label = document.getElementById("home-sync-label");
       if (!pill || !dot || !label) return;
 
-      const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
-      const isCloudConfigured = !!(window.PlatePilotCloud && window.PlatePilotCloud.CONFIG && window.PlatePilotCloud.CONFIG.isConfigured);
-
       if (isOnline) {
-        pill.className = "flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 px-3 py-1.5 rounded-full transition-colors duration-200 select-none cursor-default shadow-xs";
+        pill.className = "flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 px-3 py-1.5 rounded-full transition-colors duration-200 select-none cursor-pointer hover:opacity-90 active:scale-95 shadow-xs";
         dot.innerHTML = `<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>`;
         label.className = "font-headline text-[11px] text-emerald-700 uppercase tracking-wider font-bold";
-        label.textContent = "Sync Active";
-        pill.title = isCloudConfigured ? "Live Cloud Sync Active (Online)" : "Device is Online - Local Storage Ready";
+        label.textContent = "SYNC ACTIVE";
+        pill.title = "Live Cloud Sync Active (Online) • Tap to sync";
       } else {
-        pill.className = "flex items-center gap-1.5 bg-orange-50 border border-orange-200/80 px-3 py-1.5 rounded-full transition-colors duration-200 select-none cursor-default shadow-xs";
+        pill.className = "flex items-center gap-1.5 bg-orange-50 border border-orange-200/80 px-3 py-1.5 rounded-full transition-colors duration-200 select-none cursor-pointer hover:opacity-90 active:scale-95 shadow-xs";
         dot.innerHTML = `<span class="inline-flex rounded-full h-2 w-2 bg-orange-500"></span>`;
         label.className = "font-headline text-[11px] text-orange-700 uppercase tracking-wider font-bold";
-        label.textContent = "Offline / Local Cache";
-        pill.title = "No internet connection. Operating offline from local cache.";
+        label.textContent = "OFFLINE";
+        pill.title = "Device is Offline • Operating from local storage • Tap to retry";
       }
+    }
+
+    function updateLiveSyncIndicator() {
+      updateLiveSyncIndicatorUI(isTrueNetworkOnline);
+      probeNetworkConnectivity();
+    }
+
+    function startContinuousNetworkListener() {
+      window.addEventListener("online", () => probeNetworkConnectivity());
+      window.addEventListener("offline", () => setNetworkOnlineState(false));
+      window.addEventListener("focus", () => probeNetworkConnectivity());
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) probeNetworkConnectivity();
+      });
+
+      if (window.Capacitor?.Plugins?.Network) {
+        try {
+          window.Capacitor.Plugins.Network.addListener("networkStatusChange", status => {
+            if (!status.connected) {
+              setNetworkOnlineState(false);
+            } else {
+              probeNetworkConnectivity();
+            }
+          });
+        } catch (e) {}
+      }
+
+      if (networkProbeTimer) clearInterval(networkProbeTimer);
+      networkProbeTimer = setInterval(probeNetworkConnectivity, 3500);
+
+      probeNetworkConnectivity();
+    }
+
+    // --- PULL-TO-REFRESH CONTROLLER FOR DASHBOARD (#screen-home) ---
+    let isPullingToRefresh = false;
+    let ptrStartY = 0;
+    let ptrCurrentY = 0;
+    let ptrIsActive = false;
+
+    function initPullToRefresh() {
+      const homeScreen = document.getElementById("screen-home");
+      if (!homeScreen) return;
+
+      window.addEventListener("touchstart", (e) => {
+        if (homeScreen.classList.contains("hidden")) return;
+        if (window.scrollY > 5) return;
+        if (isPullingToRefresh) return;
+
+        ptrStartY = e.touches[0].clientY;
+        ptrCurrentY = ptrStartY;
+        ptrIsActive = true;
+      }, { passive: true });
+
+      window.addEventListener("touchmove", (e) => {
+        if (!ptrIsActive || isPullingToRefresh) return;
+        if (window.scrollY > 5) {
+          ptrIsActive = false;
+          resetPtrUI();
+          return;
+        }
+
+        ptrCurrentY = e.touches[0].clientY;
+        const dy = ptrCurrentY - ptrStartY;
+
+        if (dy > 10) {
+          const pullDist = Math.min(85, Math.pow(dy, 0.85) * 1.5);
+          const ptrContainer = document.getElementById("home-ptr-container");
+          const ptrIcon = document.getElementById("home-ptr-icon");
+          const ptrText = document.getElementById("home-ptr-text");
+
+          if (ptrContainer) {
+            ptrContainer.style.maxHeight = pullDist + "px";
+            ptrContainer.style.opacity = Math.min(1, pullDist / 45).toString();
+          }
+
+          if (pullDist >= 60) {
+            if (ptrIcon) ptrIcon.style.transform = "rotate(180deg)";
+            if (ptrText) ptrText.textContent = "Release to sync";
+          } else {
+            if (ptrIcon) ptrIcon.style.transform = "rotate(0deg)";
+            if (ptrText) ptrText.textContent = "Pull down to sync data";
+          }
+        }
+      }, { passive: true });
+
+      window.addEventListener("touchend", () => {
+        if (!ptrIsActive || isPullingToRefresh) return;
+        ptrIsActive = false;
+
+        const dy = ptrCurrentY - ptrStartY;
+        const pullDist = Math.min(85, Math.pow(Math.max(0, dy), 0.85) * 1.5);
+
+        if (pullDist >= 60) {
+          performDashboardPullSync();
+        } else {
+          resetPtrUI();
+        }
+      }, { passive: true });
+    }
+
+    function resetPtrUI() {
+      const ptrContainer = document.getElementById("home-ptr-container");
+      const ptrIcon = document.getElementById("home-ptr-icon");
+      const ptrText = document.getElementById("home-ptr-text");
+      if (ptrContainer) {
+        ptrContainer.style.maxHeight = "0px";
+        ptrContainer.style.opacity = "0";
+      }
+      if (ptrIcon) {
+        ptrIcon.style.transform = "rotate(0deg)";
+        ptrIcon.className = "material-symbols-outlined text-[18px] text-orange-500 transition-transform duration-200";
+        ptrIcon.textContent = "arrow_downward";
+      }
+      if (ptrText) {
+        ptrText.textContent = "Pull down to sync data";
+      }
+    }
+
+    async function performDashboardPullSync() {
+      if (isPullingToRefresh) return;
+      isPullingToRefresh = true;
+
+      const ptrContainer = document.getElementById("home-ptr-container");
+      const ptrIcon = document.getElementById("home-ptr-icon");
+      const ptrText = document.getElementById("home-ptr-text");
+
+      if (ptrContainer) {
+        ptrContainer.style.maxHeight = "52px";
+        ptrContainer.style.opacity = "1";
+      }
+      if (ptrIcon) {
+        ptrIcon.className = "material-symbols-outlined text-[18px] text-orange-500 animate-spin";
+        ptrIcon.textContent = "sync";
+        ptrIcon.style.transform = "none";
+      }
+      if (ptrText) {
+        ptrText.textContent = "Syncing live data...";
+      }
+
+      // Step 1: Check network connectivity
+      const isOnline = await probeNetworkConnectivity();
+      if (!isOnline) {
+        setTimeout(() => {
+          resetPtrUI();
+          isPullingToRefresh = false;
+          showToast("Cannot sync: device is offline", "cloud_off");
+        }, 300);
+        return;
+      }
+
+      // Step 2: Online - trigger sync and re-render
+      const startTime = Date.now();
+      try {
+        if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG?.isConfigured) {
+          await window.PlatePilotCloud.syncAllData(appState.activeRestaurantId);
+        }
+      } catch (err) {
+        console.warn("Pull-to-refresh sync error:", err);
+      }
+
+      const elapsed = Date.now() - startTime;
+      const remainingWait = Math.max(0, 600 - elapsed);
+
+      setTimeout(() => {
+        renderHomeDashboardMetrics(appState.currentDashboardRange || "today");
+        renderHomeOrders();
+        renderOrdersStream();
+        updateBadges();
+        initReportMonthDropdown();
+        updateLiveSyncIndicatorUI(true);
+
+        resetPtrUI();
+        isPullingToRefresh = false;
+        showToast("Dashboard updated • All data synced", "cloud_done");
+      }, remainingWait);
     }
 
     function initReportMonthDropdown() {
@@ -8398,12 +8650,26 @@
       appState.adminImpersonating = false;
       appState.adminOriginalUser = null;
       appState.activeTab = "dashboard";
-      localStorage.removeItem("roast_current_user");
-      localStorage.removeItem("platepilot_impersonating");
-      localStorage.removeItem("platepilot_original_admin");
+
+      // Purge persistent credentials and session tokens completely
+      try {
+        localStorage.removeItem("platepilot_remembered_session");
+        localStorage.removeItem("roast_current_user");
+        localStorage.removeItem("platepilot_impersonating");
+        localStorage.removeItem("platepilot_original_admin");
+        sessionStorage.removeItem("platepilot_session_temp");
+      } catch (e) {}
 
       document.getElementById("screen-admin-panel")?.classList.add("hidden");
       document.getElementById("screen-home")?.classList.remove("hidden");
+
+      // Reset login form inputs
+      const phoneInput = document.getElementById("login-phone-input");
+      const pwdInput = document.getElementById("login-password-input");
+      const rememberCheckbox = document.getElementById("login-remember-me");
+      if (phoneInput) phoneInput.value = "";
+      if (pwdInput) pwdInput.value = "";
+      if (rememberCheckbox) rememberCheckbox.checked = true;
 
       renderAdminImpersonationBar();
       updateNavigationPermissionsUI();
@@ -8577,6 +8843,32 @@
       appState.currentUser = userMember;
       saveState();
       updateUserSessionUI();
+
+      // Remember Me Session Persistence Logic
+      const rememberCheckbox = document.getElementById("login-remember-me");
+      const shouldRemember = rememberCheckbox ? rememberCheckbox.checked : true;
+
+      if (shouldRemember) {
+        try {
+          const sessionPayload = {
+            user: userMember,
+            token: "pp_sec_" + Date.now() + "_" + Math.random().toString(36).slice(2, 10),
+            savedAt: new Date().toISOString()
+          };
+          localStorage.setItem("platepilot_remembered_session", JSON.stringify(sessionPayload));
+          sessionStorage.removeItem("platepilot_session_temp");
+        } catch (e) {
+          console.warn("Failed to persist remembered session:", e);
+        }
+      } else {
+        try {
+          localStorage.removeItem("platepilot_remembered_session");
+          sessionStorage.setItem("platepilot_session_temp", JSON.stringify({
+            user: userMember,
+            savedAt: new Date().toISOString()
+          }));
+        } catch (e) {}
+      }
 
       document.getElementById("modal-app-login")?.classList.add("hidden");
       document.getElementById("modal-lock-screen")?.classList.add("hidden");
@@ -9570,16 +9862,44 @@
         } catch (e) {}
       }
 
-      // Enforce clean unauthenticated start: App always starts with the Login screen
-      appState.currentUser = null;
+      // Auto-Login Check: Verify persistent "Remember Me" session token (with error boundary)
+      let rememberedUser = null;
+      try {
+        const rawPersistent = localStorage.getItem("platepilot_remembered_session");
+        if (rawPersistent) {
+          const parsed = JSON.parse(rawPersistent);
+          if (parsed && parsed.user && parsed.user.name && parsed.token) {
+            rememberedUser = parsed.user;
+          }
+        }
+      } catch (err) {
+        console.warn("PlatePilot: Corrupted session purged:", err);
+        localStorage.removeItem("platepilot_remembered_session");
+      }
+
+      if (!rememberedUser) {
+        try {
+          const rawTemp = sessionStorage.getItem("platepilot_session_temp");
+          if (rawTemp) {
+            const parsedTemp = JSON.parse(rawTemp);
+            if (parsedTemp && parsedTemp.user && parsedTemp.user.name) {
+              rememberedUser = parsedTemp.user;
+            }
+          }
+        } catch (e) {}
+      }
+
+      if (rememberedUser) {
+        appState.currentUser = rememberedUser;
+        if (rememberedUser.restaurantId) {
+          appState.activeRestaurantId = rememberedUser.restaurantId;
+        }
+      } else {
+        appState.currentUser = null;
+      }
       appState.adminImpersonating = false;
       appState.adminOriginalUser = null;
       appState.activeTab = "dashboard";
-      try {
-        localStorage.removeItem("roast_current_user");
-        localStorage.removeItem("platepilot_impersonating");
-        localStorage.removeItem("platepilot_original_admin");
-      } catch (e) {}
 
       // 0. Parse URL parameters for direct Table QR Menu or restaurant switching
       let isQrLaunch = false;
@@ -9653,11 +9973,26 @@
       renderAdminSaaSMetrics();
       renderOutletSwitcherList();
       updateSupabaseCloudUI();
-      updateLiveSyncIndicator();
       initReportMonthDropdown();
 
-      // Always launch the Login Screen on startup
-      showLoginModal();
+      // Check whether to Auto-Login or Route to Login Screen
+      if (appState.currentUser) {
+        document.getElementById("modal-app-login")?.classList.add("hidden");
+        document.getElementById("modal-lock-screen")?.classList.add("hidden");
+        if (appState.currentUser.isAppAdmin) {
+          switchTab("admin-panel");
+        } else if ((appState.currentUser.permissions || []).includes("pos")) {
+          switchTab("pos-terminal");
+        } else {
+          switchTab("dashboard");
+        }
+      } else {
+        showLoginModal();
+      }
+
+      // Initialize Pull-to-Refresh & Continuous Reactive Network Stream
+      initPullToRefresh();
+      startContinuousNetworkListener();
 
       // Connect to Supabase Cloud & perform initial bi-directional sync
       if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG.isConfigured) {
@@ -9666,20 +10001,6 @@
         setupCloudRealtime();
       }
     }
-
-    // Network connectivity real-time event listeners (NetInfo / NetworkInfo Web standard)
-    window.addEventListener("online", () => {
-      updateLiveSyncIndicator();
-      showToast("Online: Live cloud sync connected", "cloud_done");
-      if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG?.isConfigured) {
-        window.PlatePilotCloud.syncAllData(appState.activeRestaurantId).catch(console.warn);
-      }
-    });
-
-    window.addEventListener("offline", () => {
-      updateLiveSyncIndicator();
-      showToast("Offline: Local cache active", "cloud_off");
-    });
 
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", initApp);
