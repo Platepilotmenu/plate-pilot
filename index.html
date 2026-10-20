@@ -200,9 +200,12 @@
           <span class="font-headline text-[13px] text-neutral-900 font-semibold" id="home-station-badge">Station 1 &bull; Roast &amp; Cart</span>
           <span id="home-station-arrow" class="hidden material-symbols-outlined text-[17px] text-neutral-400">expand_more</span>
         </div>
-        <div class="flex items-center gap-1.5 bg-orange-50 border border-orange-200/60 px-3 py-1.5 rounded-full">
-          <span class="w-2 h-2 rounded-full bg-orange-500 animate-ping"></span>
-          <span class="font-headline text-[11px] text-orange-600 uppercase tracking-wider font-bold">Sync Active</span>
+        <div id="home-sync-pill" class="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 px-3 py-1.5 rounded-full transition-colors duration-200 select-none cursor-default shadow-xs" title="Live Cloud Sync Active (Online)">
+          <span id="home-sync-dot" class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span id="home-sync-label" class="font-headline text-[11px] text-emerald-700 uppercase tracking-wider font-bold">Sync Active</span>
         </div>
       </section>
 
@@ -219,8 +222,8 @@
         </button>
       </section>
 
-      <!-- Quick Action Command Strip -->
-      <section class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+      <!-- Quick Action Command Strip (Clean 2-Column Grid) -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         <!-- Quick Sale Button -->
         <button onclick="switchTab('pos-terminal')" class="flex items-center justify-between bg-orange-500 hover:bg-orange-600 text-white h-16 px-3.5 rounded-xl shadow-md shadow-orange-500/25 active:translate-y-0.5 active:shadow-sm transition-all group cursor-pointer">
           <div class="flex items-center gap-2.5 min-w-0">
@@ -249,20 +252,6 @@
           <div class="flex items-center justify-center w-6 h-6 rounded-full bg-orange-500 text-white font-headline text-[11px] font-bold shadow-sm" id="home-open-tabs-count">
             0
           </div>
-        </button>
-
-        <!-- Table QR Menu Button -->
-        <button onclick="openCustomerWebMenu(1)" class="flex items-center justify-between bg-white hover:bg-orange-50/50 text-neutral-900 h-16 px-3.5 rounded-xl shadow-sm border border-orange-200 active:translate-y-0.5 transition-all group cursor-pointer">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <div class="w-9 h-9 rounded-lg bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-600 shrink-0">
-              <span class="material-symbols-outlined text-[20px]">qr_code_2</span>
-            </div>
-            <div class="flex flex-col text-left truncate">
-              <span class="font-headline text-[15px] text-neutral-900 leading-tight font-bold">Table QR Menu</span>
-              <span class="text-[11px] text-neutral-500">Live Customer Portal</span>
-            </div>
-          </div>
-          <span class="material-symbols-outlined text-orange-400 group-hover:translate-x-1 transition-transform text-[18px]">open_in_new</span>
         </button>
       </section>
 
@@ -353,6 +342,103 @@
             <span class="material-symbols-outlined text-[26px] mb-1.5 text-neutral-300">receipt_long</span>
             <span>No completed orders recorded yet today</span>
           </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION: DOWNLOAD REPORTS (SALES, P&L, ITEM-WISE)           -->
+      <!-- ============================================================ -->
+      <section class="bg-white p-4 rounded-xl shadow-sm border border-orange-100 flex flex-col space-y-3.5">
+        <!-- Section Header with Month Selector -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-neutral-100">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-lg bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-600 shrink-0">
+              <span class="material-symbols-outlined text-[20px]">download_for_offline</span>
+            </div>
+            <div>
+              <h3 class="font-headline text-[15px] font-bold text-neutral-900 leading-tight">Download Reports</h3>
+              <p class="text-[11px] text-neutral-500">Export financial audits, sales summaries &amp; menu performance</p>
+            </div>
+          </div>
+
+          <!-- Timeframe Month Dropdown -->
+          <div class="flex items-center gap-1.5 self-start sm:self-auto">
+            <label for="report-month-select" class="text-[11px] font-headline font-bold uppercase tracking-wider text-neutral-500">Period:</label>
+            <div class="relative">
+              <select id="report-month-select" onchange="handleReportMonthChange()" class="h-8.5 pl-3 pr-8 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-xl text-[12px] font-headline font-bold text-neutral-800 focus:outline-none focus:border-orange-500 cursor-pointer transition-colors appearance-none shadow-xs">
+                <!-- Dynamically populated via initReportMonthDropdown() -->
+              </select>
+              <span class="material-symbols-outlined text-[16px] text-neutral-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Report Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          
+          <!-- 1. Sales Report Card -->
+          <div class="p-3.5 rounded-xl border border-neutral-200/90 hover:border-blue-300 bg-gradient-to-b from-white to-blue-50/20 flex flex-col justify-between space-y-3 transition-all hover:shadow-xs group">
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                </span>
+                <span class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-headline text-[10px] font-bold uppercase tracking-wider">Revenue</span>
+              </div>
+              <h4 class="font-headline font-bold text-[14px] text-neutral-900 group-hover:text-blue-700 transition-colors">Sales Report</h4>
+              <p class="text-[11px] text-neutral-500 leading-snug">Total gross revenue, order volume, payment mode split (Cash/UPI/Card) &amp; AOV.</p>
+            </div>
+            <button type="button" id="btn-export-sales-report" onclick="exportReport('sales')" class="w-full h-9 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-headline text-[12px] font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">file_download</span>
+              <span>Export CSV</span>
+            </button>
+          </div>
+
+          <!-- 2. P&L Report Card -->
+          <div class="p-3.5 rounded-xl border border-neutral-200/90 hover:border-emerald-300 bg-gradient-to-b from-white to-emerald-50/20 flex flex-col justify-between space-y-3 transition-all hover:shadow-xs group">
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-[18px]">account_balance</span>
+                </span>
+                <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-headline text-[10px] font-bold uppercase tracking-wider">Financials</span>
+              </div>
+              <h4 class="font-headline font-bold text-[14px] text-neutral-900 group-hover:text-emerald-700 transition-colors">P&amp;L Statement</h4>
+              <p class="text-[11px] text-neutral-500 leading-snug">Gross sales, COGS food cost estimates, discounts given &amp; net operating margin.</p>
+            </div>
+            <button type="button" id="btn-export-pnl-report" onclick="exportReport('pnl')" class="w-full h-9 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-headline text-[12px] font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">file_download</span>
+              <span>Export CSV</span>
+            </button>
+          </div>
+
+          <!-- 3. Item-Wise Report Card -->
+          <div class="p-3.5 rounded-xl border border-neutral-200/90 hover:border-orange-300 bg-gradient-to-b from-white to-orange-50/20 flex flex-col justify-between space-y-3 transition-all hover:shadow-xs group">
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="w-8 h-8 rounded-lg bg-orange-50 border border-orange-200 text-orange-600 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-[18px]">bar_chart</span>
+                </span>
+                <span class="px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 font-headline text-[10px] font-bold uppercase tracking-wider">Catalog</span>
+              </div>
+              <h4 class="font-headline font-bold text-[14px] text-neutral-900 group-hover:text-orange-700 transition-colors">Item-Wise Sales</h4>
+              <p class="text-[11px] text-neutral-500 leading-snug">Ranked volume sold, unit pricing, category breakdown &amp; item percentage share.</p>
+            </div>
+            <button type="button" id="btn-export-items-report" onclick="exportReport('items')" class="w-full h-9 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-98 text-white font-headline text-[12px] font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">file_download</span>
+              <span>Export CSV</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Selected Month Meta & Screen Preview Trigger -->
+        <div class="flex items-center justify-between pt-1 text-[11px] text-neutral-500">
+          <span id="report-selected-month-label" class="font-headline">Selected: Current Month</span>
+          <button type="button" onclick="previewSelectedReport('sales')" class="text-orange-600 hover:text-orange-700 font-headline font-bold flex items-center gap-1 hover:underline cursor-pointer">
+            <span class="material-symbols-outlined text-[14px]">visibility</span>
+            <span>Preview On Screen</span>
+          </button>
         </div>
       </section>
 
@@ -2994,6 +3080,59 @@
     </div>
   </div>
 
+  <!-- ================= MODAL: REPORT PREVIEW & EXPORT ================= -->
+  <div id="modal-report-preview" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-neutral-200 flex flex-col max-h-[92vh] animate-in zoom-in-95">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-slate-900 via-neutral-900 to-slate-950 p-4 text-white flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
+            <span class="material-symbols-outlined text-[20px]">analytics</span>
+          </div>
+          <div>
+            <h2 class="font-headline text-[16px] font-bold leading-tight" id="report-preview-title">Report Preview</h2>
+            <span class="text-xs text-neutral-400" id="report-preview-subtitle">Financials and operational breakdown</span>
+          </div>
+        </div>
+        <button onclick="closeReportPreviewModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <!-- Report Type Selector Pills in Modal -->
+      <div class="p-3 bg-neutral-50 border-b border-neutral-200 flex items-center gap-2 shrink-0 overflow-x-auto no-scrollbar">
+        <button type="button" id="tab-preview-sales" onclick="switchPreviewReportType('sales')" class="px-3 py-1.5 rounded-xl font-headline font-bold text-xs bg-orange-500 text-white shadow-xs cursor-pointer transition-all">
+          Sales Report
+        </button>
+        <button type="button" id="tab-preview-pnl" onclick="switchPreviewReportType('pnl')" class="px-3 py-1.5 rounded-xl font-headline font-semibold text-xs bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 cursor-pointer transition-all">
+          P&amp;L Statement
+        </button>
+        <button type="button" id="tab-preview-items" onclick="switchPreviewReportType('items')" class="px-3 py-1.5 rounded-xl font-headline font-semibold text-xs bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 cursor-pointer transition-all">
+          Item-Wise Sales
+        </button>
+      </div>
+
+      <!-- Preview Content Scrollable Body -->
+      <div class="p-4 space-y-3.5 overflow-y-auto flex-1 text-neutral-800" id="report-preview-body">
+        <!-- Dynamically rendered report content -->
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="p-3.5 bg-neutral-50 border-t border-neutral-200 flex items-center justify-between shrink-0">
+        <span class="text-xs text-neutral-500 hidden sm:inline-block font-medium">CSV Format &bull; Compatible with Excel &amp; Google Sheets</span>
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <button type="button" onclick="closeReportPreviewModal()" class="px-4 h-9 rounded-xl border border-neutral-300 font-headline font-bold text-xs text-neutral-700 hover:bg-neutral-100 transition-all cursor-pointer">
+            Close
+          </button>
+          <button type="button" id="btn-preview-download-now" onclick="triggerDownloadFromPreview()" class="px-4 h-9 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-98 text-white font-headline font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-[16px]">download</span>
+            <span>Download CSV</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= JAVASCRIPT: UNIFIED STATE & LOGIC ================= -->
   <script src="api.js"></script>
   <script>
@@ -4096,16 +4235,19 @@
 
       const fullCustomerDesc = customerName + (customerPhone ? ` (+91 ${customerPhone})` : "");
 
+      const now = new Date();
       const newOrder = {
         id: newOrderId,
         type: orderMode,
         timeAgo: "Just now",
-        receivedTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        receivedTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        createdAt: now.toISOString(),
+        date: now.toISOString().split("T")[0],
         customer: fullCustomerDesc,
         customerName: customerName,
         customerPhone: customerPhone,
         paymentStatus: "PAID (" + (appState.settings.selectedPayment || "CASH").toUpperCase() + ")",
-        items: appState.cart.map(c => ({ qty: c.qty, name: c.title, price: c.price })),
+        items: appState.cart.map(c => ({ qty: c.qty, name: c.title, price: c.price, category: c.category || "General Menu" })),
         subtotal: parseFloat(total.toFixed(2)),
         discount: discountAmount > 0 ? {
           label: appState.discount.label,
@@ -4997,6 +5139,556 @@
       closeCustomDateModal();
       setTimeFilter(btn, 'custom');
       showToast('Applied range: ' + startVal + ' to ' + endVal);
+    }
+
+    // =========================================================================
+    // SECTION: LIVE SYNC NETWORK INDICATOR & DOWNLOAD REPORTS CONTROLLER
+    // =========================================================================
+
+    function updateLiveSyncIndicator() {
+      const pill = document.getElementById("home-sync-pill");
+      const dot = document.getElementById("home-sync-dot");
+      const label = document.getElementById("home-sync-label");
+      if (!pill || !dot || !label) return;
+
+      const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
+      const isCloudConfigured = !!(window.PlatePilotCloud && window.PlatePilotCloud.CONFIG && window.PlatePilotCloud.CONFIG.isConfigured);
+
+      if (isOnline) {
+        pill.className = "flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 px-3 py-1.5 rounded-full transition-colors duration-200 select-none cursor-default shadow-xs";
+        dot.innerHTML = `<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>`;
+        label.className = "font-headline text-[11px] text-emerald-700 uppercase tracking-wider font-bold";
+        label.textContent = "Sync Active";
+        pill.title = isCloudConfigured ? "Live Cloud Sync Active (Online)" : "Device is Online - Local Storage Ready";
+      } else {
+        pill.className = "flex items-center gap-1.5 bg-orange-50 border border-orange-200/80 px-3 py-1.5 rounded-full transition-colors duration-200 select-none cursor-default shadow-xs";
+        dot.innerHTML = `<span class="inline-flex rounded-full h-2 w-2 bg-orange-500"></span>`;
+        label.className = "font-headline text-[11px] text-orange-700 uppercase tracking-wider font-bold";
+        label.textContent = "Offline / Local Cache";
+        pill.title = "No internet connection. Operating offline from local cache.";
+      }
+    }
+
+    function initReportMonthDropdown() {
+      const select = document.getElementById("report-month-select");
+      if (!select) return;
+
+      const now = new Date();
+      select.innerHTML = "";
+
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const val = `${y}-${m}`;
+        const label = d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+        const opt = document.createElement("option");
+        opt.value = val;
+        opt.textContent = label;
+        if (i === 0) opt.selected = true;
+        select.appendChild(opt);
+      }
+
+      handleReportMonthChange();
+    }
+
+    function handleReportMonthChange() {
+      const select = document.getElementById("report-month-select");
+      const label = document.getElementById("report-selected-month-label");
+      if (!select || !label) return;
+
+      const selectedOpt = select.options[select.selectedIndex];
+      if (selectedOpt) {
+        label.textContent = "Selected: " + selectedOpt.textContent;
+      }
+    }
+
+    function getOrderDateObj(o) {
+      const raw = o.createdAt || o.created_at || o.date;
+      if (raw) {
+        const d = new Date(raw);
+        if (!isNaN(d.getTime())) return d;
+      }
+      return new Date();
+    }
+
+    function getFilteredOrdersForReport(targetYearMonth) {
+      const allOrders = appState.orders || [];
+      return allOrders.filter(o => {
+        if (o.status === "void") return false;
+        const d = getOrderDateObj(o);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const key = `${y}-${m}`;
+        return key === targetYearMonth;
+      });
+    }
+
+    function escapeCsvCell(val) {
+      if (val === null || val === undefined) return '""';
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    }
+
+    function downloadCsvFile(content, filename) {
+      const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function generateSalesReportCsv(orders, restName, monthLabel) {
+      const lines = [];
+      lines.push([escapeCsvCell("PLATE PILOT - MONTHLY SALES REPORT")]);
+      lines.push([escapeCsvCell("Restaurant:"), escapeCsvCell(restName)]);
+      lines.push([escapeCsvCell("Reporting Period:"), escapeCsvCell(monthLabel)]);
+      lines.push([escapeCsvCell("Generated At:"), escapeCsvCell(new Date().toLocaleString())]);
+      lines.push([]);
+
+      const gross = orders.reduce((sum, o) => sum + (Number(o.subtotal) || Number(o.total) || 0), 0);
+      const discounts = orders.reduce((sum, o) => sum + (o.discount ? (Number(o.discount.amount) || 0) : 0), 0);
+      const net = gross - discounts;
+      const aov = orders.length > 0 ? (gross / orders.length) : 0;
+
+      lines.push([escapeCsvCell("--- SALES SUMMARY KPI ---")]);
+      lines.push([escapeCsvCell("Metric"), escapeCsvCell("Value (INR)")]);
+      lines.push([escapeCsvCell("Total Gross Sales"), escapeCsvCell(gross.toFixed(2))]);
+      lines.push([escapeCsvCell("Total Discounts / Offers Given"), escapeCsvCell(discounts.toFixed(2))]);
+      lines.push([escapeCsvCell("Total Net Realized Collections"), escapeCsvCell(net.toFixed(2))]);
+      lines.push([escapeCsvCell("Total Order Count"), escapeCsvCell(orders.length)]);
+      lines.push([escapeCsvCell("Average Order Value (AOV)"), escapeCsvCell(aov.toFixed(2))]);
+      lines.push([]);
+
+      const paymentModes = {};
+      orders.forEach(o => {
+        let mode = "CASH";
+        const ps = (o.paymentStatus || "").toUpperCase();
+        if (ps.includes("UPI")) mode = "UPI / QR";
+        else if (ps.includes("CARD")) mode = "CARD";
+        else if (ps.includes("CASH")) mode = "CASH";
+        else mode = "OTHER";
+
+        if (!paymentModes[mode]) paymentModes[mode] = { count: 0, revenue: 0 };
+        paymentModes[mode].count += 1;
+        paymentModes[mode].revenue += (Number(o.subtotal) || Number(o.total) || 0);
+      });
+
+      lines.push([escapeCsvCell("--- PAYMENT MODES BREAKDOWN ---")]);
+      lines.push([escapeCsvCell("Payment Mode"), escapeCsvCell("Orders Count"), escapeCsvCell("Total Amount (INR)"), escapeCsvCell("% Share")]);
+      for (const [mode, data] of Object.entries(paymentModes)) {
+        const share = gross > 0 ? ((data.revenue / gross) * 100).toFixed(1) + "%" : "0.0%";
+        lines.push([escapeCsvCell(mode), escapeCsvCell(data.count), escapeCsvCell(data.revenue.toFixed(2)), escapeCsvCell(share)]);
+      }
+      lines.push([]);
+
+      lines.push([escapeCsvCell("--- DETAILED ORDER REGISTER ---")]);
+      lines.push([
+        escapeCsvCell("Order ID"),
+        escapeCsvCell("Date"),
+        escapeCsvCell("Time"),
+        escapeCsvCell("Order Type"),
+        escapeCsvCell("Customer"),
+        escapeCsvCell("Payment Mode"),
+        escapeCsvCell("Items Ordered"),
+        escapeCsvCell("Gross Amount (INR)"),
+        escapeCsvCell("Discount (INR)"),
+        escapeCsvCell("Net Total (INR)"),
+        escapeCsvCell("Status")
+      ]);
+
+      orders.forEach(o => {
+        const itemsSummary = (o.items || []).map(i => `${i.qty || 1}x ${i.name || i.title || "Item"}`).join("; ");
+        const discAmt = o.discount ? (Number(o.discount.amount) || 0) : 0;
+        const grossAmt = Number(o.subtotal) || Number(o.total) || 0;
+        const netAmt = grossAmt - discAmt;
+        const d = getOrderDateObj(o);
+        lines.push([
+          escapeCsvCell(o.id),
+          escapeCsvCell(d.toLocaleDateString()),
+          escapeCsvCell(o.receivedTime || d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })),
+          escapeCsvCell(o.type || "Dine-in"),
+          escapeCsvCell(o.customer || o.customerName || "Walk-in Guest"),
+          escapeCsvCell(o.paymentStatus || "PAID"),
+          escapeCsvCell(itemsSummary),
+          escapeCsvCell(grossAmt.toFixed(2)),
+          escapeCsvCell(discAmt.toFixed(2)),
+          escapeCsvCell(netAmt.toFixed(2)),
+          escapeCsvCell(o.status || "done")
+        ]);
+      });
+
+      return lines.map(row => row.join(",")).join("\r\n");
+    }
+
+    function generatePnlReportCsv(orders, restName, monthLabel) {
+      const lines = [];
+      lines.push([escapeCsvCell("PLATE PILOT - PROFIT & LOSS (P&L) FINANCIAL STATEMENT")]);
+      lines.push([escapeCsvCell("Restaurant:"), escapeCsvCell(restName)]);
+      lines.push([escapeCsvCell("Reporting Period:"), escapeCsvCell(monthLabel)]);
+      lines.push([escapeCsvCell("Generated At:"), escapeCsvCell(new Date().toLocaleString())]);
+      lines.push([]);
+
+      const gross = orders.reduce((sum, o) => sum + (Number(o.subtotal) || Number(o.total) || 0), 0);
+      const discounts = orders.reduce((sum, o) => sum + (o.discount ? (Number(o.discount.amount) || 0) : 0), 0);
+      const net = gross - discounts;
+      const cogs = gross * 0.35; // Standard benchmark food & beverage cost
+      const grossProfit = net - cogs;
+      const grossMarginPct = gross > 0 ? ((grossProfit / gross) * 100).toFixed(1) + "%" : "0.0%";
+      const overhead = gross * 0.20; // Estimated kitchen and store operating expense
+      const netProfit = grossProfit - overhead;
+      const netMarginPct = gross > 0 ? ((netProfit / gross) * 100).toFixed(1) + "%" : "0.0%";
+
+      lines.push([escapeCsvCell("--- FINANCIAL STATEMENT OVERVIEW ---")]);
+      lines.push([escapeCsvCell("Line Item"), escapeCsvCell("Amount (INR)"), escapeCsvCell("% of Gross Sales")]);
+      lines.push([escapeCsvCell("Gross Sales Revenue"), escapeCsvCell(gross.toFixed(2)), escapeCsvCell("100.0%")]);
+      lines.push([escapeCsvCell("Less: Discounts & Special Offers"), escapeCsvCell((-discounts).toFixed(2)), escapeCsvCell(gross > 0 ? ((-discounts / gross) * 100).toFixed(1) + "%" : "0.0%")]);
+      lines.push([escapeCsvCell("Net Realized Revenue"), escapeCsvCell(net.toFixed(2)), escapeCsvCell(gross > 0 ? ((net / gross) * 100).toFixed(1) + "%" : "0.0%")]);
+      lines.push([escapeCsvCell("Less: Cost of Goods Sold (COGS - 35% Benchmark)"), escapeCsvCell((-cogs).toFixed(2)), escapeCsvCell("-35.0%")]);
+      lines.push([escapeCsvCell("Gross Operating Profit"), escapeCsvCell(grossProfit.toFixed(2)), escapeCsvCell(grossMarginPct)]);
+      lines.push([escapeCsvCell("Less: Kitchen, Utilities & Staff Overhead (20% Benchmark)"), escapeCsvCell((-overhead).toFixed(2)), escapeCsvCell("-20.0%")]);
+      lines.push([escapeCsvCell("Estimated Net Operating Profit (EBITDA)"), escapeCsvCell(netProfit.toFixed(2)), escapeCsvCell(netMarginPct)]);
+      lines.push([]);
+
+      const catBreakdown = {};
+      orders.forEach(o => {
+        (o.items || []).forEach(it => {
+          const cat = it.category || "General Menu";
+          const rev = (Number(it.qty) || 1) * (Number(it.price) || 0);
+          if (!catBreakdown[cat]) catBreakdown[cat] = { qty: 0, revenue: 0 };
+          catBreakdown[cat].qty += (Number(it.qty) || 1);
+          catBreakdown[cat].revenue += rev;
+        });
+      });
+
+      lines.push([escapeCsvCell("--- CATEGORY CONTRIBUTION & MARGINS ---")]);
+      lines.push([escapeCsvCell("Category"), escapeCsvCell("Units Sold"), escapeCsvCell("Total Revenue (INR)"), escapeCsvCell("Est. COGS (35%)"), escapeCsvCell("Est. Gross Margin (65%)")]);
+      for (const [cat, data] of Object.entries(catBreakdown)) {
+        const catCogs = data.revenue * 0.35;
+        const catMargin = data.revenue * 0.65;
+        lines.push([escapeCsvCell(cat), escapeCsvCell(data.qty), escapeCsvCell(data.revenue.toFixed(2)), escapeCsvCell(catCogs.toFixed(2)), escapeCsvCell(catMargin.toFixed(2))]);
+      }
+
+      return lines.map(row => row.join(",")).join("\r\n");
+    }
+
+    function generateItemWiseReportCsv(orders, restName, monthLabel) {
+      const lines = [];
+      lines.push([escapeCsvCell("PLATE PILOT - ITEM-WISE SALES & VOLUME REPORT")]);
+      lines.push([escapeCsvCell("Restaurant:"), escapeCsvCell(restName)]);
+      lines.push([escapeCsvCell("Reporting Period:"), escapeCsvCell(monthLabel)]);
+      lines.push([escapeCsvCell("Generated At:"), escapeCsvCell(new Date().toLocaleString())]);
+      lines.push([]);
+
+      const itemsMap = {};
+      let totalVolume = 0;
+      let totalRevenue = 0;
+
+      orders.forEach(o => {
+        (o.items || []).forEach(it => {
+          const name = it.name || it.title || "Item";
+          const qty = Number(it.qty || it.quantity || 1);
+          const price = Number(it.price || 0);
+          const rev = qty * price;
+
+          if (!itemsMap[name]) {
+            itemsMap[name] = {
+              name,
+              category: it.category || "General",
+              price,
+              qty: 0,
+              revenue: 0
+            };
+          }
+          itemsMap[name].qty += qty;
+          itemsMap[name].revenue += rev;
+          totalVolume += qty;
+          totalRevenue += rev;
+        });
+      });
+
+      const sortedItems = Object.values(itemsMap).sort((a, b) => b.qty - a.qty);
+
+      lines.push([escapeCsvCell("--- MENU SALES VOLUME SUMMARY ---")]);
+      lines.push([escapeCsvCell("Unique Items Sold"), escapeCsvCell(sortedItems.length)]);
+      lines.push([escapeCsvCell("Total Units Sold"), escapeCsvCell(totalVolume)]);
+      lines.push([escapeCsvCell("Total Menu Revenue (INR)"), escapeCsvCell(totalRevenue.toFixed(2))]);
+      lines.push([]);
+
+      lines.push([escapeCsvCell("--- RANKED ITEM-WISE BREAKDOWN ---")]);
+      lines.push([
+        escapeCsvCell("Rank"),
+        escapeCsvCell("Item Name"),
+        escapeCsvCell("Category"),
+        escapeCsvCell("Unit Price (INR)"),
+        escapeCsvCell("Quantity Sold"),
+        escapeCsvCell("Total Revenue (INR)"),
+        escapeCsvCell("% Share of Sales")
+      ]);
+
+      sortedItems.forEach((it, idx) => {
+        const share = totalRevenue > 0 ? ((it.revenue / totalRevenue) * 100).toFixed(1) + "%" : "0.0%";
+        lines.push([
+          escapeCsvCell(idx + 1),
+          escapeCsvCell(it.name),
+          escapeCsvCell(it.category),
+          escapeCsvCell(it.price.toFixed(2)),
+          escapeCsvCell(it.qty),
+          escapeCsvCell(it.revenue.toFixed(2)),
+          escapeCsvCell(share)
+        ]);
+      });
+
+      return lines.map(row => row.join(",")).join("\r\n");
+    }
+
+    let currentPreviewReportType = "sales";
+
+    function exportReport(reportType = "sales") {
+      const select = document.getElementById("report-month-select");
+      const yearMonth = select ? select.value : `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+      const monthLabel = select && select.options[select.selectedIndex] ? select.options[select.selectedIndex].textContent : "Current Month";
+
+      const btnId = reportType === "pnl" ? "btn-export-pnl-report" : (reportType === "items" ? "btn-export-items-report" : "btn-export-sales-report");
+      const btn = document.getElementById(btnId);
+      const originalHtml = btn ? btn.innerHTML : "";
+
+      if (btn) {
+        btn.innerHTML = `<span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span><span>Generating...</span>`;
+        btn.disabled = true;
+      }
+
+      setTimeout(() => {
+        try {
+          const orders = getFilteredOrdersForReport(yearMonth);
+          const activeRest = (appState.onboardedRestaurants || []).find(r => r.id === appState.activeRestaurantId) || { name: appState.restaurant?.name || "Restaurant" };
+          const cleanRestName = activeRest.name.replace(/[^a-zA-Z0-9]/g, "_");
+
+          if (orders.length === 0) {
+            showToast(`No sales records found for ${monthLabel}.`, "info");
+            return;
+          }
+
+          let csvData = "";
+          let fileName = "";
+
+          if (reportType === "pnl") {
+            csvData = generatePnlReportCsv(orders, activeRest.name, monthLabel);
+            fileName = `PlatePilot_PnL_Report_${cleanRestName}_${yearMonth}.csv`;
+          } else if (reportType === "items") {
+            csvData = generateItemWiseReportCsv(orders, activeRest.name, monthLabel);
+            fileName = `PlatePilot_ItemWise_Report_${cleanRestName}_${yearMonth}.csv`;
+          } else {
+            csvData = generateSalesReportCsv(orders, activeRest.name, monthLabel);
+            fileName = `PlatePilot_Sales_Report_${cleanRestName}_${yearMonth}.csv`;
+          }
+
+          downloadCsvFile(csvData, fileName);
+          showToast(`✓ Downloaded ${fileName}`, "download_done");
+        } catch (err) {
+          console.error("Export report error:", err);
+          showToast("Failed to generate report", "error");
+        } finally {
+          if (btn) {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+          }
+        }
+      }, 350);
+    }
+
+    function previewSelectedReport(reportType = "sales") {
+      currentPreviewReportType = reportType;
+      const select = document.getElementById("report-month-select");
+      const yearMonth = select ? select.value : `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+      const monthLabel = select && select.options[select.selectedIndex] ? select.options[select.selectedIndex].textContent : "Current Month";
+
+      const titleEl = document.getElementById("report-preview-title");
+      const subEl = document.getElementById("report-preview-subtitle");
+      const activeRest = (appState.onboardedRestaurants || []).find(r => r.id === appState.activeRestaurantId) || { name: appState.restaurant?.name || "Restaurant" };
+
+      if (titleEl) titleEl.textContent = `Report Preview • ${monthLabel}`;
+      if (subEl) subEl.textContent = `${activeRest.name} • Audit & Analytics`;
+
+      renderPreviewReportContent(reportType, yearMonth, monthLabel);
+      document.getElementById("modal-report-preview")?.classList.remove("hidden");
+    }
+
+    function switchPreviewReportType(reportType) {
+      currentPreviewReportType = reportType;
+      const select = document.getElementById("report-month-select");
+      const yearMonth = select ? select.value : `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+      const monthLabel = select && select.options[select.selectedIndex] ? select.options[select.selectedIndex].textContent : "Current Month";
+
+      renderPreviewReportContent(reportType, yearMonth, monthLabel);
+    }
+
+    function renderPreviewReportContent(reportType, yearMonth, monthLabel) {
+      const body = document.getElementById("report-preview-body");
+      if (!body) return;
+
+      ["sales", "pnl", "items"].forEach(t => {
+        const tabBtn = document.getElementById(`tab-preview-${t}`);
+        if (!tabBtn) return;
+        if (t === reportType) {
+          tabBtn.className = "px-3 py-1.5 rounded-xl font-headline font-bold text-xs bg-orange-500 text-white shadow-xs cursor-pointer transition-all";
+        } else {
+          tabBtn.className = "px-3 py-1.5 rounded-xl font-headline font-semibold text-xs bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 cursor-pointer transition-all";
+        }
+      });
+
+      const orders = getFilteredOrdersForReport(yearMonth);
+      if (orders.length === 0) {
+        body.innerHTML = `
+          <div class="py-12 flex flex-col items-center justify-center text-center space-y-2">
+            <div class="w-12 h-12 rounded-2xl bg-neutral-100 flex items-center justify-center text-neutral-400">
+              <span class="material-symbols-outlined text-[28px]">receipt_long</span>
+            </div>
+            <h4 class="font-headline font-bold text-[15px] text-neutral-700">No Orders in ${monthLabel}</h4>
+            <p class="text-xs text-neutral-400 max-w-sm">No recorded POS or QR dine-in transactions match this reporting period.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const gross = orders.reduce((sum, o) => sum + (Number(o.subtotal) || Number(o.total) || 0), 0);
+      const discounts = orders.reduce((sum, o) => sum + (o.discount ? (Number(o.discount.amount) || 0) : 0), 0);
+      const net = gross - discounts;
+      const aov = orders.length > 0 ? (gross / orders.length) : 0;
+
+      if (reportType === "sales") {
+        body.innerHTML = `
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pb-2">
+            <div class="p-2.5 rounded-xl bg-neutral-50 border border-neutral-200">
+              <span class="text-[10px] uppercase font-headline font-bold text-neutral-400">Gross Sales</span>
+              <div class="font-headline font-bold text-[16px] text-neutral-900 font-numeric">₹${gross.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-neutral-50 border border-neutral-200">
+              <span class="text-[10px] uppercase font-headline font-bold text-neutral-400">Orders</span>
+              <div class="font-headline font-bold text-[16px] text-neutral-900 font-numeric">${orders.length}</div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-neutral-50 border border-neutral-200">
+              <span class="text-[10px] uppercase font-headline font-bold text-neutral-400">AOV</span>
+              <div class="font-headline font-bold text-[16px] text-neutral-900 font-numeric">₹${aov.toFixed(2)}</div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-neutral-50 border border-neutral-200">
+              <span class="text-[10px] uppercase font-headline font-bold text-neutral-400">Discounts</span>
+              <div class="font-headline font-bold text-[16px] text-neutral-900 font-numeric">₹${discounts.toFixed(2)}</div>
+            </div>
+          </div>
+          <div class="overflow-x-auto rounded-xl border border-neutral-200">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-neutral-100 font-headline font-bold text-neutral-600">
+                <tr>
+                  <th class="p-2">Order ID</th>
+                  <th class="p-2">Date</th>
+                  <th class="p-2">Customer</th>
+                  <th class="p-2">Payment</th>
+                  <th class="p-2 text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-neutral-100">
+                ${orders.slice(0, 10).map(o => `
+                  <tr class="hover:bg-neutral-50">
+                    <td class="p-2 font-mono font-bold text-orange-600">${o.id}</td>
+                    <td class="p-2 text-neutral-500">${getOrderDateObj(o).toLocaleDateString()}</td>
+                    <td class="p-2 text-neutral-800 font-medium truncate max-w-[120px]">${o.customerName || "Walk-in"}</td>
+                    <td class="p-2 text-neutral-500">${o.paymentStatus?.split("(")[1]?.replace(")", "") || "PAID"}</td>
+                    <td class="p-2 text-right font-numeric font-bold text-neutral-900">₹${(Number(o.subtotal) || Number(o.total) || 0).toFixed(2)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+          ${orders.length > 10 ? `<div class="text-center text-[11px] text-neutral-400 mt-2">+ ${orders.length - 10} more orders included in exported CSV</div>` : ""}
+        `;
+      } else if (reportType === "pnl") {
+        const cogs = gross * 0.35;
+        const grossProfit = net - cogs;
+        const overhead = gross * 0.20;
+        const netProfit = grossProfit - overhead;
+
+        body.innerHTML = `
+          <div class="space-y-2 text-xs">
+            <div class="p-3 rounded-xl bg-neutral-50 border border-neutral-200 space-y-2">
+              <div class="flex justify-between font-bold text-neutral-900 text-sm pb-1 border-b border-neutral-200">
+                <span>Gross Realized Sales</span>
+                <span class="font-numeric">₹${gross.toFixed(2)}</span>
+              </div>
+              <div class="flex justify-between text-neutral-600">
+                <span>Discounts Given</span>
+                <span class="font-numeric text-red-600">-₹${discounts.toFixed(2)}</span>
+              </div>
+              <div class="flex justify-between text-neutral-600">
+                <span>Est. Cost of Goods (COGS 35%)</span>
+                <span class="font-numeric text-red-600">-₹${cogs.toFixed(2)}</span>
+              </div>
+              <div class="flex justify-between font-bold text-emerald-700 pt-1 border-t border-neutral-200">
+                <span>Gross Operating Profit (65%)</span>
+                <span class="font-numeric">₹${grossProfit.toFixed(2)}</span>
+              </div>
+              <div class="flex justify-between text-neutral-600">
+                <span>Est. Kitchen & Staff Overhead (20%)</span>
+                <span class="font-numeric text-neutral-600">-₹${overhead.toFixed(2)}</span>
+              </div>
+              <div class="flex justify-between font-bold text-sm text-neutral-900 pt-1.5 border-t-2 border-neutral-300">
+                <span>Net Estimated Margin</span>
+                <span class="font-numeric text-emerald-600">₹${netProfit.toFixed(2)} (${gross > 0 ? ((netProfit / gross) * 100).toFixed(1) : 0}%)</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (reportType === "items") {
+        const itemMap = {};
+        orders.forEach(o => {
+          (o.items || []).forEach(it => {
+            const name = it.name || it.title || "Item";
+            const qty = Number(it.qty || 1);
+            const price = Number(it.price || 0);
+            if (!itemMap[name]) itemMap[name] = { name, qty: 0, revenue: 0, price };
+            itemMap[name].qty += qty;
+            itemMap[name].revenue += qty * price;
+          });
+        });
+        const ranked = Object.values(itemMap).sort((a, b) => b.qty - a.qty);
+        body.innerHTML = `
+          <div class="overflow-x-auto rounded-xl border border-neutral-200">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-neutral-100 font-headline font-bold text-neutral-600">
+                <tr>
+                  <th class="p-2">Rank</th>
+                  <th class="p-2">Item Name</th>
+                  <th class="p-2 text-right">Units Sold</th>
+                  <th class="p-2 text-right">Revenue</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-neutral-100">
+                ${ranked.slice(0, 15).map((it, idx) => `
+                  <tr class="hover:bg-neutral-50">
+                    <td class="p-2 font-bold text-neutral-400">#${idx + 1}</td>
+                    <td class="p-2 font-bold text-neutral-800">${it.name}</td>
+                    <td class="p-2 text-right font-numeric font-bold text-orange-600">${it.qty}</td>
+                    <td class="p-2 text-right font-numeric font-bold text-neutral-900">₹${it.revenue.toFixed(2)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+    }
+
+    function triggerDownloadFromPreview() {
+      exportReport(currentPreviewReportType);
+    }
+
+    function closeReportPreviewModal() {
+      document.getElementById("modal-report-preview")?.classList.add("hidden");
     }
 
     // --- MENU / CATALOG & CATEGORY CONTROLLER ---
@@ -6472,16 +7164,19 @@
       const newOrderId = prefix + (146 + appState.orders.length).toString();
       const tStr = String(appState.customerSelectedTable).padStart(2, "0");
 
+      const now = new Date();
       const newOrder = {
         id: newOrderId,
         type: `Dine-in • Table ${tStr}`,
         timeAgo: "Just now",
-        receivedTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        receivedTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        createdAt: now.toISOString(),
+        date: now.toISOString().split("T")[0],
         customer: name + (phone ? ` (+91 ${phone})` : ""),
         customerName: name,
         customerPhone: phone,
         paymentStatus: "PENDING (Pay at Counter/UPI)",
-        items: appState.customerCart.map(c => ({ qty: c.qty, name: c.title, price: c.price })),
+        items: appState.customerCart.map(c => ({ qty: c.qty, name: c.title, price: c.price, category: c.category || "General Menu" })),
         subtotal: total,
         discount: discount > 0 ? {
           label: appState.customerAppliedOffer?.code || "Offer",
@@ -8754,6 +9449,7 @@
       renderAdminRestaurantsList();
       renderAdminSaaSMetrics();
       renderOutletSwitcherList();
+      initReportMonthDropdown();
 
       if (notify) {
         showToast(`Switched active outlet to "${rest.name}"!`);
@@ -8957,6 +9653,8 @@
       renderAdminSaaSMetrics();
       renderOutletSwitcherList();
       updateSupabaseCloudUI();
+      updateLiveSyncIndicator();
+      initReportMonthDropdown();
 
       // Always launch the Login Screen on startup
       showLoginModal();
@@ -8968,6 +9666,20 @@
         setupCloudRealtime();
       }
     }
+
+    // Network connectivity real-time event listeners (NetInfo / NetworkInfo Web standard)
+    window.addEventListener("online", () => {
+      updateLiveSyncIndicator();
+      showToast("Online: Live cloud sync connected", "cloud_done");
+      if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG?.isConfigured) {
+        window.PlatePilotCloud.syncAllData(appState.activeRestaurantId).catch(console.warn);
+      }
+    });
+
+    window.addEventListener("offline", () => {
+      updateLiveSyncIndicator();
+      showToast("Offline: Local cache active", "cloud_off");
+    });
 
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", initApp);
