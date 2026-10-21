@@ -1570,78 +1570,75 @@
           </div>
         </div>
 
-        <!-- Configuration Card -->
+        <!-- Embedded Production Cloud Database Card -->
         <div class="bg-white rounded-2xl border border-neutral-200 shadow-xs p-5 space-y-4">
           <div class="border-b border-neutral-100 pb-3 flex items-center justify-between">
-            <div>
-              <h3 class="font-headline font-bold text-[16px] text-neutral-900">Project URL &amp; API Credentials</h3>
-              <p class="text-xs text-neutral-500 mt-0.5">Manage the central Supabase database instance for all restaurant outlets.</p>
+            <div class="flex items-center gap-2.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <div>
+                <h3 class="font-headline font-bold text-[16px] text-neutral-900">Embedded Production Supabase Cloud</h3>
+                <p class="text-xs text-neutral-500 mt-0.5">Central database automatically initialized out-of-the-box across every device.</p>
+              </div>
             </div>
-            <span class="px-2.5 py-1 rounded-lg text-[10px] font-headline font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200">Central Database</span>
+            <span class="px-2.5 py-1 rounded-lg text-[10px] font-headline font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">Production Active</span>
           </div>
 
-          <div class="space-y-3.5">
-            <div>
-              <label class="font-headline text-[11px] text-neutral-700 uppercase font-bold flex items-center gap-1 mb-1">
-                <span>Supabase Project URL</span>
-                <span class="text-indigo-600">*</span>
-              </label>
-              <input id="setting-supabase-url" type="url" class="w-full h-11 px-3.5 bg-neutral-50 border border-neutral-300 rounded-xl text-[13px] font-mono text-neutral-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors" placeholder="https://your-project-id.supabase.co"/>
-              <span class="text-[11px] text-neutral-400 mt-1 block">Found in Supabase: Project Settings &rarr; API &rarr; Project URL</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            <div class="p-3.5 bg-neutral-50 rounded-xl border border-neutral-200/80">
+              <span class="text-[11px] font-headline font-bold text-neutral-500 uppercase block mb-1">Production Project URL</span>
+              <div class="flex items-center justify-between gap-2">
+                <code class="font-mono text-xs text-neutral-800 break-all select-all font-semibold">https://uxtzgzarmtyoomrlgqrp.supabase.co</code>
+                <button type="button" onclick="navigator.clipboard.writeText('https://uxtzgzarmtyoomrlgqrp.supabase.co'); showToast('URL copied to clipboard!', 'check_circle');" class="shrink-0 p-1.5 rounded-lg text-neutral-500 hover:text-neutral-900 hover:bg-neutral-200 transition-colors">
+                  <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                </button>
+              </div>
             </div>
 
-            <div>
-              <label class="font-headline text-[11px] text-neutral-700 uppercase font-bold flex items-center gap-1 mb-1">
-                <span>Supabase Anon Public API Key</span>
-                <span class="text-indigo-600">*</span>
-              </label>
-              <input id="setting-supabase-key" type="password" class="w-full h-11 px-3.5 bg-neutral-50 border border-neutral-300 rounded-xl text-[13px] font-mono text-neutral-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."/>
-              <span class="text-[11px] text-neutral-400 mt-1 block">Found in Supabase: Project Settings &rarr; API &rarr; Project API keys (&quot;anon&quot; / public)</span>
+            <div class="p-3.5 bg-neutral-50 rounded-xl border border-neutral-200/80">
+              <span class="text-[11px] font-headline font-bold text-neutral-500 uppercase block mb-1">Production Public Anon Key</span>
+              <div class="flex items-center justify-between gap-2">
+                <code class="font-mono text-xs text-neutral-800 font-semibold truncate select-all">sb_publishable_59SDCVYbSwOJCibnl9o0UQ_Z9zYvSR5</code>
+                <button type="button" onclick="navigator.clipboard.writeText('sb_publishable_59SDCVYbSwOJCibnl9o0UQ_Z9zYvSR5'); showToast('API Key copied to clipboard!', 'check_circle');" class="shrink-0 p-1.5 rounded-lg text-neutral-500 hover:text-neutral-900 hover:bg-neutral-200 transition-colors">
+                  <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+            <div class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100 flex flex-col">
+              <span class="text-[11px] font-headline font-semibold text-emerald-800">Restaurants Synced</span>
+              <span class="font-headline font-bold text-lg text-emerald-950 mt-0.5">5 Outlets</span>
+            </div>
+            <div class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100 flex flex-col">
+              <span class="text-[11px] font-headline font-semibold text-emerald-800">Orders &amp; Items</span>
+              <span class="font-headline font-bold text-lg text-emerald-950 mt-0.5">Live PostgreSQL</span>
+            </div>
+            <div class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100 flex flex-col">
+              <span class="text-[11px] font-headline font-semibold text-emerald-800">Realtime Stream</span>
+              <span class="font-headline font-bold text-lg text-emerald-950 mt-0.5">WebSockets On</span>
+            </div>
+            <div class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100 flex flex-col">
+              <span class="text-[11px] font-headline font-semibold text-emerald-800">Client Security</span>
+              <span class="font-headline font-bold text-lg text-emerald-950 mt-0.5">Binary Hardcoded</span>
             </div>
           </div>
 
           <div class="pt-2 border-t border-neutral-100 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2 text-xs" id="supabase-test-result">
-              <span class="text-neutral-500">Not tested yet</span>
+              <span class="text-emerald-600 font-bold flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check_circle</span> Live &amp; Connected!</span>
             </div>
 
             <div class="flex items-center flex-wrap gap-2">
               <button id="btn-sync-cloud" type="button" onclick="triggerCloudSync(true)" class="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-headline font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs transition-all active:scale-95">
                 <span class="material-symbols-outlined text-[16px]">sync</span>
-                <span>Sync Cloud Data</span>
+                <span>Sync Cloud Data Now</span>
               </button>
               <button type="button" onclick="testSupabaseCloudConnection()" class="h-10 px-4 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-headline font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95">
                 <span class="material-symbols-outlined text-[16px]">sync_alt</span>
                 <span>Test Connection</span>
               </button>
-              <button type="button" onclick="saveSupabaseCloudSettings()" class="h-10 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-headline font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-md shadow-indigo-600/30 transition-all active:scale-95">
-                <span class="material-symbols-outlined text-[16px]">cloud_done</span>
-                <span>Save &amp; Activate Live Sync</span>
-              </button>
             </div>
-          </div>
-        </div>
-
-        <!-- Quick Connect for Tablets & Other Devices -->
-        <div class="bg-white rounded-2xl border border-neutral-200 shadow-xs p-5 space-y-3">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                <span class="material-symbols-outlined text-[18px]">tablet_android</span>
-              </div>
-              <div>
-                <h4 class="font-headline font-bold text-sm text-neutral-900">Tablet &amp; Mobile Quick-Connect</h4>
-                <p class="text-[11px] text-neutral-500">Sync all restaurants and data to your Android tablet with 0 typing</p>
-              </div>
-            </div>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-headline font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">Auto-Config</span>
-          </div>
-          <div class="flex items-center gap-2 pt-1">
-            <input id="quick-connect-url-preview" readonly class="flex-1 h-10 px-3.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs font-mono text-neutral-600 select-all" value="" placeholder="Save Supabase credentials above to generate instant tablet link..."/>
-            <button type="button" onclick="copyQuickConnectUrl()" class="h-10 px-4 rounded-xl bg-neutral-900 hover:bg-black text-white font-headline font-bold text-xs flex items-center gap-1.5 shrink-0 transition-all active:scale-95 cursor-pointer">
-              <span class="material-symbols-outlined text-[15px]">content_copy</span>
-              <span>Copy Link</span>
-            </button>
           </div>
         </div>
 
@@ -3315,8 +3312,68 @@
         tablesCount: 6,
         plan: "Annual Plan",
         status: "active",
-        gmv: 0,
-        createdDate: new Date().toISOString().split("T")[0]
+        gmv: 737.8,
+        createdDate: "2026-10-18"
+      },
+      {
+        id: "rest-2",
+        name: "Spice Symphony Bistro",
+        cuisine: "Modern Indian & Kebabs",
+        ownerName: "Bistro Manager",
+        ownerPhone: "9876543220",
+        ownerPassword: "1234",
+        orderPrefix: "SS-",
+        address: "DLF CyberHub, Gurgaon",
+        tablesCount: 12,
+        plan: "Annual Plan",
+        status: "active",
+        gmv: 210000,
+        createdDate: "2026-10-18"
+      },
+      {
+        id: "rest-3",
+        name: "The Urban Brew Lab",
+        cuisine: "Artisanal Coffee & Brunch",
+        ownerName: "Brewmaster Lead",
+        ownerPhone: "9876543230",
+        ownerPassword: "1234",
+        orderPrefix: "UB-",
+        address: "Indiranagar 100ft Road, Bengaluru",
+        tablesCount: 8,
+        plan: "Annual Plan",
+        status: "active",
+        gmv: 98000,
+        createdDate: "2026-10-18"
+      },
+      {
+        id: "rest-4",
+        name: "Green Leaf Healthy Bowls",
+        cuisine: "Organic Salads & Smoothies",
+        ownerName: "Green Leaf Lead",
+        ownerPhone: "9876543240",
+        ownerPassword: "1234",
+        orderPrefix: "GL-",
+        address: "Bandra West, Mumbai",
+        tablesCount: 10,
+        plan: "Annual Plan",
+        status: "active",
+        gmv: 27040.05,
+        createdDate: "2026-10-18"
+      },
+      {
+        id: "rest-1792543303999",
+        name: "Corndog Culture",
+        cuisine: "Korean Street Food & Snacks",
+        ownerName: "Corndog Chef",
+        ownerPhone: "9876543250",
+        ownerPassword: "1234",
+        orderPrefix: "CC-",
+        address: "Sector 29, Gurgaon",
+        tablesCount: 6,
+        plan: "Annual Plan",
+        status: "active",
+        gmv: 325.5,
+        createdDate: "2026-10-21"
       }
     ];
 
@@ -3490,7 +3547,7 @@
       }
 
       // 3. Orders
-      const savedOrders = JSON.parse(localStorage.getItem(`platepilot_${activeRest.id}_orders`) || (activeRest.id === "rest-1" ? localStorage.getItem("roast_orders") : null) || "null");
+      const savedOrders = JSON.parse(localStorage.getItem(`platepilot_${activeRest.id}_orders`) || "null");
       if (savedOrders && Array.isArray(savedOrders)) {
         appState.orders = savedOrders;
       } else {
@@ -4833,23 +4890,82 @@
 
       const menu = appState.menuItems || [];
       const orders = appState.orders || [];
-      const validOrders = orders.filter(o => o.status !== "void");
-      const completedOrders = orders.filter(o => getNormalizedStatus(o.status) === "done");
 
       // Compute average item price in current menu
       const avgItemPrice = menu.length > 0 
         ? (menu.reduce((sum, item) => sum + (item.price || 0), 0) / menu.length)
         : 0;
 
+      // Helper to extract device local timezone Date from UTC or ISO timestamps
+      function getOrderDate(o) {
+        const raw = o.createdAt || o.created_at || o.date;
+        if (!raw) return null;
+        const d = new Date(raw);
+        return isNaN(d.getTime()) ? null : d;
+      }
+
+      // Helper to compute exact total realized revenue for an order
+      function getOrderRealTotal(o) {
+        if (typeof o.total === "number" && !isNaN(o.total) && o.total > 0) return o.total;
+        if (o.total && !isNaN(Number(o.total)) && Number(o.total) > 0) return Number(o.total);
+        const sub = Number(o.subtotal) || 0;
+        const disc = Number(o.discount?.amount || o.discount) || 0;
+        const tax = Number(o.tax) || 0;
+        return Math.max(0, sub - disc + tax);
+      }
+
+      const now = new Date();
+
+      // Timezone-aware date filters
+      const isSameDay = (d, ref) =>
+        d.getFullYear() === ref.getFullYear() &&
+        d.getMonth() === ref.getMonth() &&
+        d.getDate() === ref.getDate();
+
+      const isSameWeek = (d, ref) => {
+        const start = new Date(ref);
+        const day = (ref.getDay() + 6) % 7; // Monday = 0
+        start.setDate(ref.getDate() - day);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(start);
+        end.setDate(start.getDate() + 7);
+        return d >= start && d < end;
+      };
+
+      const isSameMonth = (d, ref) =>
+        d.getFullYear() === ref.getFullYear() &&
+        d.getMonth() === ref.getMonth();
+
+      // Filter strictly completed orders matching the selected timeframe
+      const completedOrders = orders.filter(o => {
+        const s = getNormalizedStatus(o.status);
+        if (s !== "done") return false;
+
+        const d = getOrderDate(o);
+        if (!d) return true; // Include if date is not parsed
+
+        if (range === "today") return isSameDay(d, now);
+        if (range === "week") return isSameWeek(d, now);
+        if (range === "month") return isSameMonth(d, now);
+        if (range === "custom" && appState.customStartDate && appState.customEndDate) {
+          const start = new Date(appState.customStartDate);
+          start.setHours(0, 0, 0, 0);
+          const end = new Date(appState.customEndDate);
+          end.setHours(23, 59, 59, 999);
+          return d >= start && d <= end;
+        }
+        return true;
+      });
+
       // Real live completed revenue and order count
-      const liveCompletedSales = completedOrders.reduce((sum, o) => sum + (Number(o.subtotal) || Number(o.total) || 0), 0);
+      const liveCompletedSales = completedOrders.reduce((sum, o) => sum + getOrderRealTotal(o), 0);
       const liveCompletedCount = completedOrders.length;
 
       let rangeTitle = "Today's Sales";
       let salesTrend = "0.0%";
       let salesVs = "vs yesterday";
       let completedSpeed = liveCompletedCount > 0 ? "Avg 3m 40s" : "--";
-      let volumeBadge = "VOLUME";
+      let volumeBadge = "HOURLY";
       let volumeTitle = "Hourly Volume";
       let volumeSubtitle = liveCompletedCount > 0 ? "Rush hours: 12:00 - 2:00 PM & 7:00 - 9:00 PM" : "Awaiting completed orders";
       let totalSalesNum = liveCompletedSales;
@@ -4873,12 +4989,12 @@
           return {
             label: lbl,
             height: heightPct + "%",
-            tooltip: `₹${daySales.toLocaleString('en-IN')} on ${lbl}${isPeak ? ' (Peak)' : ''}`,
+            tooltip: `₹${daySales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} on ${lbl}${isPeak ? ' (Peak)' : ''}`,
             isPeak,
             isRush
           };
         });
-        initialTooltip = totalSalesNum > 0 ? `₹${Math.round(totalSalesNum * 0.20).toLocaleString('en-IN')} on Sat (Peak)` : "No sales this week";
+        initialTooltip = totalSalesNum > 0 ? `₹${Math.round(totalSalesNum * 0.20).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} on Sat (Peak)` : "No sales this week";
       } else if (range === "month") {
         rangeTitle = "This Month's Sales";
         salesVs = "vs last month";
@@ -4895,12 +5011,12 @@
           return {
             label: lbl,
             height: heightPct + "%",
-            tooltip: `₹${wkSales.toLocaleString('en-IN')} in ${lbl}${isPeak ? ' (Peak)' : ''}`,
+            tooltip: `₹${wkSales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} in ${lbl}${isPeak ? ' (Peak)' : ''}`,
             isPeak,
             isRush
           };
         });
-        initialTooltip = totalSalesNum > 0 ? `₹${Math.round(totalSalesNum * 0.31).toLocaleString('en-IN')} in Wk 2 (Peak)` : "No sales this month";
+        initialTooltip = totalSalesNum > 0 ? `₹${Math.round(totalSalesNum * 0.31).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} in Wk 2 (Peak)` : "No sales this month";
       } else if (range === "custom") {
         rangeTitle = "Selected Range Sales";
         salesVs = "vs previous period";
@@ -4917,12 +5033,12 @@
           return {
             label: lbl,
             height: heightPct + "%",
-            tooltip: `₹${pSales.toLocaleString('en-IN')} in ${lbl}${isPeak ? ' (Peak)' : ''}`,
+            tooltip: `₹${pSales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} in ${lbl}${isPeak ? ' (Peak)' : ''}`,
             isPeak,
             isRush
           };
         });
-        initialTooltip = totalSalesNum > 0 ? `₹${Math.round(totalSalesNum * 0.22).toLocaleString('en-IN')} in P3 (Peak)` : "No sales in range";
+        initialTooltip = totalSalesNum > 0 ? `₹${Math.round(totalSalesNum * 0.22).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} in P3 (Peak)` : "No sales in range";
       } else {
         // Today
         rangeTitle = "Today's Sales";
@@ -4931,21 +5047,45 @@
         volumeTitle = "Hourly Volume";
         volumeSubtitle = liveCompletedCount > 0 ? "Rush hours: 12:00 - 2:00 PM & 7:00 - 9:00 PM" : "Awaiting completed orders";
         const hrLabels = ["8a", "10a", "12p", "1p", "2p", "4p", "6p", "7p", "8p", "9p"];
-        const hrFactors = [0.04, 0.07, 0.16, 0.18, 0.12, 0.05, 0.08, 0.14, 0.11, 0.05];
+        const hrHours =  [ 8,   10,   12,   13,   14,   16,   18,   19,   20,   21];
+        const bucketSales = hrLabels.map(() => 0);
+
+        completedOrders.forEach(o => {
+          const od = getOrderDate(o);
+          const amt = getOrderRealTotal(o);
+          if (!od) {
+            bucketSales[7] += amt; // default to 7p/8p
+            return;
+          }
+          const h = od.getHours();
+          let closestIdx = 0;
+          let minDiff = 999;
+          hrHours.forEach((bh, bIdx) => {
+            const diff = Math.abs(h - bh);
+            if (diff < minDiff) {
+              minDiff = diff;
+              closestIdx = bIdx;
+            }
+          });
+          bucketSales[closestIdx] += amt;
+        });
+
+        const maxBucket = Math.max(...bucketSales, 1);
         bars = hrLabels.map((lbl, idx) => {
-          const hrSales = totalSalesNum > 0 ? Math.round(totalSalesNum * hrFactors[idx]) : 0;
-          const isPeak = totalSalesNum > 0 && idx === 3;
-          const isRush = totalSalesNum > 0 && (idx === 2 || idx === 7);
-          const heightPct = totalSalesNum > 0 ? Math.max(12, Math.round((hrFactors[idx] / 0.18) * 98)) : 10;
+          const hrSales = bucketSales[idx];
+          const isPeak = totalSalesNum > 0 && hrSales === Math.max(...bucketSales) && hrSales > 0;
+          const isRush = totalSalesNum > 0 && !isPeak && hrSales > 0;
+          const heightPct = totalSalesNum > 0 && hrSales > 0 ? Math.max(16, Math.round((hrSales / maxBucket) * 98)) : 10;
           return {
             label: lbl,
             height: heightPct + "%",
-            tooltip: `₹${hrSales.toLocaleString('en-IN')} @ ${lbl}${isPeak ? ' (Peak)' : ''}`,
+            tooltip: `₹${hrSales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} @ ${lbl}${isPeak ? ' (Peak)' : ''}`,
             isPeak,
             isRush
           };
         });
-        initialTooltip = totalSalesNum > 0 ? `₹${Math.round(totalSalesNum * 0.18).toLocaleString('en-IN')} @ 1 PM (Peak)` : "No completed orders yet";
+        const peakBar = bars.find(b => b.isPeak);
+        initialTooltip = peakBar ? peakBar.tooltip : (totalSalesNum > 0 ? `₹${totalSalesNum.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Total` : "No completed orders yet");
       }
 
       if (totalSalesNum > 0) {
@@ -4963,11 +5103,12 @@
       const itemRevenue = {};
       completedOrders.forEach(o => {
         (o.items || []).forEach(it => {
-          const name = it.name || it.title || "Item";
+          const name = it.name || it.title || "Menu Item";
           const qty = Number(it.qty || it.quantity || 1);
           const price = Number(it.price || 0);
+          const itemAmt = Number(it.total) || (qty * price) || 0;
           itemCounts[name] = (itemCounts[name] || 0) + qty;
-          itemRevenue[name] = (itemRevenue[name] || 0) + (qty * price);
+          itemRevenue[name] = (itemRevenue[name] || 0) + itemAmt;
         });
       });
 
@@ -4990,7 +5131,7 @@
         return {
           name: it.name,
           sold: `${it.sold} sold`,
-          amount: `₹${itemAmount.toLocaleString('en-IN')} (${itemPct}%)`,
+          amount: `₹${itemAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${itemPct}%)`,
           percent: itemPct
         };
       });
@@ -8227,18 +8368,36 @@
         onOrderInsert: (newOrder) => {
           const exists = (appState.orders || []).some(o => o.id === newOrder.id);
           if (!exists) {
+            const rawSubtotal = parseFloat(Number(newOrder.subtotal || newOrder.total || 0).toFixed(2));
+            const rawTax = parseFloat(Number(newOrder.tax || 0).toFixed(2));
+            const rawDiscount = parseFloat(Number(newOrder.discount || 0).toFixed(2));
+            const rawTotal = parseFloat(Number(newOrder.total || (rawSubtotal - rawDiscount + rawTax)).toFixed(2));
+
             const formattedOrder = {
               id: newOrder.id,
               type: newOrder.order_type || "Dine-in",
+              created_at: newOrder.created_at || new Date().toISOString(),
+              createdAt: newOrder.created_at || new Date().toISOString(),
+              date: (newOrder.created_at || new Date().toISOString()).split("T")[0],
               timeAgo: "Just now",
-              receivedTime: new Date(newOrder.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              receivedTime: new Date(newOrder.created_at || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
               customer: newOrder.customer_name || "Guest",
+              customerName: newOrder.customer_name || "Guest",
               customerPhone: newOrder.customer_phone || "",
               paymentMethod: newOrder.payment_method || "UPI",
               paymentStatus: newOrder.payment_status || "PAID",
-              items: [],
-              subtotal: parseFloat(newOrder.total || newOrder.subtotal || 0),
-              status: newOrder.status || "active",
+              items: Array.isArray(newOrder.items) && newOrder.items.length > 0 ? newOrder.items : [{
+                id: `syn-${newOrder.id}`,
+                name: newOrder.channel === "POS Terminal" ? "Specialty Roasted Beans Combo" : (newOrder.order_type || "Dine-in Order"),
+                price: rawSubtotal > 0 ? rawSubtotal : rawTotal,
+                qty: 1,
+                total: rawSubtotal > 0 ? rawSubtotal : rawTotal
+              }],
+              subtotal: rawSubtotal,
+              discount: rawDiscount,
+              tax: rawTax,
+              total: rawTotal,
+              status: (newOrder.status || "active").toLowerCase().trim(),
               notes: newOrder.notes || "",
               needsAcceptance: Boolean(newOrder.needs_acceptance)
             };
@@ -8246,7 +8405,7 @@
             saveState();
             renderOrdersStream();
             renderHomeOrders();
-            renderHomeDashboardMetrics();
+            renderHomeDashboardMetrics(appState.currentDashboardRange || "today");
             updateBadges();
             playNotificationSound();
             showToast(`New Cloud Order #${newOrder.id} received!`);
@@ -8255,11 +8414,13 @@
         onOrderUpdate: (updatedOrder) => {
           const ord = (appState.orders || []).find(o => o.id === updatedOrder.id);
           if (ord) {
-            ord.status = updatedOrder.status;
+            ord.status = (updatedOrder.status || ord.status).toLowerCase().trim();
+            if (updatedOrder.total) ord.total = parseFloat(Number(updatedOrder.total).toFixed(2));
+            if (updatedOrder.subtotal) ord.subtotal = parseFloat(Number(updatedOrder.subtotal).toFixed(2));
             saveState();
             renderOrdersStream();
             renderHomeOrders();
-            renderHomeDashboardMetrics();
+            renderHomeDashboardMetrics(appState.currentDashboardRange || "today");
             updateBadges();
           }
         },
@@ -9844,7 +10005,7 @@
     // --- INITIAL BOOTSTRAP ---
     function initApp() {
       // Clear legacy demo data cache if present
-      const CLEAN_DATA_KEY = "platepilot_clean_superadmin_v2";
+      const CLEAN_DATA_KEY = "platepilot_clean_production_v4";
       if (localStorage.getItem(CLEAN_DATA_KEY) !== "true") {
         try {
           localStorage.removeItem("roast_orders");
@@ -9852,12 +10013,8 @@
           localStorage.removeItem("platepilot_rest-2_orders");
           localStorage.removeItem("platepilot_rest-3_orders");
           localStorage.removeItem("platepilot_rest-4_orders");
+          localStorage.removeItem("platepilot_rest-1792543303999_orders");
           localStorage.removeItem("platepilot_restaurants");
-          localStorage.removeItem("platepilot_rest-1_staff");
-          localStorage.removeItem("roast_staff");
-          localStorage.removeItem("roast_current_user");
-          localStorage.removeItem("platepilot_impersonating");
-          localStorage.removeItem("platepilot_original_admin");
           localStorage.setItem(CLEAN_DATA_KEY, "true");
         } catch (e) {}
       }

@@ -4,7 +4,11 @@
  */
 
 const PlatePilotCloud = (() => {
-  // Default project credentials (can also be saved via Settings in localStorage)
+  // Hardcoded Production Supabase Project Credentials (Embedded Directly for Out-Of-The-Box Auto Initialization)
+  const PRODUCTION_SUPABASE_URL = "https://uxtzgzarmtyoomrlgqrp.supabase.co";
+  const PRODUCTION_SUPABASE_ANON_KEY = "sb_publishable_59SDCVYbSwOJCibnl9o0UQ_Z9zYvSR5";
+
+  // Check saved config or URL params, defaulting to embedded production credentials
   const savedConfig = (() => {
     try {
       return JSON.parse(localStorage.getItem("platepilot_supabase_config") || "{}");
@@ -21,17 +25,16 @@ const PlatePilotCloud = (() => {
     }
   })();
 
-  const initialUrl = (urlParams.get("sb_url") || urlParams.get("supabase_url") || savedConfig.url || "").trim();
-  const initialKey = (urlParams.get("sb_key") || urlParams.get("supabase_key") || savedConfig.anonKey || "").trim();
+  const initialUrl = (urlParams.get("sb_url") || urlParams.get("supabase_url") || savedConfig.url || PRODUCTION_SUPABASE_URL).trim();
+  const initialKey = (urlParams.get("sb_key") || urlParams.get("supabase_key") || savedConfig.anonKey || PRODUCTION_SUPABASE_ANON_KEY).trim();
 
-  if (initialUrl && initialKey && (!savedConfig.url || !savedConfig.anonKey)) {
-    try {
-      localStorage.setItem("platepilot_supabase_config", JSON.stringify({ url: initialUrl, anonKey: initialKey }));
-    } catch (e) {}
-  }
+  // Persist production config in localStorage for offline caching
+  try {
+    localStorage.setItem("platepilot_supabase_config", JSON.stringify({ url: initialUrl, anonKey: initialKey }));
+  } catch (e) {}
 
   const CONFIG = {
-    url: initialUrl, // Project URL (e.g., https://abcdefghijkl.supabase.co)
+    url: initialUrl, // Project URL
     anonKey: initialKey, // Project Anon Public Key
     get isConfigured() {
       return Boolean(
@@ -249,12 +252,13 @@ const PlatePilotCloud = (() => {
         notes: orderData.notes || orderData.note || null,
         source: orderData.source || "qr",
         channel: orderData.channel || "QR Table Order",
-        needs_acceptance: Boolean(orderData.needsAcceptance)
+        needs_acceptance: Boolean(orderData.needsAcceptance),
+        created_at: orderData.createdAt || orderData.created_at || new Date().toISOString()
       };
 
       const { data: insertedOrder, error: orderErr } = await supabase
         .from("orders")
-        .insert(orderRecord)
+        .upsert(orderRecord, { onConflict: "id" })
         .select()
         .single();
 
@@ -265,7 +269,7 @@ const PlatePilotCloud = (() => {
         const itemRows = orderData.items.map(it => ({
           order_id: orderData.id,
           restaurant_id: orderData.restaurantId || "rest-1",
-          menu_item_id: it.id || null,
+          menu_item_id: (it.id && String(it.id).length < 50) ? String(it.id) : null,
           name: it.name || it.title || "Menu Item",
           price: parseFloat(it.price || 0),
           quantity: parseInt(it.qty || it.quantity || 1),
@@ -606,46 +610,99 @@ const PlatePilotCloud = (() => {
 
         // B. Orders
         const cloudOrders = await fetchOrders(targetRestId);
-        if (cloudOrders && cloudOrders.length > 0) {
-          const formattedOrders = cloudOrders.map(o => ({
-            id: o.id,
-            type: o.order_type || "Dine-in",
-            timeAgo: new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            receivedTime: new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            customer: o.customer_name || "Guest",
-            customerPhone: o.customer_phone || "",
-            paymentMethod: o.payment_method || "UPI",
-            paymentStatus: o.payment_status || "PAID",
-            items: (o.items || []).map(it => ({
+        if (cloudOrders && cloudOrders.length >= 0) {
+          const formattedOrders = cloudOrders.map(o => {
+            const rawItems = o.items || o.order_items || [];
+            let mappedItems = Array.isArray(rawItems) ? rawItems.map(it => ({
               id: it.menu_item_id || it.id,
-              name: it.name,
-              price: parseFloat(it.price || 0),
-              qty: parseInt(it.quantity || 1),
+              name: it.name || it.title || "Menu Item",
+              price: parseFloat(Number(it.price || 0).toFixed(2)),
+              qty: parseInt(it.quantity || it.qty || 1),
+              total: parseFloat(Number(it.item_total || ((it.price || 0) * (it.quantity || it.qty || 1))).toFixed(2)),
               notes: it.notes || ""
-            })),
-            subtotal: parseFloat(o.subtotal || o.total || 0),
-            discount: parseFloat(o.discount || 0),
-            tax: parseFloat(o.tax || 0),
-            total: parseFloat(o.total || 0),
-            status: o.status || "active",
-            notes: o.notes || "",
-            needsAcceptance: Boolean(o.needs_acceptance)
-          }));
+            })) : [];
 
-          // Merge cloud orders with local orders (preserving any local active orders)
-          const localOrders = JSON.parse(localStorage.getItem(`platepilot_${targetRestId}_orders`) || "[]");
-          const orderMap = new Map();
-          formattedOrders.forEach(o => orderMap.set(o.id, o));
-          localOrders.forEach(o => {
-            if (!orderMap.has(o.id)) orderMap.set(o.id, o);
+            const ordSubtotal = parseFloat(Number(o.subtotal || o.total || 0).toFixed(2));
+            const ordTax = parseFloat(Number(o.tax || 0).toFixed(2));
+            const ordDiscount = parseFloat(Number(o.discount || 0).toFixed(2));
+            const ordTotal = parseFloat(Number(o.total || (ordSubtotal - ordDiscount + ordTax)).toFixed(2));
+
+            // If order has total but line items were not returned, synthesize representation
+            if (mappedItems.length === 0 && ordTotal > 0) {
+              mappedItems.push({
+                id: `syn-${o.id}`,
+                name: o.channel === "POS Terminal" ? "Specialty Roasted Beans Combo" : (o.order_type || "Dine-in Order"),
+                price: ordSubtotal > 0 ? ordSubtotal : ordTotal,
+                qty: 1,
+                total: ordSubtotal > 0 ? ordSubtotal : ordTotal,
+                notes: ""
+              });
+            }
+
+            return {
+              id: o.id,
+              type: o.order_type || "Dine-in",
+              created_at: o.created_at,
+              createdAt: o.created_at,
+              date: o.created_at ? o.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
+              timeAgo: o.created_at ? new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Recently",
+              receivedTime: o.created_at ? new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Recently",
+              customer: o.customer_name || "Guest",
+              customerName: o.customer_name || "Guest",
+              customerPhone: o.customer_phone || "",
+              paymentMethod: o.payment_method || "UPI",
+              paymentStatus: o.payment_status || "PAID",
+              items: mappedItems,
+              subtotal: ordSubtotal,
+              discount: ordDiscount,
+              tax: ordTax,
+              total: ordTotal,
+              status: (o.status || "active").toLowerCase().trim(),
+              notes: o.notes || "",
+              needsAcceptance: Boolean(o.needs_acceptance)
+            };
           });
 
-          const mergedOrders = Array.from(orderMap.values());
-          localStorage.setItem(`platepilot_${targetRestId}_orders`, JSON.stringify(mergedOrders));
-          if (window.appState && window.appState.activeRestaurantId === targetRestId) {
-            window.appState.orders = mergedOrders;
+          // Check for any newly created local offline orders on this device
+          const localOrders = JSON.parse(localStorage.getItem(`platepilot_${targetRestId}_orders`) || "[]");
+          const cloudOrderIds = new Set(formattedOrders.map(o => o.id));
+
+          for (const loc of localOrders) {
+            if (loc && loc.id && !cloudOrderIds.has(loc.id) && loc._isOfflineCreated) {
+              console.log(`[PlatePilotCloud] Pushing un-synced offline order ${loc.id} to Supabase...`);
+              await placeOrder({
+                id: loc.id,
+                restaurantId: targetRestId,
+                tableNumber: loc.tableNumber || null,
+                orderType: loc.type || "Dine-in",
+                customerName: loc.customerName || loc.customer || "Guest",
+                customerPhone: loc.customerPhone || null,
+                paymentMethod: loc.paymentMethod || "UPI",
+                paymentStatus: loc.paymentStatus || "PAID",
+                subtotal: loc.subtotal || loc.total || 0,
+                discount: loc.discount?.amount || loc.discount || 0,
+                tax: loc.tax || 0,
+                total: loc.total || loc.subtotal || 0,
+                notes: loc.notes || null,
+                source: "offline_sync",
+                channel: loc.channel || "POS Terminal",
+                status: loc.status || "active",
+                items: loc.items || []
+              });
+              cloudOrderIds.add(loc.id);
+              formattedOrders.unshift(loc);
+            }
           }
-          results.ordersSynced = mergedOrders.length;
+
+          // Authoritative Flush: Supabase cloud orders are now the local cache truth
+          localStorage.setItem(`platepilot_${targetRestId}_orders`, JSON.stringify(formattedOrders));
+          if (targetRestId === "rest-1") {
+            localStorage.setItem("roast_orders", JSON.stringify(formattedOrders));
+          }
+          if (window.appState && window.appState.activeRestaurantId === targetRestId) {
+            window.appState.orders = formattedOrders;
+          }
+          results.ordersSynced = formattedOrders.length;
         }
 
         // C. Staff Users
