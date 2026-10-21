@@ -4293,6 +4293,41 @@
       if (changeEl) changeEl.textContent = "₹" + change.toFixed(2);
     }
 
+    function generateUniqueOrderId(prefix) {
+      const activeRest = (appState.onboardedRestaurants || []).find(r => r.id === appState.activeRestaurantId);
+      const rawPrefix = prefix || activeRest?.orderPrefix || appState.restaurant?.orderPrefix || "PP-";
+      const cleanPrefix = rawPrefix.replace(/-+$/, "") + "-";
+
+      let maxNum = 100;
+      const usedIds = new Set();
+
+      // Collect all orders from active state & local cache
+      const localCached = JSON.parse(localStorage.getItem(`platepilot_${appState.activeRestaurantId}_orders`) || "[]");
+      const allOrders = [...(appState.orders || []), ...localCached];
+
+      for (const ord of allOrders) {
+        if (!ord || !ord.id) continue;
+        const idStr = String(ord.id).trim().toUpperCase();
+        usedIds.add(idStr);
+        const m = idStr.match(/(\d+)/);
+        if (m) {
+          const n = parseInt(m[1], 10);
+          if (!isNaN(n) && n > maxNum && n < 999999) {
+            maxNum = n;
+          }
+        }
+      }
+
+      let nextNum = maxNum + 1;
+      let candidate = `${cleanPrefix}${nextNum}`;
+      while (usedIds.has(candidate.toUpperCase())) {
+        nextNum++;
+        candidate = `${cleanPrefix}${nextNum}`;
+      }
+
+      return candidate;
+    }
+
     function processCheckoutPayment() {
       if (appState.cart.length === 0) {
         showToast("Cart is empty!", "error");
@@ -4305,9 +4340,19 @@
       const customerPhone = document.getElementById("charge-customer-phone")?.value.trim() || "";
       const orderMode = document.getElementById("charge-order-mode")?.value || "Takeaway";
       const prefix = appState.restaurant?.orderPrefix || "RC-";
-      const newOrderId = prefix + (101 + appState.orders.length).toString();
+      const newOrderId = generateUniqueOrderId(prefix);
 
       const fullCustomerDesc = customerName + (customerPhone ? ` (+91 ${customerPhone})` : "");
+
+      // Capture line items BEFORE resetting cart
+      const orderItems = appState.cart.map(c => ({
+        id: c.id,
+        qty: c.qty,
+        quantity: c.qty,
+        name: c.title || c.name,
+        price: c.price,
+        category: c.category || "General Menu"
+      }));
 
       const now = new Date();
       const newOrder = {
@@ -4321,13 +4366,14 @@
         customerName: customerName,
         customerPhone: customerPhone,
         paymentStatus: "PAID (" + (appState.settings.selectedPayment || "CASH").toUpperCase() + ")",
-        items: appState.cart.map(c => ({ qty: c.qty, name: c.title, price: c.price, category: c.category || "General Menu" })),
+        items: orderItems,
         subtotal: parseFloat(total.toFixed(2)),
         discount: discountAmount > 0 ? {
           label: appState.discount.label,
           amount: parseFloat(discountAmount.toFixed(2))
         } : null,
-        status: "active"
+        status: "active",
+        _isOfflineCreated: true
       };
 
       // Update state
@@ -4362,12 +4408,19 @@
           source: "pos",
           channel: "POS Terminal",
           status: "active",
-          items: appState.cart.map(c => ({
-            name: c.title,
-            price: c.price,
-            qty: c.qty
-          }))
-        }).catch(e => console.warn("Cloud placeOrder error:", e));
+          items: orderItems
+        }).then(inserted => {
+          if (inserted && inserted.id) {
+            newOrder._isOfflineCreated = false;
+            if (inserted.id !== newOrderId) {
+              console.log(`Order ID collision resolved by cloud: ${newOrderId} -> ${inserted.id}`);
+              newOrder.id = inserted.id;
+              saveState();
+              renderOrdersStream();
+              renderHomeOrders();
+            }
+          }
+        }).catch(e => console.warn("Cloud placeOrder notice:", e));
       }
 
       // Reset form fields
@@ -5393,11 +5446,20 @@
     }
 
     function startContinuousNetworkListener() {
-      window.addEventListener("online", () => probeNetworkConnectivity());
+      window.addEventListener("online", () => {
+        probeNetworkConnectivity();
+        if (typeof triggerCloudSync === "function") triggerCloudSync(false);
+      });
       window.addEventListener("offline", () => setNetworkOnlineState(false));
-      window.addEventListener("focus", () => probeNetworkConnectivity());
+      window.addEventListener("focus", () => {
+        probeNetworkConnectivity();
+        if (typeof triggerCloudSync === "function") triggerCloudSync(false);
+      });
       document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) probeNetworkConnectivity();
+        if (!document.hidden) {
+          probeNetworkConnectivity();
+          if (typeof triggerCloudSync === "function") triggerCloudSync(false);
+        }
       });
 
       if (window.Capacitor?.Plugins?.Network) {
@@ -7554,8 +7616,17 @@
       const total = parseFloat((subtotal - discount + tax).toFixed(2));
 
       const prefix = appState.restaurant?.orderPrefix || "RC-";
-      const newOrderId = prefix + (146 + appState.orders.length).toString();
+      const newOrderId = generateUniqueOrderId(prefix);
       const tStr = String(appState.customerSelectedTable).padStart(2, "0");
+
+      const orderItems = appState.customerCart.map(c => ({
+        id: c.id,
+        qty: c.qty,
+        quantity: c.qty,
+        name: c.title || c.name,
+        price: c.price,
+        category: c.category || "General Menu"
+      }));
 
       const now = new Date();
       const newOrder = {
@@ -7569,7 +7640,7 @@
         customerName: name,
         customerPhone: phone,
         paymentStatus: "PENDING (Pay at Counter/UPI)",
-        items: appState.customerCart.map(c => ({ qty: c.qty, name: c.title, price: c.price, category: c.category || "General Menu" })),
+        items: orderItems,
         subtotal: total,
         discount: discount > 0 ? {
           label: appState.customerAppliedOffer?.code || "Offer",
@@ -7578,7 +7649,8 @@
         notes: note,
         channel: `QR Table ${tStr}`,
         status: "active",
-        needsAcceptance: true
+        needsAcceptance: true,
+        _isOfflineCreated: true
       };
 
       appState.orders.unshift(newOrder);
@@ -7587,6 +7659,34 @@
         activeRest.gmv = (activeRest.gmv || 0) + total;
       }
       saveState();
+
+      // Send to Supabase Cloud if configured
+      if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG.isConfigured) {
+        window.PlatePilotCloud.placeOrder({
+          id: newOrderId,
+          restaurantId: appState.activeRestaurantId,
+          tableNumber: parseInt(tStr, 10) || null,
+          orderType: `Dine-in • Table ${tStr}`,
+          customerName: name,
+          customerPhone: phone,
+          paymentMethod: "UPI",
+          paymentStatus: "PENDING",
+          subtotal: total,
+          discount: discount,
+          tax: tax,
+          total: total,
+          notes: note,
+          source: "qr",
+          channel: `QR Table ${tStr}`,
+          status: "active",
+          needsAcceptance: true,
+          items: orderItems
+        }).then(inserted => {
+          if (inserted && inserted.id) {
+            newOrder._isOfflineCreated = false;
+          }
+        }).catch(e => console.warn("QR cloud placeOrder notice:", e));
+      }
 
       // Trigger continuous audio bell ringing until accepted by restaurant staff
       startOrderAlertBell(newOrderId);
@@ -8373,6 +8473,22 @@
             const rawDiscount = parseFloat(Number(newOrder.discount || 0).toFixed(2));
             const rawTotal = parseFloat(Number(newOrder.total || (rawSubtotal - rawDiscount + rawTax)).toFixed(2));
 
+            const rawItems = newOrder.items || newOrder.order_items || [];
+            const mappedItems = Array.isArray(rawItems) && rawItems.length > 0 ? rawItems.map(it => ({
+              id: it.id || it.menu_item_id,
+              name: it.name || it.title || "Menu Item",
+              price: parseFloat(Number(it.price || 0).toFixed(2)),
+              qty: parseInt(it.quantity || it.qty || 1),
+              total: parseFloat(Number(it.item_total || ((it.price || 0) * (it.quantity || it.qty || 1))).toFixed(2)),
+              notes: it.notes || ""
+            })) : [{
+              id: `syn-${newOrder.id}`,
+              name: newOrder.channel === "POS Terminal" ? "POS Counter Order" : (newOrder.order_type || "Dine-in Order"),
+              price: rawSubtotal > 0 ? rawSubtotal : rawTotal,
+              qty: 1,
+              total: rawSubtotal > 0 ? rawSubtotal : rawTotal
+            }];
+
             const formattedOrder = {
               id: newOrder.id,
               type: newOrder.order_type || "Dine-in",
@@ -8386,13 +8502,7 @@
               customerPhone: newOrder.customer_phone || "",
               paymentMethod: newOrder.payment_method || "UPI",
               paymentStatus: newOrder.payment_status || "PAID",
-              items: Array.isArray(newOrder.items) && newOrder.items.length > 0 ? newOrder.items : [{
-                id: `syn-${newOrder.id}`,
-                name: newOrder.channel === "POS Terminal" ? "Specialty Roasted Beans Combo" : (newOrder.order_type || "Dine-in Order"),
-                price: rawSubtotal > 0 ? rawSubtotal : rawTotal,
-                qty: 1,
-                total: rawSubtotal > 0 ? rawSubtotal : rawTotal
-              }],
+              items: mappedItems,
               subtotal: rawSubtotal,
               discount: rawDiscount,
               tax: rawTax,
@@ -8408,7 +8518,7 @@
             renderHomeDashboardMetrics(appState.currentDashboardRange || "today");
             updateBadges();
             playNotificationSound();
-            showToast(`New Cloud Order #${newOrder.id} received!`);
+            showToast(`🔔 New Cloud Order #${newOrder.id} received!`);
           }
         },
         onOrderUpdate: (updatedOrder) => {
@@ -8433,6 +8543,14 @@
             renderAdminRestaurantsList();
             renderAdminSaaSMetrics();
             renderOutletSwitcherList();
+          }
+        },
+        onPollCheck: (remoteOrders) => {
+          if (!Array.isArray(remoteOrders)) return;
+          const currentCount = (appState.orders || []).length;
+          if (remoteOrders.length !== currentCount) {
+            console.log(`[PlatePilotCloud] Poller count difference (${remoteOrders.length} vs ${currentCount}). Syncing...`);
+            triggerCloudSync(false);
           }
         }
       });
@@ -8893,7 +9011,7 @@
       if (errBox) errBox.classList.add("hidden");
     }
 
-    function handlePhonePasswordLogin() {
+    async function handlePhonePasswordLogin() {
       const phoneRaw = document.getElementById("login-phone-input")?.value || "";
       const password = document.getElementById("login-password-input")?.value || "";
 
@@ -8941,12 +9059,13 @@
           password: restMatch.ownerPassword,
           pin: "5959",
           permissions: ["all"],
-          avatar: restMatch.ownerName.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase() || "OW"
+          avatar: (restMatch.ownerName || "OW").split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase() || "OW"
         };
         ownerUser.restaurantId = restMatch.id;
         ownerUser.isAppAdmin = false;
         finishSuccessfulLogin(ownerUser);
         switchTab("dashboard");
+        triggerCloudSync(false);
         return;
       }
 
@@ -8985,6 +9104,70 @@
           finishSuccessfulLogin(otherStaffMatch);
           showToast(`Welcome back, ${otherStaffMatch.name}! Loaded ${r.name}`);
           return;
+        }
+      }
+
+      // 5. Cloud Verification: Query Supabase directly for newly created restaurant owners or staff members
+      if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG.isConfigured) {
+        const loginBtn = document.getElementById("btn-login-submit");
+        const origBtnHtml = loginBtn ? loginBtn.innerHTML : "";
+        if (loginBtn) {
+          loginBtn.disabled = true;
+          loginBtn.innerHTML = `<span class="material-symbols-outlined text-[16px] animate-spin">sync</span><span>Verifying with cloud...</span>`;
+        }
+
+        try {
+          const cloudAuth = await window.PlatePilotCloud.authenticateOwnerOrStaff(phone, password);
+          if (cloudAuth) {
+            hideLoginError();
+            if (cloudAuth.type === "owner" && cloudAuth.restaurant) {
+              const cloudRest = cloudAuth.restaurant;
+              if (cloudRest.status === "suspended") {
+                showLoginError("This restaurant outlet is currently suspended. Please contact Plate Pilot support.");
+                if (loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = origBtnHtml; }
+                return;
+              }
+
+              // Merge cloud restaurant into local state
+              const existingIdx = (appState.onboardedRestaurants || []).findIndex(r => r.id === cloudRest.id);
+              if (existingIdx !== -1) {
+                appState.onboardedRestaurants[existingIdx] = cloudRest;
+              } else {
+                appState.onboardedRestaurants.push(cloudRest);
+              }
+              localStorage.setItem("platepilot_restaurants", JSON.stringify(appState.onboardedRestaurants));
+
+              switchActiveRestaurant(cloudRest.id, false);
+              finishSuccessfulLogin(cloudAuth.user);
+              switchTab("dashboard");
+              triggerCloudSync(false);
+              showToast(`Welcome, ${cloudRest.ownerName}! Signed in to ${cloudRest.name}.`);
+              if (loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = origBtnHtml; }
+              return;
+            } else if (cloudAuth.type === "staff" && cloudAuth.user) {
+              const staffUser = cloudAuth.user;
+              if (staffUser.restaurantId) {
+                switchActiveRestaurant(staffUser.restaurantId, false);
+              }
+              finishSuccessfulLogin(staffUser);
+              if ((staffUser.permissions || []).includes("pos")) {
+                switchTab("pos-terminal");
+              } else {
+                switchTab("dashboard");
+              }
+              triggerCloudSync(false);
+              showToast(`Welcome back, ${staffUser.name}!`);
+              if (loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = origBtnHtml; }
+              return;
+            }
+          }
+        } catch (authErr) {
+          console.warn("Cloud auth check notice:", authErr);
+        } finally {
+          if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = origBtnHtml;
+          }
         }
       }
 
@@ -9903,6 +10086,10 @@
       renderAdminSaaSMetrics();
       renderOutletSwitcherList();
       initReportMonthDropdown();
+
+      // Reconnect Cloud Realtime & Sync for the newly activated outlet
+      if (typeof setupCloudRealtime === "function") setupCloudRealtime();
+      if (typeof triggerCloudSync === "function") triggerCloudSync(false);
 
       if (notify) {
         showToast(`Switched active outlet to "${rest.name}"!`);

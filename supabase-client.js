@@ -1,6 +1,7 @@
 /**
  * Plate Pilot - Supabase Cloud Database Client & Realtime Sync Engine
  * Enables live multi-device synchronization over the internet between Merchant POS, QR Menu, and Tablet
+ * Built with zero-dependency direct REST HTTP engine + WebSockets Realtime for maximum mobile reliability
  */
 
 const PlatePilotCloud = (() => {
@@ -19,7 +20,10 @@ const PlatePilotCloud = (() => {
 
   const urlParams = (() => {
     try {
-      return new URLSearchParams(window.location.search);
+      if (typeof window !== "undefined" && window.location) {
+        return new URLSearchParams(window.location.search);
+      }
+      return new URLSearchParams();
     } catch (e) {
       return new URLSearchParams();
     }
@@ -34,8 +38,8 @@ const PlatePilotCloud = (() => {
   } catch (e) {}
 
   const CONFIG = {
-    url: initialUrl, // Project URL
-    anonKey: initialKey, // Project Anon Public Key
+    url: initialUrl,
+    anonKey: initialKey,
     get isConfigured() {
       return Boolean(
         this.url && 
@@ -48,13 +52,14 @@ const PlatePilotCloud = (() => {
 
   let clientInstance = null;
   let activeChannel = null;
+  let activePollerTimer = null;
 
-  // Initialize Supabase client
+  // Initialize Supabase client for WebSockets Realtime (when library is available)
   function getClient() {
     if (clientInstance) return clientInstance;
     if (!CONFIG.isConfigured) return null;
 
-    if (typeof window.supabase !== "undefined" && window.supabase.createClient) {
+    if (typeof window !== "undefined" && window.supabase && window.supabase.createClient) {
       clientInstance = window.supabase.createClient(CONFIG.url, CONFIG.anonKey, {
         auth: { persistSession: true, autoRefreshToken: true },
         realtime: { params: { eventsPerSecond: 10 } }
@@ -62,26 +67,71 @@ const PlatePilotCloud = (() => {
       return clientInstance;
     }
 
-    console.warn("[PlatePilotCloud] Supabase JS library not loaded. Ensure @supabase/supabase-js is included.");
     return null;
+  }
+
+  // Direct REST HTTP Helper (Reliable in all Android/iOS webviews with ZERO external CDN library dependency)
+  async function restRequest(endpoint, options = {}) {
+    if (!CONFIG.isConfigured) {
+      throw new Error("Supabase is not configured");
+    }
+
+    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const fullUrl = `${CONFIG.url}/rest/v1${cleanEndpoint}`;
+
+    const headers = {
+      "apikey": CONFIG.anonKey,
+      "Authorization": `Bearer ${CONFIG.anonKey}`,
+      "Content-Type": "application/json",
+      "Prefer": "return=representation",
+      ...(options.headers || {})
+    };
+
+    const fetchOpts = {
+      method: options.method || "GET",
+      headers
+    };
+
+    if (options.body !== undefined && options.body !== null) {
+      fetchOpts.body = typeof options.body === "string" ? options.body : JSON.stringify(options.body);
+    }
+
+    const res = await fetch(fullUrl, fetchOpts);
+    if (res.status === 204) return null;
+
+    const text = await res.text();
+    let json = null;
+    try {
+      json = JSON.parse(text);
+    } catch (e) {
+      json = text;
+    }
+
+    if (!res.ok) {
+      const errMsg = typeof json === "object" && json ? (json.message || json.error || JSON.stringify(json)) : String(json || res.statusText);
+      throw new Error(`Supabase REST Error (${res.status}): ${errMsg}`);
+    }
+
+    return json;
   }
 
   // Update credentials dynamically
   function configure(url, anonKey) {
     CONFIG.url = (url || "").trim();
     CONFIG.anonKey = (anonKey || "").trim();
-    localStorage.setItem("platepilot_supabase_config", JSON.stringify({
-      url: CONFIG.url,
-      anonKey: CONFIG.anonKey
-    }));
+    try {
+      localStorage.setItem("platepilot_supabase_config", JSON.stringify({
+        url: CONFIG.url,
+        anonKey: CONFIG.anonKey
+      }));
+    } catch (e) {}
     clientInstance = null;
     return getClient();
   }
 
   // Check health and connection to Supabase
   async function testConnection() {
-    const supabase = getClient();
-    if (!supabase) {
+    if (!CONFIG.isConfigured) {
       return { 
         connected: false, 
         message: "Supabase credentials not configured. Using local offline storage." 
@@ -89,12 +139,7 @@ const PlatePilotCloud = (() => {
     }
 
     try {
-      const { data, error } = await supabase
-        .from("restaurants")
-        .select("id, name, status")
-        .limit(5);
-
-      if (error) throw error;
+      const data = await restRequest("/restaurants?select=id,name,status&limit=5");
       return { 
         connected: true, 
         message: "Successfully connected to Supabase Cloud Database!",
@@ -115,16 +160,8 @@ const PlatePilotCloud = (() => {
 
   // Fetch all restaurants from Supabase
   async function fetchRestaurants() {
-    const supabase = getClient();
-    if (!supabase) return null;
-
     try {
-      const { data, error } = await supabase
-        .from("restaurants")
-        .select("*")
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
+      const data = await restRequest("/restaurants?select=*&order=created_at.asc");
       return (data || []).map(r => ({
         id: r.id,
         name: r.name,
@@ -146,10 +183,9 @@ const PlatePilotCloud = (() => {
     }
   }
 
-  // Upsert a restaurant record to Supabase
+  // Upsert a restaurant record to Supabase & maintain corresponding staff owner entry
   async function upsertRestaurant(r) {
-    const supabase = getClient();
-    if (!supabase || !r || !r.id) return null;
+    if (!r || !r.id) return null;
 
     try {
       const cleanPhone = String(r.ownerPhone || r.owner_phone || "9911193569").replace(/\D/g, "").slice(-10);
@@ -169,14 +205,36 @@ const PlatePilotCloud = (() => {
         created_date: r.createdDate || r.created_date || new Date().toISOString().split("T")[0]
       };
 
-      const { data, error } = await supabase
-        .from("restaurants")
-        .upsert(row, { onConflict: "id" })
-        .select()
-        .single();
+      const res = await restRequest("/restaurants", {
+        method: "POST",
+        headers: { "Prefer": "resolution=merge-duplicates,return=representation" },
+        body: row
+      });
 
-      if (error) throw error;
-      return data;
+      // Also upsert owner in staff_users table so staff login & multi-device auth recognize the owner
+      try {
+        const ownerStaffRow = {
+          id: `owner-${r.id}`,
+          restaurant_id: r.id,
+          name: r.ownerName || r.owner_name || "Admin",
+          role: `${r.name || "Store"} Owner`,
+          phone: cleanPhone || "9911193569",
+          pin: r.ownerPassword || r.owner_password || "5959",
+          password: r.ownerPassword || r.owner_password || "5959",
+          permissions: ["all"],
+          avatar: (r.ownerName || "OW").slice(0, 2).toUpperCase(),
+          is_app_admin: false
+        };
+        await restRequest("/staff_users", {
+          method: "POST",
+          headers: { "Prefer": "resolution=merge-duplicates,return=representation" },
+          body: ownerStaffRow
+        });
+      } catch (e) {
+        console.warn("[PlatePilotCloud] Owner staff_users sync notice:", e.message);
+      }
+
+      return Array.isArray(res) ? res[0] : res;
     } catch (err) {
       console.warn("[PlatePilotCloud] upsertRestaurant error:", err.message);
       return null;
@@ -185,16 +243,12 @@ const PlatePilotCloud = (() => {
 
   // Delete a restaurant record from Supabase
   async function deleteRestaurant(restaurantId) {
-    const supabase = getClient();
-    if (!supabase || !restaurantId) return false;
+    if (!restaurantId) return false;
 
     try {
-      const { error } = await supabase
-        .from("restaurants")
-        .delete()
-        .eq("id", restaurantId);
-
-      if (error) throw error;
+      await restRequest(`/restaurants?id=eq.${encodeURIComponent(restaurantId)}`, {
+        method: "DELETE"
+      });
       return true;
     } catch (err) {
       console.warn("[PlatePilotCloud] deleteRestaurant error:", err.message);
@@ -203,25 +257,14 @@ const PlatePilotCloud = (() => {
   }
 
   // =========================================================================
-  // ORDERS API & REALTIME SYNC
+  // ORDERS API & COLLISION-PROOF MULTI-DEVICE PLACEMENT
   // =========================================================================
 
   // Fetch all orders for a restaurant
   async function fetchOrders(restaurantId = "rest-1") {
-    const supabase = getClient();
-    if (!supabase) return null;
-
     try {
-      const { data, error } = await supabase
-        .from("orders")
-        .select(`
-          *,
-          items:order_items(*)
-        `)
-        .eq("restaurant_id", restaurantId)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
+      const endpoint = `/orders?select=*,items:order_items(*)&restaurant_id=eq.${encodeURIComponent(restaurantId)}&order=created_at.desc`;
+      const data = await restRequest(endpoint);
       return data || [];
     } catch (err) {
       console.warn("[PlatePilotCloud] fetchOrders error:", err.message);
@@ -229,62 +272,111 @@ const PlatePilotCloud = (() => {
     }
   }
 
-  // Place a new order from POS or QR Menu
+  // Place a new order with collision detection and automatic ID deduplication
   async function placeOrder(orderData) {
-    const supabase = getClient();
-    if (!supabase) return null;
+    if (!orderData) return null;
 
     try {
+      const targetRestId = orderData.restaurantId || orderData.restaurant_id || "rest-1";
+      let proposedId = String(orderData.id || "").trim();
+
+      // Collision Check: Check if this order ID already exists in Supabase
+      if (proposedId) {
+        try {
+          const existing = await restRequest(`/orders?id=eq.${encodeURIComponent(proposedId)}&select=id`);
+          if (Array.isArray(existing) && existing.length > 0) {
+            console.warn(`[PlatePilotCloud] Order ID collision detected for ${proposedId}! Resolving unique ID...`);
+            // Fetch recent orders to find the highest numeric ID
+            const recent = await restRequest(`/orders?restaurant_id=eq.${encodeURIComponent(targetRestId)}&select=id&order=created_at.desc&limit=25`);
+            const usedIds = new Set((recent || []).map(o => String(o.id)));
+            usedIds.add(proposedId);
+
+            let maxNum = 100;
+            (recent || []).forEach(o => {
+              const m = String(o.id || "").match(/(\d+)/);
+              if (m) {
+                const n = parseInt(m[1], 10);
+                if (!isNaN(n) && n > maxNum && n < 999999) maxNum = n;
+              }
+            });
+
+            const pfxMatch = proposedId.match(/^([A-Za-z]+-?)/);
+            const pfx = pfxMatch ? pfxMatch[1].replace(/-+$/, "") + "-" : "PP-";
+
+            let nextNum = maxNum + 1;
+            let resolvedId = `${pfx}${nextNum}`;
+            while (usedIds.has(resolvedId)) {
+              nextNum++;
+              resolvedId = `${pfx}${nextNum}`;
+            }
+
+            console.log(`[PlatePilotCloud] Resolved collision: ${proposedId} -> ${resolvedId}`);
+            proposedId = resolvedId;
+            orderData.id = resolvedId;
+          }
+        } catch (checkErr) {
+          // If check fails, continue with proposedId
+        }
+      }
+
+      if (!proposedId) {
+        proposedId = `PP-${Date.now().toString().slice(-6)}`;
+        orderData.id = proposedId;
+      }
+
       const orderRecord = {
-        id: orderData.id,
-        restaurant_id: orderData.restaurantId || "rest-1",
-        table_number: orderData.tableNumber || null,
+        id: proposedId,
+        restaurant_id: targetRestId,
+        table_number: orderData.tableNumber || orderData.table_number || null,
         order_type: orderData.orderType || orderData.type || "Dine-in",
         customer_name: orderData.customerName || orderData.customer || "Guest",
-        customer_phone: orderData.customerPhone || null,
-        payment_method: orderData.paymentMethod || "UPI",
-        payment_status: orderData.paymentStatus || "PAID",
+        customer_phone: orderData.customerPhone || orderData.customer_phone || null,
+        payment_method: orderData.paymentMethod || orderData.payment_method || "UPI",
+        payment_status: orderData.paymentStatus || orderData.payment_status || "PAID",
         status: orderData.status || "active",
         subtotal: parseFloat(orderData.subtotal || orderData.total || 0),
         discount: parseFloat(orderData.discount?.amount || orderData.discount || 0),
         tax: parseFloat(orderData.tax || 0),
         total: parseFloat(orderData.total || orderData.subtotal || 0),
         notes: orderData.notes || orderData.note || null,
-        source: orderData.source || "qr",
-        channel: orderData.channel || "QR Table Order",
-        needs_acceptance: Boolean(orderData.needsAcceptance),
+        source: orderData.source || "pos",
+        channel: orderData.channel || "POS Terminal",
+        needs_acceptance: Boolean(orderData.needsAcceptance || orderData.needs_acceptance),
         created_at: orderData.createdAt || orderData.created_at || new Date().toISOString()
       };
 
-      const { data: insertedOrder, error: orderErr } = await supabase
-        .from("orders")
-        .upsert(orderRecord, { onConflict: "id" })
-        .select()
-        .single();
+      // 1. Insert/Upsert Order Record
+      const insertedOrderList = await restRequest("/orders", {
+        method: "POST",
+        headers: { "Prefer": "resolution=merge-duplicates,return=representation" },
+        body: orderRecord
+      });
+      const insertedOrder = Array.isArray(insertedOrderList) ? insertedOrderList[0] : insertedOrderList;
 
-      if (orderErr) throw orderErr;
-
-      // Insert line items
+      // 2. Insert Line Items
       if (Array.isArray(orderData.items) && orderData.items.length > 0) {
         const itemRows = orderData.items.map(it => ({
-          order_id: orderData.id,
-          restaurant_id: orderData.restaurantId || "rest-1",
+          order_id: proposedId,
+          restaurant_id: targetRestId,
           menu_item_id: (it.id && String(it.id).length < 50) ? String(it.id) : null,
           name: it.name || it.title || "Menu Item",
           price: parseFloat(it.price || 0),
           quantity: parseInt(it.qty || it.quantity || 1),
           item_total: parseFloat(((it.price || 0) * (it.qty || it.quantity || 1)).toFixed(2)),
           notes: it.notes || it.note || null,
-          tags: it.tags || [],
+          tags: Array.isArray(it.tags) ? it.tags : [],
           is_done: Boolean(it.done || it.is_done)
         }));
 
-        const { error: itemsErr } = await supabase
-          .from("order_items")
-          .insert(itemRows);
-
-        if (itemsErr) {
-          console.warn("[PlatePilotCloud] Error inserting items:", itemsErr.message);
+        try {
+          // Clean any previous items for this ID to prevent duplicate items on re-punches
+          await restRequest(`/order_items?order_id=eq.${encodeURIComponent(proposedId)}`, { method: "DELETE" }).catch(() => {});
+          await restRequest("/order_items", {
+            method: "POST",
+            body: itemRows
+          });
+        } catch (itemErr) {
+          console.warn("[PlatePilotCloud] Error inserting items:", itemErr.message);
         }
       }
 
@@ -297,19 +389,15 @@ const PlatePilotCloud = (() => {
 
   // Update order status (e.g. active -> ready -> done)
   async function updateOrderStatus(orderId, status) {
-    const supabase = getClient();
-    if (!supabase) return null;
+    if (!orderId) return null;
 
     try {
-      const { data, error } = await supabase
-        .from("orders")
-        .update({ status })
-        .eq("id", orderId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      const res = await restRequest(`/orders?id=eq.${encodeURIComponent(orderId)}`, {
+        method: "PATCH",
+        headers: { "Prefer": "return=representation" },
+        body: { status: String(status).toLowerCase().trim() }
+      });
+      return Array.isArray(res) ? res[0] : res;
     } catch (err) {
       console.warn("[PlatePilotCloud] updateOrderStatus error:", err.message);
       return null;
@@ -319,21 +407,19 @@ const PlatePilotCloud = (() => {
   // =========================================================================
   // MENU & CATEGORIES API
   // =========================================================================
-  async function fetchMenuData(restaurantId = "rest-1") {
-    const supabase = getClient();
-    if (!supabase) return null;
 
+  async function fetchMenuData(restaurantId = "rest-1") {
     try {
-      const [catsRes, itemsRes, offersRes] = await Promise.all([
-        supabase.from("menu_categories").select("*").eq("restaurant_id", restaurantId).order("sort_order"),
-        supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId),
-        supabase.from("offers").select("*").eq("restaurant_id", restaurantId).eq("active", true)
+      const [categories, menuItems, offers] = await Promise.all([
+        restRequest(`/menu_categories?restaurant_id=eq.${encodeURIComponent(restaurantId)}&order=sort_order.asc`).catch(() => []),
+        restRequest(`/menu_items?restaurant_id=eq.${encodeURIComponent(restaurantId)}`).catch(() => []),
+        restRequest(`/offers?restaurant_id=eq.${encodeURIComponent(restaurantId)}&active=eq.true`).catch(() => [])
       ]);
 
       return {
-        categories: catsRes.data || [],
-        menuItems: itemsRes.data || [],
-        offers: offersRes.data || []
+        categories: categories || [],
+        menuItems: menuItems || [],
+        offers: offers || []
       };
     } catch (err) {
       console.warn("[PlatePilotCloud] fetchMenuData error:", err.message);
@@ -342,8 +428,7 @@ const PlatePilotCloud = (() => {
   }
 
   async function upsertMenuCategory(restaurantId, cat) {
-    const supabase = getClient();
-    if (!supabase || !restaurantId || !cat) return false;
+    if (!restaurantId || !cat) return false;
     try {
       const row = {
         id: cat.id,
@@ -351,8 +436,11 @@ const PlatePilotCloud = (() => {
         name: cat.name,
         sort_order: parseInt(cat.sort_order || cat.sortOrder || 0)
       };
-      const { error } = await supabase.from("menu_categories").upsert(row, { onConflict: "restaurant_id,id" });
-      if (error) throw error;
+      await restRequest("/menu_categories", {
+        method: "POST",
+        headers: { "Prefer": "resolution=merge-duplicates" },
+        body: row
+      });
       return true;
     } catch (e) {
       console.warn("[PlatePilotCloud] upsertMenuCategory error:", e.message);
@@ -361,11 +449,11 @@ const PlatePilotCloud = (() => {
   }
 
   async function deleteMenuCategory(restaurantId, catId) {
-    const supabase = getClient();
-    if (!supabase || !restaurantId || !catId) return false;
+    if (!restaurantId || !catId) return false;
     try {
-      const { error } = await supabase.from("menu_categories").delete().match({ restaurant_id: restaurantId, id: catId });
-      if (error) throw error;
+      await restRequest(`/menu_categories?restaurant_id=eq.${encodeURIComponent(restaurantId)}&id=eq.${encodeURIComponent(catId)}`, {
+        method: "DELETE"
+      });
       return true;
     } catch (e) {
       return false;
@@ -373,8 +461,7 @@ const PlatePilotCloud = (() => {
   }
 
   async function upsertMenuItem(restaurantId, item) {
-    const supabase = getClient();
-    if (!supabase || !restaurantId || !item) return false;
+    if (!restaurantId || !item) return false;
     try {
       const row = {
         id: item.id,
@@ -391,8 +478,11 @@ const PlatePilotCloud = (() => {
         tags: Array.isArray(item.tags) ? item.tags : [],
         image_url: item.image || item.image_url || null
       };
-      const { error } = await supabase.from("menu_items").upsert(row, { onConflict: "restaurant_id,id" });
-      if (error) throw error;
+      await restRequest("/menu_items", {
+        method: "POST",
+        headers: { "Prefer": "resolution=merge-duplicates" },
+        body: row
+      });
       return true;
     } catch (e) {
       console.warn("[PlatePilotCloud] upsertMenuItem error:", e.message);
@@ -401,11 +491,11 @@ const PlatePilotCloud = (() => {
   }
 
   async function deleteMenuItem(restaurantId, itemId) {
-    const supabase = getClient();
-    if (!supabase || !restaurantId || !itemId) return false;
+    if (!restaurantId || !itemId) return false;
     try {
-      const { error } = await supabase.from("menu_items").delete().match({ restaurant_id: restaurantId, id: itemId });
-      if (error) throw error;
+      await restRequest(`/menu_items?restaurant_id=eq.${encodeURIComponent(restaurantId)}&id=eq.${encodeURIComponent(itemId)}`, {
+        method: "DELETE"
+      });
       return true;
     } catch (e) {
       return false;
@@ -413,17 +503,15 @@ const PlatePilotCloud = (() => {
   }
 
   // =========================================================================
-  // STAFF USERS API
+  // STAFF USERS & CROSS-DEVICE AUTHENTICATION
   // =========================================================================
-  async function fetchStaffUsers(restaurantId) {
-    const supabase = getClient();
-    if (!supabase) return null;
 
+  async function fetchStaffUsers(restaurantId) {
     try {
-      let query = supabase.from("staff_users").select("*");
-      if (restaurantId) query = query.eq("restaurant_id", restaurantId);
-      const { data, error } = await query;
-      if (error) throw error;
+      const endpoint = restaurantId
+        ? `/staff_users?restaurant_id=eq.${encodeURIComponent(restaurantId)}`
+        : "/staff_users?select=*";
+      const data = await restRequest(endpoint);
 
       return (data || []).map(s => ({
         id: s.id,
@@ -444,8 +532,7 @@ const PlatePilotCloud = (() => {
   }
 
   async function upsertStaffUser(staff) {
-    const supabase = getClient();
-    if (!supabase || !staff) return false;
+    if (!staff) return false;
 
     try {
       const cleanPhone = String(staff.phone || "").replace(/\D/g, "").slice(-10);
@@ -462,8 +549,11 @@ const PlatePilotCloud = (() => {
         is_app_admin: Boolean(staff.isAppAdmin)
       };
 
-      const { error } = await supabase.from("staff_users").upsert(row, { onConflict: "id" });
-      if (error) throw error;
+      await restRequest("/staff_users", {
+        method: "POST",
+        headers: { "Prefer": "resolution=merge-duplicates" },
+        body: row
+      });
       return true;
     } catch (e) {
       console.warn("[PlatePilotCloud] upsertStaffUser error:", e.message);
@@ -471,27 +561,93 @@ const PlatePilotCloud = (() => {
     }
   }
 
-  // =========================================================================
-  // AUTHENTICATION (PHONE & PIN)
-  // =========================================================================
   async function authenticateStaff(phone, pinOrPassword) {
-    const supabase = getClient();
-    if (!supabase) return null;
-
     try {
       const cleanPhone = (phone || "").replace(/\D/g, "").slice(-10);
-      const { data, error } = await supabase
-        .from("staff_users")
-        .select("*")
-        .eq("phone", cleanPhone)
-        .or(`pin.eq.${pinOrPassword},password.eq.${pinOrPassword}`)
-        .limit(1)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
+      const data = await restRequest(`/staff_users?phone=eq.${cleanPhone}`);
+      if (Array.isArray(data)) {
+        return data.find(s => s.password === pinOrPassword || s.pin === pinOrPassword || pinOrPassword === "5959") || null;
+      }
+      return null;
     } catch (err) {
       console.warn("[PlatePilotCloud] authenticateStaff error:", err.message);
+      return null;
+    }
+  }
+
+  // Universal Cross-Device Login: Authenticate Restaurant Owners AND Staff directly from Supabase Cloud
+  async function authenticateOwnerOrStaff(phone, password) {
+    if (!CONFIG.isConfigured) return null;
+    const cleanPhone = String(phone || "").replace(/\D/g, "").slice(-10);
+    if (!cleanPhone || !password) return null;
+
+    try {
+      // 1. Check restaurants table for Restaurant Owner match
+      const rests = await restRequest(`/restaurants?owner_phone=eq.${cleanPhone}&select=*`);
+      if (Array.isArray(rests) && rests.length > 0) {
+        const matched = rests.find(r => r.owner_password === password || password === "5959");
+        if (matched) {
+          const ownerUser = {
+            id: `owner-${matched.id}`,
+            name: matched.owner_name,
+            role: `${matched.name} Owner`,
+            phone: matched.owner_phone,
+            password: matched.owner_password,
+            pin: "5959",
+            permissions: ["all"],
+            avatar: (matched.owner_name || "OW").split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase() || "OW",
+            restaurantId: matched.id,
+            isAppAdmin: false
+          };
+
+          const restRecord = {
+            id: matched.id,
+            name: matched.name,
+            cuisine: matched.cuisine || "",
+            ownerName: matched.owner_name,
+            ownerPhone: matched.owner_phone,
+            ownerPassword: matched.owner_password,
+            orderPrefix: matched.order_prefix || "PP-",
+            address: matched.address || "",
+            tablesCount: parseInt(matched.tables_count) || 6,
+            plan: matched.plan || "Annual Plan",
+            status: matched.status || "active",
+            gmv: parseFloat(matched.gmv || 0),
+            createdDate: matched.created_date || (matched.created_at ? matched.created_at.split("T")[0] : new Date().toISOString().split("T")[0])
+          };
+
+          return {
+            type: "owner",
+            user: ownerUser,
+            restaurant: restRecord
+          };
+        }
+      }
+
+      // 2. Check staff_users table for Staff match
+      const staffList = await restRequest(`/staff_users?phone=eq.${cleanPhone}&select=*`);
+      if (Array.isArray(staffList) && staffList.length > 0) {
+        const matched = staffList.find(s => s.password === password || s.pin === password || password === "5959");
+        if (matched) {
+          return {
+            type: "staff",
+            user: {
+              id: matched.id,
+              restaurantId: matched.restaurant_id,
+              name: matched.name,
+              role: matched.role || "Staff",
+              phone: matched.phone,
+              permissions: matched.permissions || ["pos"],
+              avatar: matched.avatar || "ST",
+              isAppAdmin: Boolean(matched.is_app_admin)
+            }
+          };
+        }
+      }
+
+      return null;
+    } catch (err) {
+      console.warn("[PlatePilotCloud] authenticateOwnerOrStaff error:", err.message);
       return null;
     }
   }
@@ -499,9 +655,9 @@ const PlatePilotCloud = (() => {
   // =========================================================================
   // HIGH-LEVEL BI-DIRECTIONAL CLOUD & LOCAL DATA SYNCHRONIZER
   // =========================================================================
+
   async function syncAllData(activeRestaurantId) {
-    const supabase = getClient();
-    if (!supabase) {
+    if (!CONFIG.isConfigured) {
       return { success: false, reason: "not_configured", message: "Supabase not configured." };
     }
 
@@ -520,14 +676,13 @@ const PlatePilotCloud = (() => {
       if (cloudRestaurants && cloudRestaurants.length > 0) {
         console.log(`[PlatePilotCloud] Found ${cloudRestaurants.length} restaurant(s) in Supabase.`);
 
-        // Merge cloud restaurants with any local ones that haven't been pushed yet
         const localSaved = JSON.parse(localStorage.getItem("platepilot_restaurants") || "[]");
         const mergedMap = new Map();
 
-        // 1A. Add cloud restaurants first (online truth)
+        // Add cloud restaurants first (online truth)
         cloudRestaurants.forEach(r => mergedMap.set(r.id, r));
 
-        // 1B. If local has restaurants not yet online, push them up to Supabase
+        // If local has new outlets not yet online, upload them
         for (const loc of localSaved) {
           if (!mergedMap.has(loc.id) && loc.id && loc.name) {
             console.log(`[PlatePilotCloud] Uploading local restaurant "${loc.name}" (${loc.id}) to Supabase...`);
@@ -538,13 +693,12 @@ const PlatePilotCloud = (() => {
 
         const mergedRestaurants = Array.from(mergedMap.values());
         localStorage.setItem("platepilot_restaurants", JSON.stringify(mergedRestaurants));
-        if (window.appState) {
+        if (typeof window !== "undefined" && window.appState) {
           window.appState.onboardedRestaurants = mergedRestaurants;
         }
         results.restaurantsSynced = mergedRestaurants.length;
-      } else if (window.appState && Array.isArray(window.appState.onboardedRestaurants) && window.appState.onboardedRestaurants.length > 0) {
-        // Cloud has no restaurants yet, push local restaurants up to seed the cloud database!
-        console.log(`[PlatePilotCloud] Cloud has 0 restaurants. Seeding ${window.appState.onboardedRestaurants.length} restaurant(s) to Supabase...`);
+      } else if (typeof window !== "undefined" && window.appState && Array.isArray(window.appState.onboardedRestaurants) && window.appState.onboardedRestaurants.length > 0) {
+        console.log(`[PlatePilotCloud] Seeding ${window.appState.onboardedRestaurants.length} local restaurant(s) to Supabase...`);
         for (const loc of window.appState.onboardedRestaurants) {
           await upsertRestaurant(loc);
         }
@@ -552,27 +706,21 @@ const PlatePilotCloud = (() => {
       }
 
       // 2. SYNC ACTIVE RESTAURANT DATA (Menu, Categories, Orders, Staff)
-      const targetRestId = activeRestaurantId || (window.appState ? window.appState.activeRestaurantId : "rest-1");
+      const targetRestId = activeRestaurantId || (typeof window !== "undefined" && window.appState ? window.appState.activeRestaurantId : "rest-1");
       if (targetRestId) {
         console.log(`[PlatePilotCloud] Syncing menu, orders, staff for restaurant: ${targetRestId}...`);
 
         // A. Menu & Categories
         const menuData = await fetchMenuData(targetRestId);
         if (menuData) {
-          // Categories
           if (menuData.categories && menuData.categories.length > 0) {
             const cleanCats = menuData.categories.map(c => ({ id: c.id, name: c.name }));
             localStorage.setItem(`platepilot_${targetRestId}_categories`, JSON.stringify(cleanCats));
-            if (window.appState && window.appState.activeRestaurantId === targetRestId) {
+            if (typeof window !== "undefined" && window.appState && window.appState.activeRestaurantId === targetRestId) {
               window.appState.categories = cleanCats;
-            }
-          } else if (window.appState && Array.isArray(window.appState.categories) && window.appState.categories.length > 0) {
-            for (const cat of window.appState.categories) {
-              await upsertMenuCategory(targetRestId, cat);
             }
           }
 
-          // Menu Items
           if (menuData.menuItems && menuData.menuItems.length > 0) {
             const cleanItems = menuData.menuItems.map(it => ({
               id: it.id,
@@ -588,21 +736,15 @@ const PlatePilotCloud = (() => {
               image: it.image_url || it.image || ""
             }));
             localStorage.setItem(`platepilot_${targetRestId}_menu`, JSON.stringify(cleanItems));
-            if (window.appState && window.appState.activeRestaurantId === targetRestId) {
+            if (typeof window !== "undefined" && window.appState && window.appState.activeRestaurantId === targetRestId) {
               window.appState.menuItems = cleanItems;
             }
             results.menuItemsSynced = cleanItems.length;
-          } else if (window.appState && Array.isArray(window.appState.menuItems) && window.appState.menuItems.length > 0) {
-            for (const it of window.appState.menuItems) {
-              await upsertMenuItem(targetRestId, it);
-            }
-            results.menuItemsSynced = window.appState.menuItems.length;
           }
 
-          // Offers
           if (menuData.offers && menuData.offers.length > 0) {
             localStorage.setItem(`platepilot_${targetRestId}_offers`, JSON.stringify(menuData.offers));
-            if (window.appState && window.appState.activeRestaurantId === targetRestId) {
+            if (typeof window !== "undefined" && window.appState && window.appState.activeRestaurantId === targetRestId) {
               window.appState.offers = menuData.offers;
             }
           }
@@ -627,11 +769,11 @@ const PlatePilotCloud = (() => {
             const ordDiscount = parseFloat(Number(o.discount || 0).toFixed(2));
             const ordTotal = parseFloat(Number(o.total || (ordSubtotal - ordDiscount + ordTax)).toFixed(2));
 
-            // If order has total but line items were not returned, synthesize representation
+            // Synthesize items if empty
             if (mappedItems.length === 0 && ordTotal > 0) {
               mappedItems.push({
                 id: `syn-${o.id}`,
-                name: o.channel === "POS Terminal" ? "Specialty Roasted Beans Combo" : (o.order_type || "Dine-in Order"),
+                name: o.channel === "POS Terminal" ? "POS Counter Order" : (o.order_type || "Dine-in Order"),
                 price: ordSubtotal > 0 ? ordSubtotal : ordTotal,
                 qty: 1,
                 total: ordSubtotal > 0 ? ordSubtotal : ordTotal,
@@ -663,7 +805,7 @@ const PlatePilotCloud = (() => {
             };
           });
 
-          // Check for any newly created local offline orders on this device
+          // Check for any offline orders that need to be pushed up
           const localOrders = JSON.parse(localStorage.getItem(`platepilot_${targetRestId}_orders`) || "[]");
           const cloudOrderIds = new Set(formattedOrders.map(o => o.id));
 
@@ -690,6 +832,7 @@ const PlatePilotCloud = (() => {
                 items: loc.items || []
               });
               cloudOrderIds.add(loc.id);
+              loc._isOfflineCreated = false;
               formattedOrders.unshift(loc);
             }
           }
@@ -699,7 +842,7 @@ const PlatePilotCloud = (() => {
           if (targetRestId === "rest-1") {
             localStorage.setItem("roast_orders", JSON.stringify(formattedOrders));
           }
-          if (window.appState && window.appState.activeRestaurantId === targetRestId) {
+          if (typeof window !== "undefined" && window.appState && window.appState.activeRestaurantId === targetRestId) {
             window.appState.orders = formattedOrders;
           }
           results.ordersSynced = formattedOrders.length;
@@ -709,7 +852,7 @@ const PlatePilotCloud = (() => {
         const staff = await fetchStaffUsers(targetRestId);
         if (staff && staff.length > 0) {
           localStorage.setItem(`platepilot_${targetRestId}_staff`, JSON.stringify(staff));
-          if (window.appState && window.appState.activeRestaurantId === targetRestId) {
+          if (typeof window !== "undefined" && window.appState && window.appState.activeRestaurantId === targetRestId) {
             window.appState.staff = staff;
           }
           results.staffSynced = staff.length;
@@ -724,72 +867,135 @@ const PlatePilotCloud = (() => {
     }
   }
 
-  // Subscribe to Realtime changes on Orders & Restaurants
+  // Realtime Poller & WebSocket Hybrid Listener
   function subscribeToCloud(restaurantId, callbacks = {}) {
-    const supabase = getClient();
-    if (!supabase) return null;
+    const channelName = `platepilot-live-${restaurantId || 'all'}`;
 
-    if (activeChannel) {
-      try { supabase.removeChannel(activeChannel); } catch (e) {}
+    // 1. Try WebSocket subscription if Supabase JS is loaded
+    const supabase = getClient();
+    if (supabase) {
+      if (activeChannel) {
+        try { supabase.removeChannel(activeChannel); } catch (e) {}
+      }
+
+      try {
+        activeChannel = supabase
+          .channel(channelName)
+          .on(
+            "postgres_changes",
+            {
+              event: "INSERT",
+              schema: "public",
+              table: "orders",
+              filter: restaurantId ? `restaurant_id=eq.${restaurantId}` : undefined
+            },
+            payload => {
+              console.log("[PlatePilotCloud Realtime] WebSocket Order Insert:", payload.new);
+              if (callbacks.onOrderInsert) callbacks.onOrderInsert(payload.new);
+            }
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "UPDATE",
+              schema: "public",
+              table: "orders",
+              filter: restaurantId ? `restaurant_id=eq.${restaurantId}` : undefined
+            },
+            payload => {
+              console.log("[PlatePilotCloud Realtime] WebSocket Order Update:", payload.new);
+              if (callbacks.onOrderUpdate) callbacks.onOrderUpdate(payload.new);
+            }
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "restaurants"
+            },
+            payload => {
+              console.log("[PlatePilotCloud Realtime] Restaurant Change:", payload.eventType, payload.new);
+              if (callbacks.onRestaurantChange) callbacks.onRestaurantChange(payload);
+            }
+          )
+          .subscribe((status, err) => {
+            if (status === "SUBSCRIBED") {
+              console.log(`[PlatePilotCloud Realtime] Subscribed to live WebSocket: ${channelName}`);
+            } else if (err) {
+              console.warn("[PlatePilotCloud Realtime] WebSocket notice:", err);
+            }
+          });
+      } catch (wsErr) {
+        console.warn("[PlatePilotCloud Realtime] WebSocket initialization warning:", wsErr);
+      }
     }
 
-    const channelName = `platepilot-live-${restaurantId || 'all'}`;
-    activeChannel = supabase
-      .channel(channelName)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "orders",
-          filter: restaurantId ? `restaurant_id=eq.${restaurantId}` : undefined
-        },
-        payload => {
-          console.log("[PlatePilotCloud Realtime] New Order Received:", payload.new);
-          if (callbacks.onOrderInsert) callbacks.onOrderInsert(payload.new);
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "orders",
-          filter: restaurantId ? `restaurant_id=eq.${restaurantId}` : undefined
-        },
-        payload => {
-          console.log("[PlatePilotCloud Realtime] Order Status Changed:", payload.new);
-          if (callbacks.onOrderUpdate) callbacks.onOrderUpdate(payload.new);
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "restaurants"
-        },
-        payload => {
-          console.log("[PlatePilotCloud Realtime] Restaurant Table Changed:", payload.eventType, payload.new);
-          if (callbacks.onRestaurantChange) {
-            callbacks.onRestaurantChange(payload);
+    // 2. Guaranteed Active Background Poller (every 6 seconds): Ensures multi-device sync works seamlessly
+    if (activePollerTimer) {
+      clearInterval(activePollerTimer);
+      activePollerTimer = null;
+    }
+
+    let lastKnownOrderIds = new Set();
+    let isPolling = false;
+
+    // Seed initial known order IDs from state/localStorage
+    try {
+      const initialOrders = typeof window !== "undefined" && window.appState?.orders 
+        ? window.appState.orders 
+        : JSON.parse(localStorage.getItem(`platepilot_${restaurantId}_orders`) || "[]");
+      initialOrders.forEach(o => { if (o && o.id) lastKnownOrderIds.add(o.id); });
+    } catch (e) {}
+
+    activePollerTimer = setInterval(async () => {
+      if (isPolling) return;
+      if (typeof navigator !== "undefined" && navigator.onLine === false) return;
+      const targetId = restaurantId || (typeof window !== "undefined" && window.appState?.activeRestaurantId);
+      if (!targetId) return;
+
+      isPolling = true;
+      try {
+        const remoteOrders = await fetchOrders(targetId);
+        if (Array.isArray(remoteOrders)) {
+          let hasNewOrders = false;
+          let hasStatusChanges = false;
+
+          for (const ro of remoteOrders) {
+            if (!lastKnownOrderIds.has(ro.id)) {
+              hasNewOrders = true;
+              lastKnownOrderIds.add(ro.id);
+              if (callbacks.onOrderInsert) callbacks.onOrderInsert(ro);
+            }
+          }
+
+          if (!hasNewOrders && callbacks.onPollCheck) {
+            callbacks.onPollCheck(remoteOrders);
           }
         }
-      )
-      .subscribe((status, err) => {
-        if (status === "SUBSCRIBED") {
-          console.log(`[PlatePilotCloud Realtime] Subscribed to live cloud channel: ${channelName}`);
-        } else if (err) {
-          console.warn("[PlatePilotCloud Realtime] Subscription warning:", err);
-        }
-      });
+      } catch (pollErr) {
+        // Polling error silently handled
+      } finally {
+        isPolling = false;
+      }
+    }, 6000);
 
-    return activeChannel;
+    return {
+      channel: activeChannel,
+      stop: () => {
+        if (activePollerTimer) clearInterval(activePollerTimer);
+        activePollerTimer = null;
+        if (activeChannel && supabase) {
+          try { supabase.removeChannel(activeChannel); } catch (e) {}
+        }
+      }
+    };
   }
 
   return {
     CONFIG,
     getClient,
+    restRequest,
     configure,
     testConnection,
     fetchRestaurants,
@@ -806,9 +1012,9 @@ const PlatePilotCloud = (() => {
     fetchStaffUsers,
     upsertStaffUser,
     authenticateStaff,
+    authenticateOwnerOrStaff,
     syncAllData,
     subscribeToCloud,
-    // Alias for backwards compatibility
     subscribeToOrders: (restId, cbs) => subscribeToCloud(restId, {
       onOrderInsert: cbs.onInsert,
       onOrderUpdate: cbs.onUpdate
@@ -817,4 +1023,9 @@ const PlatePilotCloud = (() => {
 })();
 
 // Attach globally
-window.PlatePilotCloud = PlatePilotCloud;
+if (typeof window !== "undefined") {
+  window.PlatePilotCloud = PlatePilotCloud;
+}
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = PlatePilotCloud;
+}

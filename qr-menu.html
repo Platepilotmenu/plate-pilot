@@ -1018,10 +1018,26 @@
       const tax = (subtotal - discount) * 0.05;
       const grandTotal = parseFloat((subtotal - discount + tax).toFixed(2));
 
-      // Retrieve existing order count for clean order numbers
+      // Retrieve existing orders and find highest numeric sequence for collision-proof order numbers
       const savedOrders = JSON.parse(localStorage.getItem(`platepilot_${session.restaurantId}_orders`) || "[]");
-      const orderNum = 101 + savedOrders.length;
-      const orderId = `${prefix}${orderNum}`;
+      let maxNum = 100;
+      const usedIds = new Set();
+      for (const ord of savedOrders) {
+        if (!ord || !ord.id) continue;
+        const idStr = String(ord.id).trim().toUpperCase();
+        usedIds.add(idStr);
+        const m = idStr.match(/(\d+)/);
+        if (m) {
+          const n = parseInt(m[1], 10);
+          if (!isNaN(n) && n > maxNum && n < 999999) maxNum = n;
+        }
+      }
+      let nextNum = maxNum + 1;
+      let orderId = `${prefix}${nextNum}`;
+      while (usedIds.has(orderId.toUpperCase())) {
+        nextNum++;
+        orderId = `${prefix}${nextNum}`;
+      }
 
       const newOrderTicket = {
         id: orderId,
