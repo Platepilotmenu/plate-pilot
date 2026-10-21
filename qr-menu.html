@@ -338,7 +338,7 @@
             <span id="bill-discount-val">-₹0.00</span>
           </div>
           <div class="flex justify-between text-neutral-400">
-            <span>GST (5%)</span>
+            <span id="bill-tax-label">GST (5%)</span>
             <span id="bill-tax">₹0.00</span>
           </div>
           <div class="pt-2 border-t border-neutral-800 flex justify-between items-center text-sm font-headline font-black text-white">
@@ -599,6 +599,7 @@
       const savedCats = JSON.parse(localStorage.getItem(`platepilot_${rId}_categories`) || "null");
       const savedMenu = JSON.parse(localStorage.getItem(`platepilot_${rId}_menu`) || "null");
       const savedOffers = JSON.parse(localStorage.getItem(`platepilot_${rId}_offers`) || "null");
+      const savedSettings = JSON.parse(localStorage.getItem(`platepilot_${rId}_settings`) || "null");
 
       const defaultPack = OUTLET_PACKS[rId] || OUTLET_PACKS["rest-1"];
 
@@ -607,6 +608,12 @@
         cuisine: defaultPack.cuisine,
         address: defaultPack.address,
         orderPrefix: defaultPack.orderPrefix
+      };
+
+      session.settings = savedSettings || {
+        taxRate: (savedRest && savedRest.taxRate !== undefined) ? parseFloat(savedRest.taxRate) : 5.0,
+        taxEnabled: (savedRest && savedRest.taxEnabled !== undefined) ? savedRest.taxEnabled : true,
+        taxLabel: (savedRest && savedRest.taxLabel) ? savedRest.taxLabel : "GST (5%)"
       };
 
       session.categories = (savedCats && savedCats.length > 0) ? savedCats : defaultPack.categories;
@@ -888,11 +895,17 @@
         }
       }
 
-      const tax = (subtotal - discount) * 0.05;
+      const isTaxEnabled = session.settings ? session.settings.taxEnabled !== false : true;
+      const taxRate = isTaxEnabled ? (parseFloat(session.settings?.taxRate) ?? (session.restaurant?.taxRate !== undefined ? parseFloat(session.restaurant.taxRate) : 5.0)) : 0;
+      const taxLabel = session.settings?.taxLabel || (taxRate > 0 ? `GST (${taxRate}%)` : "Tax Exempt");
+
+      const tax = (subtotal - discount) * (taxRate / 100);
       const grandTotal = Math.max(0, subtotal - discount + tax);
 
       // Update Drawer Bill
       document.getElementById("bill-subtotal").textContent = `₹${subtotal.toFixed(2)}`;
+      const taxLabelEl = document.getElementById("bill-tax-label");
+      if (taxLabelEl) taxLabelEl.textContent = taxLabel;
       document.getElementById("bill-tax").textContent = `₹${tax.toFixed(2)}`;
       document.getElementById("bill-grand-total").textContent = `₹${grandTotal.toFixed(2)}`;
 
@@ -1015,7 +1028,9 @@
           : session.appliedOffer.value;
         discount = Math.min(discount, subtotal);
       }
-      const tax = (subtotal - discount) * 0.05;
+      const isTaxEnabled = session.settings ? session.settings.taxEnabled !== false : true;
+      const taxRate = isTaxEnabled ? (parseFloat(session.settings?.taxRate) ?? (session.restaurant?.taxRate !== undefined ? parseFloat(session.restaurant.taxRate) : 5.0)) : 0;
+      const tax = parseFloat(((subtotal - discount) * (taxRate / 100)).toFixed(2));
       const grandTotal = parseFloat((subtotal - discount + tax).toFixed(2));
 
       // Retrieve existing orders and find highest numeric sequence for collision-proof order numbers

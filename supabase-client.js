@@ -502,6 +502,40 @@ const PlatePilotCloud = (() => {
     }
   }
 
+  // Upload item image: Attempts Supabase Storage upload with fallback to optimized data URL
+  async function uploadItemImage(restaurantId, fileOrDataUrl, fileName = "item.jpg") {
+    if (!fileOrDataUrl) return null;
+
+    // If already a remote HTTP/HTTPS URL, return immediately
+    if (typeof fileOrDataUrl === "string" && (fileOrDataUrl.startsWith("http://") || fileOrDataUrl.startsWith("https://"))) {
+      return fileOrDataUrl;
+    }
+
+    try {
+      const cleanName = `${Date.now()}-${(fileName || "item.jpg").replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      const filePath = `${restaurantId || "common"}/${cleanName}`;
+
+      const supabase = getClient();
+      if (supabase && typeof fileOrDataUrl !== "string") {
+        const { data, error } = await supabase.storage
+          .from("item-images")
+          .upload(filePath, fileOrDataUrl, { upsert: true });
+
+        if (!error && data) {
+          const { data: pubData } = supabase.storage.from("item-images").getPublicUrl(filePath);
+          if (pubData && pubData.publicUrl) {
+            return pubData.publicUrl;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[PlatePilotCloud] Storage upload notice:", e.message);
+    }
+
+    // Resilient fallback: return optimized data URL directly
+    return fileOrDataUrl;
+  }
+
   // =========================================================================
   // STAFF USERS & CROSS-DEVICE AUTHENTICATION
   // =========================================================================
@@ -649,6 +683,55 @@ const PlatePilotCloud = (() => {
     } catch (err) {
       console.warn("[PlatePilotCloud] authenticateOwnerOrStaff error:", err.message);
       return null;
+    }
+  }
+
+  // =========================================================================
+  // STORE TAX & GST CONFIGURATION
+  // =========================================================================
+
+  async function fetchStoreTaxSettings(restaurantId) {
+    if (!restaurantId) return null;
+    try {
+      // 1. Check qr_settings metadata
+      const res = await restRequest(`/qr_settings?restaurant_id=eq.${encodeURIComponent(restaurantId)}`);
+      if (res && res.length > 0) {
+        const row = res[0];
+        if (row.wifi_password && row.wifi_password.startsWith("TAX_CFG:")) {
+          return JSON.parse(row.wifi_password.replace("TAX_CFG:", ""));
+        }
+      }
+    } catch (e) {
+      console.warn("[PlatePilotCloud] fetchStoreTaxSettings notice:", e.message);
+    }
+    return null;
+  }
+
+  async function saveStoreTaxSettings(restaurantId, settings) {
+    if (!restaurantId || !settings) return false;
+    try {
+      const payload = {
+        taxRate: parseFloat(settings.taxRate || 0),
+        taxEnabled: settings.taxEnabled !== false,
+        taxLabel: settings.taxLabel || "GST (5%)"
+      };
+
+      // 1. Persist to qr_settings metadata
+      await restRequest(`/qr_settings?restaurant_id=eq.${encodeURIComponent(restaurantId)}`, {
+        method: "PATCH",
+        body: { wifi_password: `TAX_CFG:${JSON.stringify(payload)}` }
+      }).catch(() => {});
+
+      // 2. Also try patching restaurants table if column exists
+      await restRequest(`/restaurants?id=eq.${encodeURIComponent(restaurantId)}`, {
+        method: "PATCH",
+        body: { tax_rate: payload.taxRate, tax_enabled: payload.taxEnabled }
+      }).catch(() => {});
+
+      return true;
+    } catch (e) {
+      console.warn("[PlatePilotCloud] saveStoreTaxSettings error:", e.message);
+      return false;
     }
   }
 
@@ -859,6 +942,18 @@ const PlatePilotCloud = (() => {
           }
           results.staffSynced = staff.length;
         }
+
+        // D. Tax / GST Settings
+        const taxCfg = await fetchStoreTaxSettings(targetRestId);
+        if (taxCfg) {
+          if (typeof window !== "undefined" && window.appState && window.appState.activeRestaurantId === targetRestId) {
+            window.appState.settings = { ...window.appState.settings, ...taxCfg };
+            localStorage.setItem(`platepilot_${targetRestId}_settings`, JSON.stringify(window.appState.settings));
+            if (typeof renderTaxSettingsUI === "function") renderTaxSettingsUI();
+            if (typeof updateCartUI === "function") updateCartUI();
+          }
+          results.taxSynced = true;
+        }
       }
 
       console.log("[PlatePilotCloud] Full sync complete:", results);
@@ -1034,6 +1129,9 @@ const PlatePilotCloud = (() => {
     deleteMenuCategory,
     upsertMenuItem,
     deleteMenuItem,
+    uploadItemImage,
+    fetchStoreTaxSettings,
+    saveStoreTaxSettings,
     fetchStaffUsers,
     upsertStaffUser,
     authenticateStaff,

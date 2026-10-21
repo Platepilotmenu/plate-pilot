@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS public.restaurants (
     order_prefix TEXT NOT NULL DEFAULT 'RC-',
     address TEXT,
     tables_count INTEGER NOT NULL DEFAULT 6,
+    tax_rate NUMERIC(5, 2) NOT NULL DEFAULT 5.00,
+    tax_enabled BOOLEAN NOT NULL DEFAULT true,
     plan TEXT NOT NULL DEFAULT 'Annual Plan',
     status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'pending', 'suspended')),
     gmv NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
