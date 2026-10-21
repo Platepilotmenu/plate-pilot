@@ -564,6 +564,14 @@
     <!-- ------------------------------------------------------------- -->
     <div id="screen-orders" class="hidden w-full max-w-3xl mx-auto px-4 pt-2 space-y-3 pb-8">
 
+      <!-- Native Pull-To-Refresh Indicator for Orders -->
+      <div id="orders-ptr-container" class="w-full flex items-center justify-center overflow-hidden transition-all duration-200 pointer-events-none opacity-0 max-h-0">
+        <div class="flex items-center gap-2 py-2 px-4 rounded-full bg-orange-50 border border-orange-200 text-orange-700 shadow-sm text-xs font-headline font-bold">
+          <span class="material-symbols-outlined text-[18px] transition-transform duration-200" id="orders-ptr-icon">arrow_downward</span>
+          <span id="orders-ptr-text">Pull down to refresh orders</span>
+        </div>
+      </div>
+
       <!-- Orders Live Header Bar (Lead Time & Search bar removed per user request) -->
       <section class="flex items-center justify-between py-1 bg-white border border-orange-200/80 px-3.5 py-2.5 rounded-xl shadow-xs">
         <div class="flex items-center gap-2">
@@ -576,8 +584,8 @@
             <span class="material-symbols-outlined text-[16px]" id="chime-icon">volume_up</span>
             <span class="hidden xs:inline">Alert Sound</span>
           </button>
-          <button type="button" onclick="refreshOrdersFeed()" class="h-8 w-8 bg-white hover:bg-orange-50 border border-orange-200 text-orange-600 rounded-lg flex items-center justify-center shadow-xs active:scale-95 transition-transform cursor-pointer" title="Refresh Live Orders">
-            <span class="material-symbols-outlined text-[16px]">sync</span>
+          <button type="button" id="btn-manual-refresh-orders" onclick="refreshOrdersFeed(true)" class="h-8 w-8 bg-white hover:bg-orange-50 border border-orange-200 text-orange-600 rounded-lg flex items-center justify-center shadow-xs active:scale-95 transition-transform cursor-pointer" title="Refresh Live Orders from Supabase">
+            <span class="material-symbols-outlined text-[16px]" id="manual-refresh-orders-icon">sync</span>
           </button>
         </div>
       </section>
@@ -619,26 +627,20 @@
         <!-- Injected via JavaScript -->
       </section>
 
-      <!-- Rush Target Banner -->
-      <section class="bg-white border border-orange-200 p-3.5 rounded-xl shadow-sm flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center shrink-0 shadow-sm">
-            <span class="material-symbols-outlined text-[20px]">local_fire_department</span>
-          </div>
-          <div class="flex flex-col">
-            <span class="font-headline text-[14px] text-neutral-900 font-bold">Rush Target: 92% On-Time</span>
-            <span class="text-[12px] text-neutral-500">51 total tickets served this morning shift</span>
-          </div>
-        </div>
-        <span class="material-symbols-outlined text-orange-500 text-[20px]">chevron_right</span>
-      </section>
-
     </div>
 
     <!-- ------------------------------------------------------------- -->
     <!-- SCREEN 4: CART MENU / INVENTORY (#screen-menu)                 -->
     <!-- ------------------------------------------------------------- -->
     <div id="screen-menu" class="hidden w-full max-w-3xl mx-auto px-4 pt-2 space-y-3 pb-24">
+
+      <!-- Native Pull-To-Refresh Indicator for Menu & Inventory -->
+      <div id="menu-ptr-container" class="w-full flex items-center justify-center overflow-hidden transition-all duration-200 pointer-events-none opacity-0 max-h-0">
+        <div class="flex items-center gap-2 py-2 px-4 rounded-full bg-orange-50 border border-orange-200 text-orange-700 shadow-sm text-xs font-headline font-bold">
+          <span class="material-symbols-outlined text-[18px] transition-transform duration-200" id="menu-ptr-icon">arrow_downward</span>
+          <span id="menu-ptr-text">Pull down to refresh catalog</span>
+        </div>
+      </div>
 
       <!-- Top Header & Action Row -->
       <section class="flex items-center justify-between pt-1">
@@ -647,6 +649,9 @@
           <h1 class="font-headline text-[22px] text-neutral-900 tracking-tight font-bold">Cart Menu</h1>
         </div>
         <div class="flex items-center gap-2">
+          <button type="button" onclick="performMenuPullSync(true)" class="h-11 w-11 bg-white hover:bg-orange-50 border border-orange-200 text-orange-600 rounded-xl flex items-center justify-center shadow-xs active:scale-95 transition-transform cursor-pointer" title="Refresh Menu Catalog">
+            <span class="material-symbols-outlined text-[18px]" id="manual-refresh-menu-icon">sync</span>
+          </button>
           <button type="button" onclick="openAddCategoryModal()" class="flex items-center gap-1 h-11 px-3.5 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 rounded-xl font-headline text-[13px] font-bold active:scale-95 transition-all shadow-xs cursor-pointer">
             <span class="material-symbols-outlined text-[18px]">category</span>
             <span class="hidden xs:inline">Add</span>
@@ -1962,22 +1967,22 @@
           </div>
         </div>
 
-        <!-- UPI Details Section (When UPI selected, QR code image removed) -->
+        <!-- UPI Details Section (When UPI selected: Standard Counter QR & Soundbox Verification) -->
         <div id="upi-details-section" class="hidden space-y-2 bg-orange-50/60 p-3 rounded-xl border border-orange-200">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <div class="w-7 h-7 rounded-lg bg-orange-500 text-white flex items-center justify-center shrink-0">
-                <span class="material-symbols-outlined text-[16px]">smartphone</span>
+                <span class="material-symbols-outlined text-[16px]">qr_code_scanner</span>
               </div>
-              <span class="text-xs font-headline font-bold text-neutral-800">Direct UPI Payment</span>
+              <span class="text-xs font-headline font-bold text-neutral-800">UPI Payment</span>
             </div>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-headline font-extrabold bg-emerald-100 text-emerald-800">Instant</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-headline font-extrabold bg-emerald-100 text-emerald-800">Standard / QR</span>
           </div>
-          <div class="bg-white p-2 rounded-lg border border-orange-200 text-xs flex items-center justify-between">
-            <span class="text-neutral-500">Merchant UPI VPA:</span>
-            <span class="font-bold text-orange-600 font-mono text-[13px]">roastcart@upi</span>
+          <div class="bg-white p-2.5 rounded-lg border border-orange-200 text-xs flex items-center justify-between">
+            <span class="text-neutral-500 font-medium">Payment Mode:</span>
+            <span class="font-bold text-orange-600 font-mono text-[13px]">UPI / QR Scan</span>
           </div>
-          <p class="text-[11px] text-neutral-500 text-center">Verify settlement on customer phone or soundbox.</p>
+          <p class="text-[11px] text-neutral-500 text-center">Verify payment settlement on counter QR display or UPI soundbox.</p>
         </div>
 
         <!-- Order Mode Selection (Takeaway & Dine-in Only) -->
@@ -2817,13 +2822,13 @@
           </div>
         </div>
 
-        <!-- Remember Me / Keep Me Signed In Checkbox -->
+        <!-- Remember Login Number Checkbox (Enforces Mandatory PIN on Launch) -->
         <div class="flex items-center justify-between pt-0.5 select-none">
           <label class="flex items-center gap-2 cursor-pointer group">
             <input type="checkbox" id="login-remember-me" checked class="w-4 h-4 rounded border-neutral-700 bg-neutral-800 text-orange-500 focus:ring-orange-500/30 focus:ring-offset-0 cursor-pointer accent-orange-500"/>
-            <span class="text-xs font-headline font-medium text-neutral-300 group-hover:text-white transition-colors">Keep me signed in</span>
+            <span class="text-xs font-headline font-medium text-neutral-300 group-hover:text-white transition-colors">Remember Login Number</span>
           </label>
-          <span class="text-[11px] text-neutral-500">Auto-login next time</span>
+          <span class="text-[11px] text-neutral-500">PIN required on launch</span>
         </div>
 
         <div id="login-error-msg" class="hidden p-2.5 rounded-xl bg-red-950/80 border border-red-800 text-red-200 text-xs flex items-center gap-2">
@@ -3428,6 +3433,12 @@
     function normalizeMenuItems(items) {
       if (!Array.isArray(items)) return;
       items.forEach(it => {
+        if (!it.title && it.name) it.title = it.name;
+        if (!it.name && it.title) it.name = it.title;
+        if (!it.title && !it.name) {
+          it.title = "Menu Item";
+          it.name = "Menu Item";
+        }
         if (!it.category) {
           const t = (it.title || "").toLowerCase();
           if (t.includes("cold") || t.includes("iced") || t.includes("juice") || t.includes("chai") || t.includes("lassi") || t.includes("cooler")) it.category = "beverages";
@@ -3819,9 +3830,12 @@
       if (!container) return;
 
       const query = (filterQuery || "").toLowerCase().trim();
-      const items = appState.menuItems.filter(item => {
+      const items = (appState.menuItems || []).filter(item => {
+        if (!item) return false;
         const matchesCat = itemMatchesCategory(item, cat);
-        const matchesQuery = !query || item.title.toLowerCase().includes(query) || (item.subtitle || "").toLowerCase().includes(query);
+        const itemTitle = (item.title || item.name || "").toLowerCase();
+        const itemSub = (item.subtitle || item.desc || "").toLowerCase();
+        const matchesQuery = !query || itemTitle.includes(query) || itemSub.includes(query);
         return matchesCat && matchesQuery;
       });
 
@@ -3837,54 +3851,100 @@
         return;
       }
 
-      container.innerHTML = items.map(item => `
-        <div onclick="addPosItemToCart('${item.id}')" class="pos-card group bg-white border ${item.inStock ? 'border-orange-100 hover:border-orange-500' : 'border-neutral-200 opacity-60'} rounded-xl p-2 flex flex-col justify-between shadow-[0_2px_8px_rgba(249,115,22,0.06)] active:scale-[0.98] transition-all cursor-pointer relative overflow-hidden">
-          <div class="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-orange-50">
-            <img class="w-full h-full object-cover ${item.inStock ? '' : 'grayscale'}" src="${item.image}" alt="${item.title}"/>
-            <div class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full ${item.inStock ? 'bg-orange-500 text-white' : 'bg-neutral-600 text-white'} font-headline text-[10px] uppercase font-bold shadow-sm">
-              ${item.inStock ? (item.badgeText || (item.stock + ' in stock')) : 'Sold Out'}
-            </div>
-          </div>
-          <div class="pt-2 flex flex-col flex-1 justify-between">
-            <div>
-              <h3 class="font-headline text-[14px] text-neutral-900 group-hover:text-orange-600 transition-colors line-clamp-1 leading-snug font-bold ${item.inStock ? '' : 'line-through'}">${item.title}</h3>
-              <p class="text-[11px] text-neutral-500 truncate">${item.subtitle || 'Fresh Specialty'}</p>
-            </div>
-            <div class="mt-2 pt-1 flex items-center justify-between">
-              <span class="font-headline font-numeric text-[15px] text-orange-600 font-bold">₹${item.price.toFixed(2)}</span>
-              <button aria-label="Add ${item.title}" class="w-10 h-10 rounded-xl ${item.inStock ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/20' : 'bg-neutral-200 text-neutral-400 cursor-not-allowed'} flex items-center justify-center font-bold active:scale-90 transition-all">
-                <span class="material-symbols-outlined text-[20px]">add</span>
+      container.innerHTML = items.map(item => {
+        const title = item.title || item.name || "Menu Item";
+        const inCartItem = (appState.cart || []).find(c => c.id === item.id);
+        const inCartQty = inCartItem ? inCartItem.qty : 0;
+        const imgUrl = item.image || item.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60";
+
+        // Dynamic Interactive Counter Stepper: Switches between "+" button and "[-] [Qty] [+]" stepper
+        let actionBtnHtml = "";
+        if (inCartQty > 0) {
+          actionBtnHtml = `
+            <div class="h-10 rounded-xl bg-orange-500 text-white flex items-center shadow-md shadow-orange-500/20 overflow-hidden" onclick="event.stopPropagation()">
+              <button type="button" onclick="changePosItemQty('${item.id}', -1, event)" aria-label="Decrease quantity" class="w-8 h-full flex items-center justify-center hover:bg-orange-600 active:scale-90 transition-all cursor-pointer font-bold select-none text-white">
+                <span class="material-symbols-outlined text-[18px]">remove</span>
+              </button>
+              <span class="px-2 font-headline font-bold text-[13px] text-white select-none min-w-[20px] text-center">${inCartQty}</span>
+              <button type="button" onclick="changePosItemQty('${item.id}', 1, event)" aria-label="Increase quantity" class="w-8 h-full flex items-center justify-center hover:bg-orange-600 active:scale-90 transition-all cursor-pointer font-bold select-none text-white">
+                <span class="material-symbols-outlined text-[18px]">add</span>
               </button>
             </div>
+          `;
+        } else {
+          actionBtnHtml = `
+            <button type="button" onclick="changePosItemQty('${item.id}', 1, event)" aria-label="Add ${title}" class="w-10 h-10 rounded-xl ${item.inStock ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/20' : 'bg-neutral-200 text-neutral-400 cursor-not-allowed'} flex items-center justify-center font-bold active:scale-90 transition-all cursor-pointer">
+              <span class="material-symbols-outlined text-[20px]">add</span>
+            </button>
+          `;
+        }
+
+        return `
+          <div onclick="if(!(${inCartQty} > 0)) changePosItemQty('${item.id}', 1, event)" class="pos-card group bg-white border ${item.inStock ? (inCartQty > 0 ? 'border-orange-500 ring-2 ring-orange-500/10' : 'border-orange-100 hover:border-orange-500') : 'border-neutral-200 opacity-60'} rounded-xl p-2 flex flex-col justify-between shadow-[0_2px_8px_rgba(249,115,22,0.06)] active:scale-[0.98] transition-all cursor-pointer relative overflow-hidden">
+            <div class="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-orange-50">
+              <img class="w-full h-full object-cover ${item.inStock ? '' : 'grayscale'}" src="${imgUrl}" alt="${title}"/>
+              <div class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full ${item.inStock ? 'bg-orange-500 text-white' : 'bg-neutral-600 text-white'} font-headline text-[10px] uppercase font-bold shadow-sm">
+                ${item.inStock ? (item.badgeText || (item.stock + ' in stock')) : 'Sold Out'}
+              </div>
+              ${inCartQty > 0 ? `<div class="absolute top-1.5 right-1.5 px-2 py-0.5 rounded-full bg-emerald-600 text-white font-headline text-[10px] uppercase font-bold shadow-sm">${inCartQty} in cart</div>` : ''}
+            </div>
+            <div class="pt-2 flex flex-col flex-1 justify-between">
+              <div>
+                <h3 class="font-headline text-[14px] text-neutral-900 group-hover:text-orange-600 transition-colors line-clamp-1 leading-snug font-bold ${item.inStock ? '' : 'line-through'}">${title}</h3>
+                <p class="text-[11px] text-neutral-500 truncate">${item.subtitle || 'Fresh Specialty'}</p>
+              </div>
+              <div class="mt-2 pt-1 flex items-center justify-between">
+                <span class="font-headline font-numeric text-[15px] text-orange-600 font-bold">₹${item.price.toFixed(2)}</span>
+                ${actionBtnHtml}
+              </div>
+            </div>
           </div>
-        </div>
-      `).join("");
+        `;
+      }).join("");
       updatePosCategoryCounts();
     }
 
-    function addPosItemToCart(itemId) {
+    function changePosItemQty(itemId, delta, event) {
+      if (event) event.stopPropagation();
       const item = appState.menuItems.find(i => i.id === itemId);
       if (!item) return;
 
-      if (!item.inStock) {
-        showToast(item.title + " is currently Sold Out (86'd)!", "error");
+      if (!item.inStock && delta > 0) {
+        showToast((item.title || item.name || "Item") + " is currently Sold Out (86'd)!", "error");
         return;
       }
 
-      const existing = appState.cart.find(c => c.id === itemId);
-      if (existing) {
-        existing.qty += 1;
-      } else {
-        appState.cart.push({
-          id: item.id,
-          title: item.title,
-          price: item.price,
-          qty: 1
-        });
+      const existingIndex = appState.cart.findIndex(c => c.id === itemId);
+      if (delta > 0) {
+        if (existingIndex !== -1) {
+          appState.cart[existingIndex].qty += delta;
+        } else {
+          appState.cart.push({
+            id: item.id,
+            title: item.title || item.name || "Menu Item",
+            name: item.title || item.name || "Menu Item",
+            price: item.price,
+            category: item.category || "General Menu",
+            qty: 1
+          });
+        }
+      } else if (delta < 0) {
+        if (existingIndex !== -1) {
+          appState.cart[existingIndex].qty += delta;
+          if (appState.cart[existingIndex].qty <= 0) {
+            appState.cart.splice(existingIndex, 1);
+          }
+        }
       }
 
+      saveState();
       updateCartUI();
-      showToast("Added " + item.title + " (₹" + item.price.toFixed(2) + ")");
+      renderPosGrid();
+      updateBadges();
+    }
+
+    function addPosItemToCart(itemId) {
+      changePosItemQty(itemId, 1);
     }
 
     function calculateCurrentTotal() {
@@ -4037,7 +4097,10 @@
     function incrementCartItem(id) {
       const it = appState.cart.find(c => c.id === id);
       if (it) it.qty += 1;
+      saveState();
       updateCartUI();
+      renderPosGrid();
+      updateBadges();
     }
 
     function decrementCartItem(id) {
@@ -4049,13 +4112,19 @@
           appState.cart.splice(idx, 1);
         }
       }
+      saveState();
       updateCartUI();
+      renderPosGrid();
+      updateBadges();
     }
 
     function clearCurrentCart() {
       appState.cart = [];
       appState.discount = { type: 'none', value: 0, label: '' };
+      saveState();
       updateCartUI();
+      renderPosGrid();
+      updateBadges();
       showToast("Current ticket cleared");
       toggleCartDrawer(false);
       togglePosInlineTicket(false);
@@ -4354,6 +4423,7 @@
         category: c.category || "General Menu"
       }));
 
+      const selectedPaymentMode = (appState.settings.selectedPayment || "cash").toUpperCase() === "CASH" ? "CASH" : "UPI";
       const now = new Date();
       const newOrder = {
         id: newOrderId,
@@ -4365,7 +4435,9 @@
         customer: fullCustomerDesc,
         customerName: customerName,
         customerPhone: customerPhone,
-        paymentStatus: "PAID (" + (appState.settings.selectedPayment || "CASH").toUpperCase() + ")",
+        paymentStatus: "PAID (" + selectedPaymentMode + ")",
+        payment_mode: selectedPaymentMode,
+        paymentMethod: selectedPaymentMode === "CASH" ? "Cash" : "UPI",
         items: orderItems,
         subtotal: parseFloat(total.toFixed(2)),
         discount: discountAmount > 0 ? {
@@ -4378,7 +4450,7 @@
 
       // Update state
       appState.orders.unshift(newOrder);
-      if (appState.settings.selectedPayment === "cash") {
+      if (selectedPaymentMode === "CASH") {
         appState.drawer.cashTendered += total;
       }
       const activeRest = (appState.onboardedRestaurants || []).find(r => r.id === appState.activeRestaurantId);
@@ -4398,7 +4470,8 @@
           orderType: appState.settings.orderMode === "dine-in" ? "Dine-in" : "Takeaway",
           customerName: customerName,
           customerPhone: customerPhone,
-          paymentMethod: appState.settings.selectedPayment === "cash" ? "Cash" : "UPI",
+          paymentMethod: selectedPaymentMode === "CASH" ? "Cash" : "UPI",
+          payment_mode: selectedPaymentMode,
           paymentStatus: "PAID",
           subtotal: parseFloat(subtotal.toFixed(2)),
           discount: discountAmount,
@@ -4859,10 +4932,87 @@
       renderOrdersStream();
     }
 
-    function refreshOrdersFeed() {
-      showToast("Refreshed live orders stream", "sync");
+    async function refreshOrdersFeed(showToastMsg = true) {
+      const refreshBtnIcon = document.getElementById("manual-refresh-orders-icon");
+      if (refreshBtnIcon) refreshBtnIcon.classList.add("animate-spin");
+
+      if (showToastMsg) {
+        showToast("Fetching live orders from Supabase...", "sync");
+      }
+
+      if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG.isConfigured) {
+        try {
+          const cloudOrders = await window.PlatePilotCloud.fetchOrders(appState.activeRestaurantId);
+          if (Array.isArray(cloudOrders)) {
+            const formatted = cloudOrders.map(o => {
+              const rawItems = o.items || o.order_items || [];
+              const mappedItems = Array.isArray(rawItems) && rawItems.length > 0 ? rawItems.map(it => ({
+                id: it.id || it.menu_item_id,
+                name: it.name || it.title || "Menu Item",
+                price: parseFloat(Number(it.price || 0).toFixed(2)),
+                qty: parseInt(it.quantity || it.qty || 1),
+                total: parseFloat(Number(it.item_total || ((it.price || 0) * (it.quantity || it.qty || 1))).toFixed(2)),
+                notes: it.notes || ""
+              })) : [{
+                id: `syn-${o.id}`,
+                name: o.channel === "POS Terminal" ? "POS Counter Order" : (o.order_type || "Dine-in Order"),
+                price: parseFloat(Number(o.subtotal || o.total || 0).toFixed(2)),
+                qty: 1,
+                total: parseFloat(Number(o.total || o.subtotal || 0).toFixed(2)),
+                notes: ""
+              }];
+
+              const ordSubtotal = parseFloat(Number(o.subtotal || o.total || 0).toFixed(2));
+              const ordTax = parseFloat(Number(o.tax || 0).toFixed(2));
+              const ordDiscount = parseFloat(Number(o.discount || 0).toFixed(2));
+              const ordTotal = parseFloat(Number(o.total || (ordSubtotal - ordDiscount + ordTax)).toFixed(2));
+
+              return {
+                id: o.id,
+                type: o.order_type || "Dine-in",
+                created_at: o.created_at,
+                createdAt: o.created_at,
+                date: o.created_at ? o.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
+                timeAgo: o.created_at ? new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Recently",
+                receivedTime: o.created_at ? new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Recently",
+                customer: o.customer_name || "Guest",
+                customerName: o.customer_name || "Guest",
+                customerPhone: o.customer_phone || "",
+                paymentMethod: o.payment_method || "UPI",
+                paymentStatus: o.payment_status || "PAID",
+                items: mappedItems,
+                subtotal: ordSubtotal,
+                discount: ordDiscount,
+                tax: ordTax,
+                total: ordTotal,
+                status: (o.status || "active").toLowerCase().trim(),
+                notes: o.notes || "",
+                needsAcceptance: Boolean(o.needs_acceptance)
+              };
+            });
+
+            appState.orders = formatted;
+            localStorage.setItem(`platepilot_${appState.activeRestaurantId}_orders`, JSON.stringify(formatted));
+            if (appState.activeRestaurantId === "rest-1") {
+              localStorage.setItem("roast_orders", JSON.stringify(formatted));
+            }
+          }
+        } catch (err) {
+          console.warn("Manual orders refresh notice:", err);
+        }
+      }
+
       renderOrdersStream();
+      renderHomeOrders();
+      renderHomeDashboardMetrics();
       updateBadges();
+
+      if (refreshBtnIcon) {
+        setTimeout(() => refreshBtnIcon.classList.remove("animate-spin"), 500);
+      }
+      if (showToastMsg) {
+        showToast("Orders feed updated with latest cloud records!", "cloud_done");
+      }
     }
 
     let audioChimeActive = true;
@@ -5480,20 +5630,63 @@
       probeNetworkConnectivity();
     }
 
-    // --- PULL-TO-REFRESH CONTROLLER FOR DASHBOARD (#screen-home) ---
+    // --- MULTI-SCREEN PULL-TO-REFRESH CONTROLLER FOR DASHBOARD (#screen-home), ORDERS (#screen-orders), & MENU (#screen-menu) ---
     let isPullingToRefresh = false;
     let ptrStartY = 0;
     let ptrCurrentY = 0;
     let ptrIsActive = false;
+    let activePtrTarget = null;
+
+    function getActivePtrConfig() {
+      const homeScreen = document.getElementById("screen-home");
+      const ordersScreen = document.getElementById("screen-orders");
+      const menuScreen = document.getElementById("screen-menu");
+
+      if (homeScreen && !homeScreen.classList.contains("hidden")) {
+        return {
+          type: "home",
+          container: document.getElementById("home-ptr-container"),
+          icon: document.getElementById("home-ptr-icon"),
+          text: document.getElementById("home-ptr-text"),
+          defaultText: "Pull down to sync data",
+          releaseText: "Release to sync",
+          syncingText: "Syncing live data...",
+          syncFn: performDashboardPullSync
+        };
+      }
+      if (ordersScreen && !ordersScreen.classList.contains("hidden")) {
+        return {
+          type: "orders",
+          container: document.getElementById("orders-ptr-container"),
+          icon: document.getElementById("orders-ptr-icon"),
+          text: document.getElementById("orders-ptr-text"),
+          defaultText: "Pull down to refresh orders",
+          releaseText: "Release to sync orders",
+          syncingText: "Syncing live orders...",
+          syncFn: performOrdersPullSync
+        };
+      }
+      if (menuScreen && !menuScreen.classList.contains("hidden")) {
+        return {
+          type: "menu",
+          container: document.getElementById("menu-ptr-container"),
+          icon: document.getElementById("menu-ptr-icon"),
+          text: document.getElementById("menu-ptr-text"),
+          defaultText: "Pull down to refresh catalog",
+          releaseText: "Release to sync catalog",
+          syncingText: "Syncing menu catalog...",
+          syncFn: () => performMenuPullSync(false)
+        };
+      }
+      return null;
+    }
 
     function initPullToRefresh() {
-      const homeScreen = document.getElementById("screen-home");
-      if (!homeScreen) return;
-
       window.addEventListener("touchstart", (e) => {
-        if (homeScreen.classList.contains("hidden")) return;
         if (window.scrollY > 5) return;
         if (isPullingToRefresh) return;
+        activePtrTarget = getActivePtrConfig();
+        if (!activePtrTarget) return;
 
         ptrStartY = e.touches[0].clientY;
         ptrCurrentY = ptrStartY;
@@ -5501,10 +5694,11 @@
       }, { passive: true });
 
       window.addEventListener("touchmove", (e) => {
-        if (!ptrIsActive || isPullingToRefresh) return;
+        if (!ptrIsActive || isPullingToRefresh || !activePtrTarget) return;
         if (window.scrollY > 5) {
           ptrIsActive = false;
-          resetPtrUI();
+          resetPtrUI(activePtrTarget);
+          activePtrTarget = null;
           return;
         }
 
@@ -5513,56 +5707,77 @@
 
         if (dy > 10) {
           const pullDist = Math.min(85, Math.pow(dy, 0.85) * 1.5);
-          const ptrContainer = document.getElementById("home-ptr-container");
-          const ptrIcon = document.getElementById("home-ptr-icon");
-          const ptrText = document.getElementById("home-ptr-text");
-
-          if (ptrContainer) {
-            ptrContainer.style.maxHeight = pullDist + "px";
-            ptrContainer.style.opacity = Math.min(1, pullDist / 45).toString();
+          if (activePtrTarget.container) {
+            activePtrTarget.container.style.maxHeight = pullDist + "px";
+            activePtrTarget.container.style.opacity = Math.min(1, pullDist / 45).toString();
           }
 
           if (pullDist >= 60) {
-            if (ptrIcon) ptrIcon.style.transform = "rotate(180deg)";
-            if (ptrText) ptrText.textContent = "Release to sync";
+            if (activePtrTarget.icon) activePtrTarget.icon.style.transform = "rotate(180deg)";
+            if (activePtrTarget.text) activePtrTarget.text.textContent = activePtrTarget.releaseText;
           } else {
-            if (ptrIcon) ptrIcon.style.transform = "rotate(0deg)";
-            if (ptrText) ptrText.textContent = "Pull down to sync data";
+            if (activePtrTarget.icon) activePtrTarget.icon.style.transform = "rotate(0deg)";
+            if (activePtrTarget.text) activePtrTarget.text.textContent = activePtrTarget.defaultText;
           }
         }
       }, { passive: true });
 
       window.addEventListener("touchend", () => {
-        if (!ptrIsActive || isPullingToRefresh) return;
+        if (!ptrIsActive || isPullingToRefresh || !activePtrTarget) return;
         ptrIsActive = false;
 
         const dy = ptrCurrentY - ptrStartY;
         const pullDist = Math.min(85, Math.pow(Math.max(0, dy), 0.85) * 1.5);
 
         if (pullDist >= 60) {
-          performDashboardPullSync();
+          const target = activePtrTarget;
+          activePtrTarget = null;
+          if (target && typeof target.syncFn === "function") {
+            target.syncFn();
+          }
         } else {
-          resetPtrUI();
+          resetPtrUI(activePtrTarget);
+          activePtrTarget = null;
         }
       }, { passive: true });
     }
 
-    function resetPtrUI() {
-      const ptrContainer = document.getElementById("home-ptr-container");
-      const ptrIcon = document.getElementById("home-ptr-icon");
-      const ptrText = document.getElementById("home-ptr-text");
-      if (ptrContainer) {
-        ptrContainer.style.maxHeight = "0px";
-        ptrContainer.style.opacity = "0";
-      }
-      if (ptrIcon) {
-        ptrIcon.style.transform = "rotate(0deg)";
-        ptrIcon.className = "material-symbols-outlined text-[18px] text-orange-500 transition-transform duration-200";
-        ptrIcon.textContent = "arrow_downward";
-      }
-      if (ptrText) {
-        ptrText.textContent = "Pull down to sync data";
-      }
+    function resetPtrUI(target = null) {
+      const targets = target ? [target] : [
+        {
+          container: document.getElementById("home-ptr-container"),
+          icon: document.getElementById("home-ptr-icon"),
+          text: document.getElementById("home-ptr-text"),
+          defaultText: "Pull down to sync data"
+        },
+        {
+          container: document.getElementById("orders-ptr-container"),
+          icon: document.getElementById("orders-ptr-icon"),
+          text: document.getElementById("orders-ptr-text"),
+          defaultText: "Pull down to refresh orders"
+        },
+        {
+          container: document.getElementById("menu-ptr-container"),
+          icon: document.getElementById("menu-ptr-icon"),
+          text: document.getElementById("menu-ptr-text"),
+          defaultText: "Pull down to refresh catalog"
+        }
+      ];
+
+      targets.forEach(cfg => {
+        if (cfg.container) {
+          cfg.container.style.maxHeight = "0px";
+          cfg.container.style.opacity = "0";
+        }
+        if (cfg.icon) {
+          cfg.icon.style.transform = "rotate(0deg)";
+          cfg.icon.className = "material-symbols-outlined text-[18px] text-orange-500 transition-transform duration-200";
+          cfg.icon.textContent = "arrow_downward";
+        }
+        if (cfg.text) {
+          cfg.text.textContent = cfg.defaultText || "Pull down to sync";
+        }
+      });
     }
 
     async function performDashboardPullSync() {
@@ -5621,6 +5836,153 @@
         resetPtrUI();
         isPullingToRefresh = false;
         showToast("Dashboard updated • All data synced", "cloud_done");
+      }, remainingWait);
+    }
+
+    async function performOrdersPullSync() {
+      if (isPullingToRefresh) return;
+      isPullingToRefresh = true;
+
+      const ptrContainer = document.getElementById("orders-ptr-container");
+      const ptrIcon = document.getElementById("orders-ptr-icon");
+      const ptrText = document.getElementById("orders-ptr-text");
+
+      if (ptrContainer) {
+        ptrContainer.style.maxHeight = "52px";
+        ptrContainer.style.opacity = "1";
+      }
+      if (ptrIcon) {
+        ptrIcon.className = "material-symbols-outlined text-[18px] text-orange-500 animate-spin";
+        ptrIcon.textContent = "sync";
+        ptrIcon.style.transform = "none";
+      }
+      if (ptrText) {
+        ptrText.textContent = "Syncing live orders...";
+      }
+
+      // Step 1: Check network connectivity
+      const isOnline = await probeNetworkConnectivity();
+      if (!isOnline) {
+        setTimeout(() => {
+          resetPtrUI();
+          isPullingToRefresh = false;
+          showToast("Cannot sync: device is offline", "cloud_off");
+        }, 300);
+        return;
+      }
+
+      // Step 2: Online - trigger orders refresh
+      const startTime = Date.now();
+      try {
+        await refreshOrdersFeed(false);
+      } catch (err) {
+        console.warn("Orders pull-to-refresh sync error:", err);
+      }
+
+      const elapsed = Date.now() - startTime;
+      const remainingWait = Math.max(0, 600 - elapsed);
+
+      setTimeout(() => {
+        resetPtrUI();
+        isPullingToRefresh = false;
+        showToast("Orders feed updated • Synced with cloud", "cloud_done");
+      }, remainingWait);
+    }
+
+    async function performMenuPullSync(isManual = false) {
+      const manualIcon = document.getElementById("manual-refresh-menu-icon");
+      if (isManual && manualIcon) manualIcon.classList.add("animate-spin");
+
+      const ptrContainer = document.getElementById("menu-ptr-container");
+      const ptrIcon = document.getElementById("menu-ptr-icon");
+      const ptrText = document.getElementById("menu-ptr-text");
+
+      if (!isManual) {
+        if (isPullingToRefresh) return;
+        isPullingToRefresh = true;
+        if (ptrContainer) {
+          ptrContainer.style.maxHeight = "52px";
+          ptrContainer.style.opacity = "1";
+        }
+        if (ptrIcon) {
+          ptrIcon.className = "material-symbols-outlined text-[18px] text-orange-500 animate-spin";
+          ptrIcon.textContent = "sync";
+          ptrIcon.style.transform = "none";
+        }
+        if (ptrText) {
+          ptrText.textContent = "Syncing menu catalog...";
+        }
+      } else {
+        showToast("Fetching latest menu items from Supabase...", "sync");
+      }
+
+      // Step 1: Check network connectivity
+      const isOnline = await probeNetworkConnectivity();
+      if (!isOnline) {
+        setTimeout(() => {
+          if (!isManual) {
+            resetPtrUI();
+            isPullingToRefresh = false;
+          }
+          if (manualIcon) manualIcon.classList.remove("animate-spin");
+          showToast("Cannot sync: device is offline", "cloud_off");
+        }, 300);
+        return;
+      }
+
+      // Step 2: Online - fetch menu from Supabase
+      const startTime = Date.now();
+      try {
+        if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG?.isConfigured) {
+          const menuData = await window.PlatePilotCloud.fetchMenuData(appState.activeRestaurantId);
+          if (menuData) {
+            if (Array.isArray(menuData.categories) && menuData.categories.length > 0) {
+              const cleanCats = menuData.categories.map(c => ({ id: c.id, name: c.name }));
+              localStorage.setItem(`platepilot_${appState.activeRestaurantId}_categories`, JSON.stringify(cleanCats));
+              appState.categories = cleanCats;
+            }
+
+            if (Array.isArray(menuData.menuItems) && menuData.menuItems.length > 0) {
+              const cleanItems = menuData.menuItems.map(it => ({
+                id: it.id,
+                name: it.title || it.name || "Menu Item",
+                title: it.title || it.name || "Menu Item",
+                subtitle: it.subtitle || it.desc || "Fresh Specialty",
+                category: it.category_id || it.category || "all",
+                price: parseFloat(it.price || 0),
+                cost: parseFloat(it.cost || 0),
+                stock: parseInt(it.stock || 50),
+                inStock: it.in_stock !== false,
+                isVeg: it.is_veg !== false,
+                popular: Boolean(it.popular),
+                tags: Array.isArray(it.tags) ? it.tags : [],
+                image: it.image_url || it.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60"
+              }));
+              localStorage.setItem(`platepilot_${appState.activeRestaurantId}_menu`, JSON.stringify(cleanItems));
+              appState.menuItems = cleanItems;
+              normalizeMenuItems(appState.menuItems);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Menu sync error:", err);
+      }
+
+      const elapsed = Date.now() - startTime;
+      const remainingWait = Math.max(0, 600 - elapsed);
+
+      setTimeout(() => {
+        renderCategoryPills();
+        renderMenuList();
+        renderPosGrid();
+        updateBadges();
+
+        if (manualIcon) manualIcon.classList.remove("animate-spin");
+        if (!isManual) {
+          resetPtrUI();
+          isPullingToRefresh = false;
+        }
+        showToast("Menu catalog updated from cloud!", "cloud_done");
       }, remainingWait);
     }
 
@@ -6382,9 +6744,10 @@
       if (!container) return;
 
       const query = filterQuery.toLowerCase().trim();
-      const items = appState.menuItems.filter(i => {
+      const items = (appState.menuItems || []).filter(i => {
         const matchesCat = (activeMenuCat === "all" || i.category === activeMenuCat);
-        const matchesText = i.title.toLowerCase().includes(query);
+        const itemName = (i.title || i.name || "").toLowerCase();
+        const matchesText = itemName.includes(query);
         return matchesCat && matchesText;
       });
 
@@ -6404,9 +6767,10 @@
       }
 
       container.innerHTML = items.map(item => {
-        const cost = (item.cost !== undefined && !isNaN(item.cost)) ? item.cost : parseFloat((item.price * 0.3).toFixed(2));
-        const profit = item.price - cost;
-        const marginPct = item.price > 0 ? ((profit / item.price) * 100) : 0;
+        const title = item.title || item.name || "Menu Item";
+        const cost = (item.cost !== undefined && !isNaN(item.cost)) ? item.cost : parseFloat(((item.price || 0) * 0.3).toFixed(2));
+        const profit = (item.price || 0) - cost;
+        const marginPct = (item.price || 0) > 0 ? ((profit / item.price) * 100) : 0;
         const catName = getCategoryName(item.category);
 
         let marginBadgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
@@ -6417,15 +6781,15 @@
           <div onclick="handleMenuItemClick('${item.id}')" class="menu-item-row flex items-center justify-between p-3.5 bg-white border border-neutral-200 rounded-xl shadow-sm hover:shadow-md transition-all ${item.inStock ? '' : 'bg-neutral-50/70'}">
             <div class="flex items-center gap-3.5 min-w-0">
               <div class="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-orange-50 border border-orange-200/50">
-                <img class="w-full h-full object-cover ${item.inStock ? '' : 'grayscale'}" src="${item.image}" alt="${item.title}"/>
+                <img class="w-full h-full object-cover ${item.inStock ? '' : 'grayscale'}" src="${item.image || item.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'}" alt="${title}"/>
               </div>
               <div class="flex flex-col min-w-0">
                 <div class="flex items-center gap-1.5 flex-wrap">
-                  <h2 class="font-headline text-[15px] text-neutral-900 truncate font-semibold ${item.inStock ? '' : 'line-through text-neutral-400'}">${item.title}</h2>
+                  <h2 class="font-headline text-[15px] text-neutral-900 truncate font-semibold ${item.inStock ? '' : 'line-through text-neutral-400'}">${title}</h2>
                   <span class="px-1.5 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-200 text-[10px] font-headline font-bold uppercase">${catName}</span>
                 </div>
                 <div class="flex items-center gap-2 mt-1 flex-wrap text-[12px]">
-                  <span class="font-headline font-numeric text-[14px] text-neutral-900 font-bold">₹${item.price.toFixed(2)}</span>
+                  <span class="font-headline font-numeric text-[14px] text-neutral-900 font-bold">₹${(item.price || 0).toFixed(2)}</span>
                   <span class="text-neutral-400">•</span>
                   <span class="text-neutral-500 font-medium font-numeric">Cost: ₹${cost.toFixed(2)}</span>
                   <span class="px-1.5 py-0.2 rounded border font-headline text-[10px] font-bold ${marginBadgeClass}">
@@ -6452,8 +6816,8 @@
       }).join("");
 
       // Update active and sold out counter
-      const activeCount = appState.menuItems.filter(i => i.inStock).length;
-      const soldOutCount = appState.menuItems.length - activeCount;
+      const activeCount = (appState.menuItems || []).filter(i => i.inStock).length;
+      const soldOutCount = (appState.menuItems || []).length - activeCount;
       const activeEl = document.getElementById("menu-active-count");
       const soldOutEl = document.getElementById("menu-soldout-count");
       if (activeEl) activeEl.textContent = activeCount + " Active Items";
@@ -8534,6 +8898,20 @@
             updateBadges();
           }
         },
+        onOrderDelete: (deleted) => {
+          if (!deleted || !deleted.id) return;
+          console.log("[PlatePilot] Realtime order deleted from Supabase Cloud:", deleted.id);
+          const idx = (appState.orders || []).findIndex(o => o.id === deleted.id);
+          if (idx !== -1) {
+            appState.orders.splice(idx, 1);
+            saveState();
+            renderOrdersStream();
+            renderHomeOrders();
+            renderHomeDashboardMetrics(appState.currentDashboardRange || "today");
+            updateBadges();
+            showToast(`Order #${deleted.id} removed.`, "info");
+          }
+        },
         onRestaurantChange: async () => {
           console.log("[PlatePilot] Realtime restaurant update received from Supabase Cloud!");
           const cloudRests = await window.PlatePilotCloud.fetchRestaurants();
@@ -8961,8 +9339,13 @@
       hideLoginError();
       const phoneInput = document.getElementById("login-phone-input");
       const pwdInput = document.getElementById("login-password-input");
-      if (phoneInput) phoneInput.value = "";
+      const rememberCheckbox = document.getElementById("login-remember-me");
+
+      // Pre-fill saved mobile number if remembered previously
+      const savedPhone = localStorage.getItem("platepilot_saved_login_phone") || "";
+      if (phoneInput) phoneInput.value = savedPhone;
       if (pwdInput) pwdInput.value = "";
+      if (rememberCheckbox) rememberCheckbox.checked = Boolean(savedPhone);
 
       // Close button is only shown if a user is ALREADY signed in (canceling switch user)
       const closeBtn = document.getElementById("login-modal-close-btn");
@@ -8972,7 +9355,11 @@
 
       document.getElementById("modal-app-login")?.classList.remove("hidden");
       setTimeout(() => {
-        phoneInput?.focus();
+        if (savedPhone && pwdInput) {
+          pwdInput.focus();
+        } else {
+          phoneInput?.focus();
+        }
       }, 100);
     }
 
@@ -9188,31 +9575,27 @@
       saveState();
       updateUserSessionUI();
 
-      // Remember Me Session Persistence Logic
+      // Remember Login Number Persistence (Saves Phone Number Only; Never bypasses PIN)
       const rememberCheckbox = document.getElementById("login-remember-me");
       const shouldRemember = rememberCheckbox ? rememberCheckbox.checked : true;
+      const phoneInput = document.getElementById("login-phone-input");
+      const rawPhone = (phoneInput?.value || userMember.phone || "").replace(/\D/g, "").slice(-10);
 
-      if (shouldRemember) {
+      if (shouldRemember && rawPhone) {
         try {
-          const sessionPayload = {
-            user: userMember,
-            token: "pp_sec_" + Date.now() + "_" + Math.random().toString(36).slice(2, 10),
-            savedAt: new Date().toISOString()
-          };
-          localStorage.setItem("platepilot_remembered_session", JSON.stringify(sessionPayload));
-          sessionStorage.removeItem("platepilot_session_temp");
-        } catch (e) {
-          console.warn("Failed to persist remembered session:", e);
-        }
+          localStorage.setItem("platepilot_saved_login_phone", rawPhone);
+        } catch (e) {}
       } else {
         try {
-          localStorage.removeItem("platepilot_remembered_session");
-          sessionStorage.setItem("platepilot_session_temp", JSON.stringify({
-            user: userMember,
-            savedAt: new Date().toISOString()
-          }));
+          localStorage.removeItem("platepilot_saved_login_phone");
         } catch (e) {}
       }
+
+      // Purge any persistent session bypasses to enforce PIN on every launch
+      try {
+        localStorage.removeItem("platepilot_remembered_session");
+        sessionStorage.removeItem("platepilot_session_temp");
+      } catch (e) {}
 
       document.getElementById("modal-app-login")?.classList.add("hidden");
       document.getElementById("modal-lock-screen")?.classList.add("hidden");
@@ -10206,41 +10589,14 @@
         } catch (e) {}
       }
 
-      // Auto-Login Check: Verify persistent "Remember Me" session token (with error boundary)
-      let rememberedUser = null;
+      // Mandatory PIN Security Enforcement on Every App Launch
+      // Purge any legacy session bypass tokens to require PIN verification
       try {
-        const rawPersistent = localStorage.getItem("platepilot_remembered_session");
-        if (rawPersistent) {
-          const parsed = JSON.parse(rawPersistent);
-          if (parsed && parsed.user && parsed.user.name && parsed.token) {
-            rememberedUser = parsed.user;
-          }
-        }
-      } catch (err) {
-        console.warn("PlatePilot: Corrupted session purged:", err);
         localStorage.removeItem("platepilot_remembered_session");
-      }
+        sessionStorage.removeItem("platepilot_session_temp");
+      } catch (e) {}
 
-      if (!rememberedUser) {
-        try {
-          const rawTemp = sessionStorage.getItem("platepilot_session_temp");
-          if (rawTemp) {
-            const parsedTemp = JSON.parse(rawTemp);
-            if (parsedTemp && parsedTemp.user && parsedTemp.user.name) {
-              rememberedUser = parsedTemp.user;
-            }
-          }
-        } catch (e) {}
-      }
-
-      if (rememberedUser) {
-        appState.currentUser = rememberedUser;
-        if (rememberedUser.restaurantId) {
-          appState.activeRestaurantId = rememberedUser.restaurantId;
-        }
-      } else {
-        appState.currentUser = null;
-      }
+      appState.currentUser = null;
       appState.adminImpersonating = false;
       appState.adminOriginalUser = null;
       appState.activeTab = "dashboard";

@@ -724,7 +724,9 @@ const PlatePilotCloud = (() => {
           if (menuData.menuItems && menuData.menuItems.length > 0) {
             const cleanItems = menuData.menuItems.map(it => ({
               id: it.id,
-              name: it.title || it.name,
+              name: it.title || it.name || "Menu Item",
+              title: it.title || it.name || "Menu Item",
+              subtitle: it.subtitle || it.desc || "Fresh Specialty",
               category: it.category_id || it.category || "all",
               price: parseFloat(it.price || 0),
               cost: parseFloat(it.cost || 0),
@@ -732,8 +734,8 @@ const PlatePilotCloud = (() => {
               inStock: it.in_stock !== false,
               isVeg: it.is_veg !== false,
               popular: Boolean(it.popular),
-              tags: it.tags || [],
-              image: it.image_url || it.image || ""
+              tags: Array.isArray(it.tags) ? it.tags : [],
+              image: it.image_url || it.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60"
             }));
             localStorage.setItem(`platepilot_${targetRestId}_menu`, JSON.stringify(cleanItems));
             if (typeof window !== "undefined" && window.appState && window.appState.activeRestaurantId === targetRestId) {
@@ -910,6 +912,19 @@ const PlatePilotCloud = (() => {
           .on(
             "postgres_changes",
             {
+              event: "DELETE",
+              schema: "public",
+              table: "orders",
+              filter: restaurantId ? `restaurant_id=eq.${restaurantId}` : undefined
+            },
+            payload => {
+              console.log("[PlatePilotCloud Realtime] WebSocket Order Delete:", payload.old);
+              if (callbacks.onOrderDelete) callbacks.onOrderDelete(payload.old);
+            }
+          )
+          .on(
+            "postgres_changes",
+            {
               event: "*",
               schema: "public",
               table: "restaurants"
@@ -966,10 +981,20 @@ const PlatePilotCloud = (() => {
               hasNewOrders = true;
               lastKnownOrderIds.add(ro.id);
               if (callbacks.onOrderInsert) callbacks.onOrderInsert(ro);
+            } else if (callbacks.onOrderUpdate) {
+              const localOrd = typeof window !== "undefined" && window.appState?.orders?.find(o => o.id === ro.id);
+              if (localOrd && (localOrd.status || "").toLowerCase() !== (ro.status || "").toLowerCase()) {
+                hasStatusChanges = true;
+                callbacks.onOrderUpdate(ro);
+              }
             }
           }
 
-          if (!hasNewOrders && callbacks.onPollCheck) {
+          // If remote count is less than known set, an order was deleted/voided on another terminal
+          if (remoteOrders.length < lastKnownOrderIds.size) {
+            lastKnownOrderIds = new Set(remoteOrders.map(o => o.id));
+            if (callbacks.onPollCheck) callbacks.onPollCheck(remoteOrders);
+          } else if (!hasNewOrders && !hasStatusChanges && callbacks.onPollCheck) {
             callbacks.onPollCheck(remoteOrders);
           }
         }
