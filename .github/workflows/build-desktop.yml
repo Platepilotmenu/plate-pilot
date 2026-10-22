@@ -1,0 +1,59 @@
+name: Build Plate Pilot Windows Desktop Apps
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-desktop:
+    name: Compile Windows 64-bit & 32-bit Desktop Apps
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Desktop Dependencies
+        run: |
+          cd desktop
+          npm install
+
+      - name: Build Windows 64-bit and 32-bit .EXE
+        run: |
+          cd desktop
+          npm run build:all
+
+      - name: List Generated Desktop Binaries
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path "desktop/dist-build" -Filter "*.exe" | Select-Object Name, Length, LastWriteTime
+
+      - name: Upload Windows Desktop Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: plate-pilot-windows-executables
+          path: desktop/dist-build/*.exe
+          retention-days: 30
+
+      - name: Attach Windows Executables to GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: v1.0.0
+          name: Plate Pilot v1.0.0 - Unified Release
+          files: |
+            desktop/dist-build/PlatePilot-Setup-x64.exe
+            desktop/dist-build/PlatePilot-Portable-x64.exe
+            desktop/dist-build/PlatePilot-Setup-ia32.exe
+            desktop/dist-build/PlatePilot-Portable-ia32.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

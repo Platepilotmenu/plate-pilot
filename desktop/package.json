@@ -1,0 +1,72 @@
+{
+  "name": "plate-pilot-desktop",
+  "productName": "Plate Pilot POS",
+  "version": "1.0.0",
+  "description": "Plate Pilot - Restaurant POS & Management Desktop Application",
+  "main": "main.js",
+  "author": {
+    "name": "Plate Pilot",
+    "email": "support@platepilot.com"
+  },
+  "scripts": {
+    "start": "electron .",
+    "build:x64": "electron-builder --win nsis portable --x64",
+    "build:ia32": "electron-builder --win nsis portable --ia32",
+    "build:all": "electron-builder --win nsis portable --x64 --ia32",
+    "dist": "electron-builder --win nsis portable --x64 --ia32"
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.platepilot.pos.desktop",
+    "productName": "Plate Pilot POS",
+    "copyright": "Copyright © 2026 Plate Pilot",
+    "directories": {
+      "output": "dist-build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "qr-menu.html",
+      "api.js",
+      "supabase-client.js",
+      "supabase-schema.js",
+      "icon.png",
+      "icon-192.png",
+      "icon-512.png"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Plate Pilot POS",
+      "artifactName": "PlatePilot-Setup-${arch}.exe"
+    },
+    "portable": {
+      "artifactName": "PlatePilot-Portable-${arch}.exe"
+    }
+  }
+}

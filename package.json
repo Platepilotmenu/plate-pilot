@@ -5,8 +5,12 @@
   "main": "server/src/server.js",
   "scripts": {
     "start": "node server/src/server.js",
+    "desktop": "cd desktop && npm start",
     "build:apk": "npx cap sync && cd android && ./gradlew assembleDebug",
-    "build:ios": "npx cap sync ios"
+    "build:ios": "npx cap sync ios",
+    "build:desktop": "cd desktop && npm install && npm run build:all",
+    "build:desktop:x64": "cd desktop && npm install && npm run build:x64",
+    "build:desktop:ia32": "cd desktop && npm install && npm run build:ia32"
   },
   "dependencies": {
     "@capacitor/android": "^6.1.2",

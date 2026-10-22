@@ -2418,9 +2418,9 @@
 
       <div class="p-3 bg-white border-t border-neutral-200 flex gap-2">
         <button onclick="closeThermalSlip()" class="flex-1 h-10 border border-neutral-200 rounded-xl font-headline font-bold text-[12px]">Close</button>
-        <button onclick="window.print()" class="flex-1 h-10 bg-orange-500 text-white rounded-xl font-headline font-bold text-[12px] flex items-center justify-center gap-1 shadow-sm">
+        <button onclick="executeReceiptPrint()" class="flex-1 h-10 bg-orange-500 hover:bg-orange-600 active:scale-95 transition-all text-white rounded-xl font-headline font-bold text-[12px] flex items-center justify-center gap-1 shadow-sm cursor-pointer">
           <span class="material-symbols-outlined text-[16px]">print</span>
-          Print
+          <span id="btn-print-receipt-text">Print Receipt</span>
         </button>
       </div>
     </div>
@@ -7808,6 +7808,28 @@
       document.getElementById("modal-thermal-slip")?.classList.add("hidden");
     }
 
+    function executeReceiptPrint() {
+      if (window.desktopAPI && window.desktopAPI.isDesktop) {
+        const slipBody = document.querySelector("#modal-thermal-slip .overflow-y-auto")?.innerHTML;
+        if (slipBody) {
+          showToast("Sending to thermal printer...", "print");
+          window.desktopAPI.printReceipt(slipBody, { silent: true, width: "80mm" }).then(res => {
+            if (res && res.success) {
+              showToast("Receipt printed silently!", "check_circle");
+            } else {
+              console.warn("Silent print fallback:", res?.error);
+              window.print();
+            }
+          }).catch(err => {
+            console.warn("Silent print error:", err);
+            window.print();
+          });
+          return;
+        }
+      }
+      window.print();
+    }
+
     function testPrintReceipt() {
       showToast("Dispatching test receipt to Epson TM-T88VI...", "print");
       setTimeout(() => {
@@ -11485,6 +11507,31 @@
         console.log("PlatePilot: Initializing Supabase Cloud Sync & Realtime Stream...");
         triggerCloudSync(false);
         setupCloudRealtime();
+      }
+
+      // Initialize Desktop POS IPC Hooks (when running in Electron Desktop App)
+      if (window.desktopAPI && window.desktopAPI.isDesktop) {
+        console.log(`PlatePilot Desktop POS Active (${window.desktopAPI.arch || 'Windows'})`);
+        const headerStationBadge = document.getElementById("home-station-badge");
+        if (headerStationBadge) {
+          headerStationBadge.innerHTML += ` &bull; <span class="text-orange-400 font-bold">DESKTOP POS (${(window.desktopAPI.arch || 'x64').toUpperCase()})</span>`;
+        }
+
+        window.desktopAPI.onMenuAction((action, data) => {
+          if (action === "new-order") {
+            switchTab("pos-terminal");
+            showToast("POS Ready for New Order", "point_of_sale");
+          } else if (action === "print-receipt") {
+            if (appState.orders && appState.orders.length > 0) {
+              openThermalSlip(appState.orders[0]);
+            } else {
+              showToast("No orders available to print", "info");
+            }
+          } else if (action === "refresh-cloud") {
+            triggerCloudSync(true);
+            showToast("Syncing with Supabase Cloud...", "sync");
+          }
+        });
       }
     }
 

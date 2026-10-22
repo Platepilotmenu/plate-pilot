@@ -30,3 +30,9 @@ edge_test_profile_*
 edge_verify_profile_*
 edge_home_profile_*
 scratch/
+
+# Desktop & Electron Builds
+desktop/dist-build/
+dist-build/
+*.exe
+
