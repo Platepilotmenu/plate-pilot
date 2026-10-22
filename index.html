@@ -7098,14 +7098,26 @@
       if (soldOutEl) soldOutEl.textContent = "• " + soldOutCount + " Items Sold Out";
     }
 
-    function toggleMenuItemStock(id, inStock) {
-      const item = appState.menuItems.find(i => i.id === id);
+    async function toggleMenuItemStock(id, inStock) {
+      const item = appState.menuItems.find(i => String(i.id) === String(id));
       if (item) {
         item.inStock = inStock;
         saveState();
         renderMenuList();
         renderPosGrid();
-        showToast(item.title + (inStock ? " is now Back In Stock!" : " is now 86'd (Sold Out)!"));
+        showToast(item.title + (inStock ? " is now Back In Stock!" : " is now 86'd (Sold Out)!"), inStock ? "check_circle" : "block");
+
+        // Sync to Supabase Cloud immediately
+        if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG?.isConfigured) {
+          try {
+            const ok = await window.PlatePilotCloud.updateMenuItemStock(appState.activeRestaurantId, item, inStock);
+            if (!ok) {
+              await window.PlatePilotCloud.upsertMenuItem(appState.activeRestaurantId, item);
+            }
+          } catch (e) {
+            console.warn("Stock sync notice:", e);
+          }
+        }
       }
     }
 
@@ -7125,15 +7137,27 @@
       }
     }
 
-    function handleMenuItemClick(id) {
+    async function handleMenuItemClick(id) {
       if (appState.rush86Active) {
-        const item = appState.menuItems.find(i => i.id === id);
+        const item = appState.menuItems.find(i => String(i.id) === String(id));
         if (item) {
           item.inStock = !item.inStock;
           saveState();
           renderMenuList();
           renderPosGrid();
-          showToast(item.title + (item.inStock ? " restored to Stock" : " marked Sold Out!"));
+          showToast(item.title + (item.inStock ? " restored to Stock" : " marked Sold Out!"), item.inStock ? "check_circle" : "block");
+
+          // Sync to Supabase Cloud immediately
+          if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG?.isConfigured) {
+            try {
+              const ok = await window.PlatePilotCloud.updateMenuItemStock(appState.activeRestaurantId, item, item.inStock);
+              if (!ok) {
+                await window.PlatePilotCloud.upsertMenuItem(appState.activeRestaurantId, item);
+              }
+            } catch (e) {
+              console.warn("Rush 86 sync notice:", e);
+            }
+          }
         }
       }
     }
@@ -7404,6 +7428,7 @@
       appState.settings.taxEnabled = Boolean(checked);
       renderTaxSettingsUI();
       updateCartUI();
+      saveTaxSettings();
       showToast(checked ? "Tax / GST calculation enabled" : "Tax / GST calculation disabled (0%)", checked ? "check_circle" : "info");
     }
 
@@ -7423,6 +7448,7 @@
       }
       renderTaxSettingsUI();
       updateCartUI();
+      saveTaxSettings();
       showToast(`Tax preset selected: ${label}`, "percent");
     }
 
@@ -9727,6 +9753,88 @@
             renderOutletSwitcherList();
           }
         },
+        onMenuItemUpdate: (updatedItem) => {
+          if (!updatedItem || !updatedItem.id) return;
+          console.log("[PlatePilot] Realtime menu item updated from cloud:", updatedItem.title, "in_stock:", updatedItem.in_stock);
+          const item = (appState.menuItems || []).find(i => String(i.id) === String(updatedItem.id));
+          if (item) {
+            const nextInStock = updatedItem.in_stock !== false;
+            const stockChanged = item.inStock !== nextInStock;
+            item.inStock = nextInStock;
+            if (updatedItem.title) item.title = updatedItem.title;
+            if (updatedItem.name) item.name = updatedItem.name;
+            if (updatedItem.price !== undefined) item.price = parseFloat(updatedItem.price);
+            if (updatedItem.cost !== undefined) item.cost = parseFloat(updatedItem.cost);
+            if (updatedItem.stock !== undefined) item.stock = parseInt(updatedItem.stock);
+            if (updatedItem.image_url) {
+              item.image = updatedItem.image_url;
+              item.image_url = updatedItem.image_url;
+            }
+
+            if (!nextInStock && (appState.cart || []).some(c => String(c.id) === String(item.id))) {
+              showToast(`⚠️ ${item.title} was marked Sold Out by Owner!`, "warning");
+            }
+
+            saveState();
+            renderPosGrid();
+            renderMenuList();
+            renderCategoryPills();
+            updateCartUI();
+
+            if (stockChanged) {
+              showToast(`${item.title} is now ${item.inStock ? 'Back In Stock' : 'Sold Out (86’d)'}!`, item.inStock ? "check_circle" : "block");
+            }
+          } else {
+            triggerCloudSync(false);
+          }
+        },
+        onMenuItemInsert: (newItem) => {
+          console.log("[PlatePilot] Realtime menu item inserted:", newItem?.title);
+          triggerCloudSync(false);
+        },
+        onMenuItemDelete: (deletedItem) => {
+          if (!deletedItem || !deletedItem.id) return;
+          console.log("[PlatePilot] Realtime menu item deleted:", deletedItem.id);
+          const idx = (appState.menuItems || []).findIndex(i => String(i.id) === String(deletedItem.id));
+          if (idx !== -1) {
+            appState.menuItems.splice(idx, 1);
+            saveState();
+            renderPosGrid();
+            renderMenuList();
+            renderCategoryPills();
+            updateCartUI();
+          }
+        },
+        onQrSettingsChange: (newQrSettings) => {
+          if (!newQrSettings) return;
+          if (newQrSettings.restaurant_id && newQrSettings.restaurant_id !== appState.activeRestaurantId) {
+            return;
+          }
+          if (newQrSettings.wifi_password && newQrSettings.wifi_password.startsWith("TAX_CFG:")) {
+            try {
+              const taxCfg = JSON.parse(newQrSettings.wifi_password.replace("TAX_CFG:", ""));
+              console.log("[PlatePilot] Realtime tax config received from cloud:", taxCfg);
+              if (!appState.settings) appState.settings = {};
+              appState.settings.taxEnabled = taxCfg.taxEnabled !== false;
+              appState.settings.taxRate = parseFloat(taxCfg.taxRate || 0);
+              appState.settings.taxLabel = taxCfg.taxLabel || (appState.settings.taxRate > 0 ? `GST (${appState.settings.taxRate}%)` : "Tax Exempt");
+
+              const activeRest = (appState.onboardedRestaurants || []).find(r => r.id === appState.activeRestaurantId);
+              if (activeRest) {
+                activeRest.taxRate = appState.settings.taxRate;
+                activeRest.taxEnabled = appState.settings.taxEnabled;
+                activeRest.taxLabel = appState.settings.taxLabel;
+              }
+
+              saveState();
+              updateCartUI();
+              renderTaxSettingsUI();
+              showToast(appState.settings.taxEnabled ? `Tax settings updated: ${appState.settings.taxLabel}` : "Tax calculation disabled (0%) by Owner", "percent");
+            } catch (err) {
+              console.warn("Realtime tax parse error:", err);
+            }
+          }
+        },
         onPollCheck: (remoteOrders) => {
           if (!Array.isArray(remoteOrders)) return;
           const currentCount = (appState.orders || []).length;
@@ -9772,6 +9880,8 @@
           renderAdminRestaurantsList();
           renderAdminSaaSMetrics();
           renderOutletSwitcherList();
+          renderTaxSettingsUI();
+          renderSettingsCustomersList();
           updateSupabaseCloudUI();
 
           if (showUserToast) {

@@ -502,6 +502,36 @@ const PlatePilotCloud = (() => {
     }
   }
 
+  // Update item in-stock status (86'd or restored) with immediate cloud sync
+  async function updateMenuItemStock(restaurantId, itemOrId, inStock) {
+    if (!restaurantId || !itemOrId) return false;
+    const itemId = typeof itemOrId === "object" ? itemOrId.id : itemOrId;
+    try {
+      const res = await restRequest(`/menu_items?restaurant_id=eq.${encodeURIComponent(restaurantId)}&id=eq.${encodeURIComponent(itemId)}`, {
+        method: "PATCH",
+        headers: { "Prefer": "return=representation" },
+        body: {
+          in_stock: Boolean(inStock),
+          updated_at: new Date().toISOString()
+        }
+      });
+      if (Array.isArray(res) && res.length > 0) {
+        return true;
+      }
+      // If row did not exist in cloud yet, upsert the full item
+      if (typeof itemOrId === "object") {
+        return await upsertMenuItem(restaurantId, { ...itemOrId, inStock: Boolean(inStock) });
+      }
+      return false;
+    } catch (e) {
+      console.warn("[PlatePilotCloud] updateMenuItemStock error:", e.message);
+      if (typeof itemOrId === "object") {
+        return await upsertMenuItem(restaurantId, { ...itemOrId, inStock: Boolean(inStock) });
+      }
+      return false;
+    }
+  }
+
   // Upload item image: Attempts Supabase Storage upload with fallback to optimized data URL
   async function uploadItemImage(restaurantId, fileOrDataUrl, fileName = "item.jpg") {
     if (!fileOrDataUrl) return null;
@@ -715,17 +745,30 @@ const PlatePilotCloud = (() => {
         taxEnabled: settings.taxEnabled !== false,
         taxLabel: settings.taxLabel || "GST (5%)"
       };
+      const taxPayloadStr = `TAX_CFG:${JSON.stringify(payload)}`;
 
-      // 1. Persist to qr_settings metadata
-      await restRequest(`/qr_settings?restaurant_id=eq.${encodeURIComponent(restaurantId)}`, {
-        method: "PATCH",
-        body: { wifi_password: `TAX_CFG:${JSON.stringify(payload)}` }
-      }).catch(() => {});
+      // 1. Upsert into qr_settings with merge-duplicates so it creates row if missing or updates if exists
+      const qrBody = {
+        restaurant_id: restaurantId,
+        wifi_password: taxPayloadStr,
+        updated_at: new Date().toISOString()
+      };
+      await restRequest("/qr_settings", {
+        method: "POST",
+        headers: { "Prefer": "resolution=merge-duplicates" },
+        body: qrBody
+      }).catch(async () => {
+        // Fallback to PATCH if POST fails
+        await restRequest(`/qr_settings?restaurant_id=eq.${encodeURIComponent(restaurantId)}`, {
+          method: "PATCH",
+          body: { wifi_password: taxPayloadStr, updated_at: new Date().toISOString() }
+        }).catch(() => {});
+      });
 
       // 2. Also try patching restaurants table if column exists
       await restRequest(`/restaurants?id=eq.${encodeURIComponent(restaurantId)}`, {
         method: "PATCH",
-        body: { tax_rate: payload.taxRate, tax_enabled: payload.taxEnabled }
+        body: { tax_rate: payload.taxRate, tax_enabled: payload.taxEnabled, updated_at: new Date().toISOString() }
       }).catch(() => {});
 
       return true;
@@ -1020,6 +1063,58 @@ const PlatePilotCloud = (() => {
           .on(
             "postgres_changes",
             {
+              event: "UPDATE",
+              schema: "public",
+              table: "menu_items",
+              filter: restaurantId ? `restaurant_id=eq.${restaurantId}` : undefined
+            },
+            payload => {
+              console.log("[PlatePilotCloud Realtime] WebSocket Menu Item Update:", payload.new);
+              if (callbacks.onMenuItemUpdate) callbacks.onMenuItemUpdate(payload.new);
+            }
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "INSERT",
+              schema: "public",
+              table: "menu_items",
+              filter: restaurantId ? `restaurant_id=eq.${restaurantId}` : undefined
+            },
+            payload => {
+              console.log("[PlatePilotCloud Realtime] WebSocket Menu Item Insert:", payload.new);
+              if (callbacks.onMenuItemInsert) callbacks.onMenuItemInsert(payload.new);
+            }
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "DELETE",
+              schema: "public",
+              table: "menu_items",
+              filter: restaurantId ? `restaurant_id=eq.${restaurantId}` : undefined
+            },
+            payload => {
+              console.log("[PlatePilotCloud Realtime] WebSocket Menu Item Delete:", payload.old);
+              if (callbacks.onMenuItemDelete) callbacks.onMenuItemDelete(payload.old);
+            }
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "qr_settings",
+              filter: restaurantId ? `restaurant_id=eq.${restaurantId}` : undefined
+            },
+            payload => {
+              console.log("[PlatePilotCloud Realtime] WebSocket QR/Tax Settings Change:", payload.eventType, payload.new);
+              if (callbacks.onQrSettingsChange) callbacks.onQrSettingsChange(payload.new);
+            }
+          )
+          .on(
+            "postgres_changes",
+            {
               event: "*",
               schema: "public",
               table: "restaurants"
@@ -1048,6 +1143,8 @@ const PlatePilotCloud = (() => {
     }
 
     let lastKnownOrderIds = new Set();
+    let lastKnownItemStock = new Map();
+    let lastKnownTaxKey = null;
     let isPolling = false;
 
     // Seed initial known order IDs from state/localStorage
@@ -1093,6 +1190,44 @@ const PlatePilotCloud = (() => {
             callbacks.onPollCheck(remoteOrders);
           }
         }
+
+        // Background Poll: Check Menu Item Stock Changes
+        try {
+          const remoteMenu = await fetchMenuData(targetId);
+          if (remoteMenu && Array.isArray(remoteMenu.menuItems)) {
+            for (const rItem of remoteMenu.menuItems) {
+              const prevStock = lastKnownItemStock.get(rItem.id);
+              const currentStock = rItem.in_stock !== false;
+              if (prevStock !== undefined && prevStock !== currentStock) {
+                console.log(`[PlatePilotCloud Poller] Item ${rItem.title} stock changed: ${prevStock} -> ${currentStock}`);
+                lastKnownItemStock.set(rItem.id, currentStock);
+                if (callbacks.onMenuItemUpdate) callbacks.onMenuItemUpdate(rItem);
+              } else {
+                lastKnownItemStock.set(rItem.id, currentStock);
+              }
+            }
+          }
+        } catch (mErr) {}
+
+        // Background Poll: Check Store Tax Settings Changes
+        try {
+          const remoteTax = await fetchStoreTaxSettings(targetId);
+          if (remoteTax && typeof remoteTax === "object") {
+            const taxKey = `${remoteTax.taxEnabled}_${remoteTax.taxRate}_${remoteTax.taxLabel}`;
+            if (lastKnownTaxKey && lastKnownTaxKey !== taxKey) {
+              console.log(`[PlatePilotCloud Poller] Store tax settings changed: ${lastKnownTaxKey} -> ${taxKey}`);
+              lastKnownTaxKey = taxKey;
+              if (callbacks.onQrSettingsChange) {
+                callbacks.onQrSettingsChange({
+                  restaurant_id: targetId,
+                  wifi_password: `TAX_CFG:${JSON.stringify(remoteTax)}`
+                });
+              }
+            } else {
+              lastKnownTaxKey = taxKey;
+            }
+          }
+        } catch (tErr) {}
       } catch (pollErr) {
         // Polling error silently handled
       } finally {
@@ -1129,6 +1264,7 @@ const PlatePilotCloud = (() => {
     deleteMenuCategory,
     upsertMenuItem,
     deleteMenuItem,
+    updateMenuItemStock,
     uploadItemImage,
     fetchStoreTaxSettings,
     saveStoreTaxSettings,
