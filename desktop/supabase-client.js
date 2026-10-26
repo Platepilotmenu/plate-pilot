@@ -388,20 +388,37 @@ const PlatePilotCloud = (() => {
   }
 
   // Update order status (e.g. active -> ready -> done)
-  async function updateOrderStatus(orderId, status) {
+  async function updateOrderStatus(orderId, status, extraFields = {}) {
     if (!orderId) return null;
 
     try {
+      const cleanStatus = String(status).toLowerCase().trim();
+      const patchBody = {
+        status: cleanStatus,
+        ...extraFields
+      };
+
+      // By default, whenever order status transitions (accepted to active, marked ready, done, or void),
+      // needs_acceptance should be cleared to false unless caller explicitly requested otherwise.
+      if (!("needs_acceptance" in extraFields)) {
+        patchBody.needs_acceptance = false;
+      }
+
       const res = await restRequest(`/orders?id=eq.${encodeURIComponent(orderId)}`, {
         method: "PATCH",
         headers: { "Prefer": "return=representation" },
-        body: { status: String(status).toLowerCase().trim() }
+        body: patchBody
       });
       return Array.isArray(res) ? res[0] : res;
     } catch (err) {
       console.warn("[PlatePilotCloud] updateOrderStatus error:", err.message);
       return null;
     }
+  }
+
+  // Explicit helper to accept a pending QR order
+  async function acceptOrder(orderId) {
+    return updateOrderStatus(orderId, "active", { needs_acceptance: false });
   }
 
   // =========================================================================
@@ -909,6 +926,8 @@ const PlatePilotCloud = (() => {
               });
             }
 
+            const cleanStatus = (o.status || "active").toLowerCase().trim();
+
             return {
               id: o.id,
               type: o.order_type || "Dine-in",
@@ -927,9 +946,9 @@ const PlatePilotCloud = (() => {
               discount: ordDiscount,
               tax: ordTax,
               total: ordTotal,
-              status: (o.status || "active").toLowerCase().trim(),
+              status: cleanStatus,
               notes: o.notes || "",
-              needsAcceptance: Boolean(o.needs_acceptance)
+              needsAcceptance: Boolean(cleanStatus === "active" && o.needs_acceptance)
             };
           });
 
@@ -1259,6 +1278,7 @@ const PlatePilotCloud = (() => {
     fetchOrders,
     placeOrder,
     updateOrderStatus,
+    acceptOrder,
     fetchMenuData,
     upsertMenuCategory,
     deleteMenuCategory,
