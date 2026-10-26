@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-neutral-100">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <title>Customer Dine-in QR Menu | Plate Pilot</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: "#FFF7ED",
+              100: "#FFEDD5",
+              200: "#FED7AA",
+              300: "#FDBA74",
+              400: "#FB923C",
+              500: "#F97316", // Primary Warm Orange
+              600: "#EA580C",
+              700: "#C2410C",
+              800: "#9A3412",
+              900: "#7C2D12"
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            headline: ['"Outfit"', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Google Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <style>
+    /* Custom Scrollbar */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Smooth Touch Bounce */
+    body {
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: contain;
+    }
+    
+    /* Animation Keyframes */
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .animate-slide-up {
+      animation: slideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes pulseBeacon {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.7; }
+    }
+    .beacon-pulse {
+      animation: pulseBeacon 2s infinite ease-in-out;
+    }
+
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+
+  <!-- Supabase Cloud Engine & Realtime Sync Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+</head>
+<body class="h-full flex flex-col font-sans text-neutral-800 antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- Mobile Viewport Container: Max-w-md for perfect smartphone feel, centered on wide screens -->
+  <div class="w-full max-w-md mx-auto min-h-screen bg-white flex flex-col shadow-2xl relative border-x border-neutral-200/60 pb-28">
+
+    <!-- Top Sticky Bar -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-neutral-200/80 px-4 py-3 flex items-center justify-between shadow-xs">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div id="rest-logo-badge" class="w-9 h-9 rounded-xl bg-brand-500 text-white font-headline font-extrabold text-[15px] flex items-center justify-center shrink-0 shadow-xs">
+          PP
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5">
+            <h1 id="rest-display-name" class="font-headline font-bold text-[15px] text-neutral-900 truncate leading-tight">
+              Restaurant Name
+            </h1>
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-headline font-extrabold bg-emerald-100 text-emerald-800 shrink-0">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>LIVE</span>
+            </span>
+          </div>
+          <p id="rest-display-cuisine" class="text-[11px] text-neutral-400 truncate">Speciality Dining &bull; Dine-in</p>
+        </div>
+      </div>
+
+      <!-- Table Badge Pill & Wi-Fi -->
+      <div class="shrink-0 flex items-center gap-1.5">
+        <button type="button" onclick="openWifiModal()" class="w-8 h-8 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-600 flex items-center justify-center transition-all cursor-pointer shadow-2xs" title="Guest Wi-Fi">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path></svg>
+        </button>
+        <div class="px-2.5 py-1.5 rounded-xl bg-brand-50 border border-brand-200 text-brand-700 flex items-center gap-1.5 shadow-2xs">
+          <svg class="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+          <span id="top-table-badge" class="font-headline font-extrabold text-xs">Table 01</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Search & Filter Bar -->
+    <div class="bg-white border-b border-neutral-100 px-4 py-3 space-y-2.5 shadow-2xs">
+      <div class="relative flex items-center">
+        <svg class="w-4 h-4 absolute left-3 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input 
+          id="menu-search-input" 
+          type="search" 
+          placeholder="Search dishes, coffees, combos..." 
+          oninput="handleSearchInput(this.value)"
+          class="w-full h-10 pl-9 pr-8 bg-neutral-100 hover:bg-neutral-100/80 focus:bg-white rounded-xl text-xs font-medium text-neutral-800 placeholder-neutral-400 border border-transparent focus:border-brand-400 focus:outline-none transition-all shadow-inner"
+        />
+        <button id="search-clear-btn" type="button" onclick="clearSearch()" class="hidden absolute right-2.5 text-neutral-400 hover:text-neutral-600 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- Quick Diet Filters -->
+      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs">
+        <button type="button" onclick="setDietFilter('all')" id="diet-all-btn" class="diet-btn px-3 py-1 rounded-lg font-headline font-bold text-[11px] bg-brand-500 text-white shadow-2xs transition-all shrink-0">
+          All Dishes
+        </button>
+        <button type="button" onclick="setDietFilter('veg')" id="diet-veg-btn" class="diet-btn px-3 py-1 rounded-lg font-headline font-bold text-[11px] bg-neutral-100 text-neutral-600 hover:bg-neutral-200 transition-all shrink-0 flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>Pure Veg</span>
+        </button>
+        <button type="button" onclick="setDietFilter('nonveg')" id="diet-nonveg-btn" class="diet-btn px-3 py-1 rounded-lg font-headline font-bold text-[11px] bg-neutral-100 text-neutral-600 hover:bg-neutral-200 transition-all shrink-0 flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+          <span>Non-Veg</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Offers & Deals Strip -->
+    <section id="offers-strip-container" class="px-4 pt-3.5 space-y-1.5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1.5 text-xs font-headline font-bold text-neutral-900">
+          <svg class="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+          <span>Dine-In Offers &amp; Promo Codes</span>
+        </div>
+        <span class="text-[10px] text-neutral-400">Tap to apply</span>
+      </div>
+      <div id="offers-carousel" class="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- Categories Navigation Pills -->
+    <nav class="sticky top-[61px] z-20 bg-white/95 backdrop-blur-md border-b border-neutral-100 px-4 py-2.5 overflow-x-auto no-scrollbar flex items-center gap-2 shadow-2xs" id="category-nav-bar">
+      <!-- Rendered dynamically -->
+    </nav>
+
+    <!-- Menu Items List -->
+    <main class="flex-1 p-4 space-y-6" id="menu-items-container">
+      <!-- Items dynamically populated by category -->
+    </main>
+
+    <!-- Floating Bottom Cart Action Bar -->
+    <div id="floating-cart-bar" class="hidden fixed bottom-3 inset-x-0 max-w-md mx-auto px-4 z-30 animate-slide-up pointer-events-none">
+      <div class="pointer-events-auto bg-neutral-950 text-white p-3 rounded-2xl shadow-2xl border border-neutral-800 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-brand-500 text-white flex items-center justify-center font-headline font-extrabold text-sm shadow-sm relative">
+            <span class="material-symbols-outlined text-[20px]">shopping_bag</span>
+            <span id="float-cart-count" class="absolute -top-1.5 -right-1.5 bg-white text-brand-700 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shadow-xs border border-brand-200">
+              1
+            </span>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span id="float-cart-total" class="font-headline font-black text-[16px] text-white">₹0</span>
+              <span class="text-[10px] text-neutral-400">(taxes extra)</span>
+            </div>
+            <p id="float-cart-items-summary" class="text-[11px] text-neutral-300">1 item added</p>
+          </div>
+        </div>
+
+        <button type="button" onclick="openCheckoutDrawer()" class="h-11 px-5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-headline font-bold text-xs flex items-center gap-1.5 shadow-md shadow-brand-500/30 active:scale-95 transition-all cursor-pointer">
+          <span>Review &amp; Order</span>
+          <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+
+  </div> <!-- End Max-w-md Container -->
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: SLIDE-UP CHECKOUT & TICKET DRAWER -->
+  <!-- ========================================================================= -->
+  <div id="drawer-checkout" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex flex-col justify-end">
+    <div class="w-full max-w-md mx-auto bg-white rounded-t-3xl shadow-2xl border-t border-neutral-200 max-h-[92vh] flex flex-col animate-slide-up overflow-hidden">
+      
+      <!-- Drawer Top Bar -->
+      <div class="p-4 bg-gradient-to-r from-brand-500 to-amber-600 text-white flex items-center justify-between shrink-0 shadow-sm">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
+            <span class="material-symbols-outlined text-[20px]">receipt_long</span>
+          </div>
+          <div>
+            <h3 class="font-headline font-bold text-[16px] leading-tight">Your Dine-in Order Ticket</h3>
+            <p id="drawer-table-label" class="text-[11px] text-brand-100">Table 01 &bull; Direct Kitchen Queue</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeCheckoutDrawer()" class="w-8 h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/20 transition-all cursor-pointer">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <!-- Drawer Scrollable Body -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4">
+        
+        <!-- Cart Items List -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-headline font-bold text-neutral-500 uppercase tracking-wider">Ordered Items</span>
+            <button type="button" onclick="clearCart()" class="text-[11px] text-rose-600 font-semibold hover:underline cursor-pointer">Clear All</button>
+          </div>
+          <div id="drawer-items-list" class="space-y-2">
+            <!-- Dynamically populated items -->
+          </div>
+        </div>
+
+        <!-- Cooking Instructions / Notes -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-headline font-bold text-neutral-700 flex items-center gap-1">
+            <span class="material-symbols-outlined text-[15px] text-brand-600">edit_note</span>
+            <span>Cooking Note / Special Requests</span>
+          </label>
+          <input 
+            id="input-cooking-note" 
+            type="text" 
+            placeholder="e.g. Less spicy, oat milk, extra napkins..."
+            class="w-full h-10 px-3 rounded-xl border border-neutral-200 text-xs font-medium text-neutral-800 focus:border-brand-500 focus:outline-none"
+          />
+        </div>
+
+        <!-- Promo Code Section -->
+        <div class="p-3 bg-brand-50/50 rounded-2xl border border-brand-200/80 space-y-2">
+          <div class="flex items-center justify-between text-xs font-headline font-bold text-neutral-800">
+            <span class="flex items-center gap-1 text-brand-800">
+              <span class="material-symbols-outlined text-[16px] text-brand-600">loyalty</span>
+              <span>Apply Promo Code</span>
+            </span>
+            <span id="coupon-applied-tag" class="hidden text-emerald-700 font-bold text-[11px] bg-emerald-100 px-2 py-0.5 rounded-full">Applied</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <input 
+              id="input-coupon-code" 
+              type="text" 
+              placeholder="e.g. WELCOME20" 
+              class="flex-1 h-9 px-3 rounded-xl border border-neutral-200 uppercase font-mono font-bold text-xs focus:border-brand-500 focus:outline-none"
+            />
+            <button type="button" onclick="handleApplyCoupon()" id="btn-apply-coupon" class="h-9 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-headline font-bold text-xs transition-all cursor-pointer">
+              Apply
+            </button>
+          </div>
+          <p id="coupon-feedback-msg" class="hidden text-[11px] font-medium"></p>
+        </div>
+
+        <!-- Customer Identity Details -->
+        <div class="space-y-2.5 p-3.5 bg-neutral-50 rounded-2xl border border-neutral-200/80">
+          <span class="text-xs font-headline font-bold text-neutral-800 block">Dine-in Customer Information</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label class="text-[11px] font-medium text-neutral-500 block mb-0.5">Your Name <span class="text-rose-500">*</span></label>
+              <input 
+                id="input-cust-name" 
+                type="text" 
+                placeholder="e.g. Rohan Sharma" 
+                class="w-full h-9 px-3 rounded-xl border border-neutral-200 text-xs font-semibold text-neutral-800 focus:border-brand-500 focus:outline-none bg-white"
+                required
+              />
+            </div>
+            <div>
+              <label class="text-[11px] font-medium text-neutral-500 block mb-0.5">Mobile Phone (Optional)</label>
+              <input 
+                id="input-cust-phone" 
+                type="tel" 
+                placeholder="e.g. 9876543210" 
+                class="w-full h-9 px-3 rounded-xl border border-neutral-200 text-xs font-semibold text-neutral-800 focus:border-brand-500 focus:outline-none bg-white"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Method Preference -->
+        <div class="space-y-1.5">
+          <span class="text-xs font-headline font-bold text-neutral-700 block">Payment Mode</span>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="flex items-center gap-2 p-2.5 rounded-xl border border-brand-300 bg-brand-50/50 cursor-pointer text-xs">
+              <input type="radio" name="payment_choice" value="counter" checked class="text-brand-600 focus:ring-brand-500" />
+              <span class="font-headline font-bold text-neutral-800">Pay at Counter</span>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 rounded-xl border border-neutral-200 hover:border-neutral-300 cursor-pointer text-xs">
+              <input type="radio" name="payment_choice" value="upi" class="text-brand-600 focus:ring-brand-500" />
+              <span class="font-headline font-bold text-neutral-800">UPI / QR Scan</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Bill Calculation Breakdown -->
+        <div class="p-3.5 bg-neutral-900 text-neutral-100 rounded-2xl space-y-2 text-xs">
+          <div class="flex justify-between text-neutral-300">
+            <span>Item Subtotal</span>
+            <span id="bill-subtotal" class="font-semibold text-white">₹0.00</span>
+          </div>
+          <div id="bill-discount-row" class="hidden flex justify-between text-emerald-400 font-semibold">
+            <span id="bill-discount-label">Coupon Discount</span>
+            <span id="bill-discount-val">-₹0.00</span>
+          </div>
+          <div class="flex justify-between text-neutral-400">
+            <span id="bill-tax-label">GST (5%)</span>
+            <span id="bill-tax">₹0.00</span>
+          </div>
+          <div class="pt-2 border-t border-neutral-800 flex justify-between items-center text-sm font-headline font-black text-white">
+            <span>Total Payable</span>
+            <span id="bill-grand-total" class="text-[17px] text-amber-400 font-mono font-bold">₹0.00</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Drawer Bottom Submit CTA -->
+      <div class="p-4 bg-white border-t border-neutral-200 shrink-0">
+        <button 
+          id="btn-confirm-order" 
+          type="button" 
+          onclick="submitDineInOrder()" 
+          class="w-full h-12 rounded-2xl bg-brand-500 hover:bg-brand-600 active:scale-98 text-white font-headline font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-500/25 transition-all cursor-pointer"
+        >
+          <span class="material-symbols-outlined text-[20px]">check_circle</span>
+          <span>Place Dine-in Order &bull; Send to Kitchen</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- ========================================================================= -->
+  <!-- MODAL: ORDER CONFIRMED -->
+  <!-- ========================================================================= -->
+  <div id="modal-order-confirmed" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 text-center space-y-5 animate-slide-up border border-brand-200 relative">
+      
+      <!-- Close X Button -->
+      <button type="button" onclick="placeNewOrder()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-neutral-700 flex items-center justify-center transition-all cursor-pointer" title="Close">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+
+      <!-- Celebration Ring with Green Checkmark -->
+      <div id="confirmed-celebration-ring" class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-md border-2 border-emerald-200 beacon-pulse">
+        <svg id="confirmed-celebration-svg" class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+      </div>
+
+      <div>
+        <span id="confirmed-order-id" class="px-3 py-1 rounded-full bg-brand-100 text-brand-800 font-headline font-extrabold text-xs uppercase tracking-wider inline-block">
+          Order #RC-148
+        </span>
+        <h3 id="confirmed-order-title" class="font-headline font-black text-[22px] text-neutral-900 mt-2 leading-tight">
+          Order Received!
+        </h3>
+      </div>
+
+      <!-- Table Badge -->
+      <div class="py-2.5 px-4 bg-brand-50 rounded-2xl border border-brand-200 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+          <span id="confirmed-table-badge" class="font-headline font-bold text-neutral-900">Table 01</span>
+        </div>
+        <span class="text-brand-700 font-bold">Dine-in Order</span>
+      </div>
+
+      <!-- Single Action Button: Place New Order -->
+      <div class="pt-2 border-t border-neutral-100">
+        <button 
+          id="btn-place-new-order"
+          type="button" 
+          onclick="placeNewOrder()" 
+          class="w-full h-12 rounded-2xl bg-brand-500 hover:bg-brand-600 active:scale-98 text-white font-headline font-bold text-sm shadow-lg shadow-brand-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
+        >
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+          </svg>
+          <span>Place New Order</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Wi-Fi Modal -->
+  <div id="modal-wifi" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+    <div class="w-full max-w-xs bg-white rounded-2xl p-5 text-center space-y-3 shadow-2xl animate-slide-up">
+      <div class="w-12 h-12 rounded-2xl bg-brand-100 text-brand-600 flex items-center justify-center mx-auto">
+        <span class="material-symbols-outlined text-[28px]">wifi</span>
+      </div>
+      <h4 class="font-headline font-bold text-[16px] text-neutral-900">Guest Wi-Fi Details</h4>
+      <div class="bg-neutral-50 p-3 rounded-xl border border-neutral-200 text-left text-xs space-y-1.5">
+        <div><span class="text-neutral-400">Network (SSID):</span> <strong id="wifi-ssid" class="text-neutral-800">PlatePilot_Guest</strong></div>
+        <div><span class="text-neutral-400">Password:</span> <strong id="wifi-pass" class="text-neutral-800">dinein2026</strong></div>
+      </div>
+      <button type="button" onclick="closeWifiModal()" class="w-full h-9 rounded-xl bg-neutral-900 text-white font-headline font-bold text-xs cursor-pointer">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification Pill -->
+  <div id="toast-container" class="fixed top-4 inset-x-0 flex justify-center z-50 pointer-events-none px-4">
+    <div id="toast-pill" class="hidden bg-neutral-950/95 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-headline font-bold shadow-2xl flex items-center gap-2 border border-neutral-800 transition-all pointer-events-auto">
+      <span class="material-symbols-outlined text-[16px] text-brand-400" id="toast-icon">check_circle</span>
+      <span id="toast-msg">Notification</span>
+    </div>
+  </div>
+
+  <!-- Audio Chime Elements (Web Audio API synthesis used) -->
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT CONTROLLER: QR MENU PIPELINE -->
+  <!-- ========================================================================= -->
+  <script>
+    // --- 1. DEFAULT OUTLET PACKS (Ensures 100% offline & local operation) ---
+    const OUTLET_PACKS = {
+      "rest-1": {
+        name: "Roast & Cart Speciality",
+        cuisine: "Artisan Coffee & Micro-Roastery",
+        address: "Shop 4, Connaught Place, New Delhi",
+        orderPrefix: "RC-",
+        categories: [
+          { id: "hot", name: "Hot Brews" },
+          { id: "iced", name: "Iced Specials" },
+          { id: "food", name: "Food & Bakery" }
+        ],
+        menuItems: [
+          { id: "rc-1", category: "hot", title: "Single Origin Espresso", subtitle: "Rich caramel notes, double shot", price: 140, image: "https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?w=400&auto=format&fit=crop&q=60", isVeg: true },
+          { id: "rc-2", category: "hot", title: "Velvet Flat White", subtitle: "Silky textured microfoam over ristretto", price: 210, image: "https://images.unsplash.com/photo-1577968897966-3d4325b36b61?w=400&auto=format&fit=crop&q=60", isVeg: true },
+          { id: "rc-3", category: "iced", title: "Nitro Cascara Cold Brew", subtitle: "Slow steeped for 18h with citrus tonic", price: 240, image: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=400&auto=format&fit=crop&q=60", isVeg: true },
+          { id: "rc-4", category: "food", title: "Almond Croissant", subtitle: "Twice baked butter pastry with toasted frangipane", price: 180, image: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&auto=format&fit=crop&q=60", isVeg: true },
+          { id: "rc-5", category: "food", title: "Truffle Mushroom Melt", subtitle: "Wild mushrooms & gruyere on sourdough", price: 290, image: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=400&auto=format&fit=crop&q=60", isVeg: true }
+        ],
+        offers: [
+          { code: "WELCOME20", title: "20% Off Welcome Treat", discountType: "pct", value: 20, minOrder: 150, description: "20% off on your first dine-in order" },
+          { code: "FLAT50", title: "Flat ₹50 Super Saver", discountType: "flat", value: 50, minOrder: 250, description: "Save flat ₹50 on bills above ₹250" }
+        ]
+      },
+      "rest-2": {
+        name: "Spice Symphony Bistro",
+        cuisine: "Modern Indian & Bistro",
+        address: "12th Main Road, Indiranagar, Bengaluru",
+        orderPrefix: "SSB-",
+        categories: [
+          { id: "curries", name: "Main Curries" },
+          { id: "tandoor", name: "Tandoori Kebabs" },
+          { id: "biryani", name: "Biryani & Rice" },
+          { id: "breads", name: "Breads & Sides" }
+        ],
+        menuItems: [
+          { id: "ssb-1", category: "curries", title: "Butter Chicken Platter", subtitle: "Slow-cooked creamy tomato makhani with tender chicken", price: 380, image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=400&auto=format&fit=crop&q=60", isVeg: false },
+          { id: "ssb-2", category: "curries", title: "Paneer Tikka Masala", subtitle: "Charred cottage cheese cubes in spiced onion tomato gravy", price: 320, image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&auto=format&fit=crop&q=60", isVeg: true },
+          { id: "ssb-3", category: "biryani", title: "Hyderabadi Dum Biryani Box", subtitle: "Fragrant basmati rice layered with aromatic saffron & spices", price: 340, image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&auto=format&fit=crop&q=60", isVeg: false },
+          { id: "ssb-4", category: "curries", title: "Dal Makhani Slow Cooked", subtitle: "24-hour slow simmered black lentils with churned butter", price: 260, image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&auto=format&fit=crop&q=60", isVeg: true },
+          { id: "ssb-5", category: "breads", title: "Garlic Butter Naan (2 Pcs)", subtitle: "Clay oven baked flatbread brushed with garlic & butter", price: 110, image: "https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?w=400&auto=format&fit=crop&q=60", isVeg: true }
+        ],
+        offers: [
+          { code: "BIRYANIFEST", title: "Flat ₹75 Off Biryanis", discountType: "flat", value: 75, minOrder: 400, description: "Save ₹75 on biryani platters" },
+          { code: "SPICE15", title: "15% Off Total Bill", discountType: "pct", value: 15, minOrder: 300, description: "15% discount on dine-in meals" }
+        ]
+      },
+      "rest-3": {
+        name: "The Urban Brew Lab",
+        cuisine: "Artisan Roastery & Cafe",
+        address: "Pali Hill, Bandra West, Mumbai",
+        orderPrefix: "UBL-",
+        categories: [
+          { id: "pour-over", name: "Manual Pour-Over" },
+          { id: "espresso", name: "Espresso Bar" },
+          { id: "bakery", name: "Artisan Bakes" }
+        ],
+        menuItems: [
+          { id: "ubl-1", category: "pour-over", title: "Geisha Single Origin Pour Over", subtitle: "Jasmine aroma, bergamot & sweet peach finish", price: 320, image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop&q=60", isVeg: true },
+          { id: "ubl-2", category: "pour-over", title: "Cascara Tonic Cold Brew", subtitle: "Coffee cherry tea syrup with craft tonic & lemon", price: 280, image: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=400&auto=format&fit=crop&q=60", isVeg: true },
+          { id: "ubl-3", category: "espresso", title: "Spanish Cortado", subtitle: "Equal parts espresso and warm silky milk", price: 220, image: "https://images.unsplash.com/photo-1534778101976-62847782c213?w=400&auto=format&fit=crop&q=60", isVeg: true }
+        ],
+        offers: [
+          { code: "ROASTLAB", title: "15% Off Manual Pour-Overs", discountType: "pct", value: 15, minOrder: 200, description: "15% off single origin brews" }
+        ]
+      },
+      "rest-4": {
+        name: "Green Leaf Healthy Bowls",
+        cuisine: "Salads, Bowls & Cold Pressed",
+        address: "27th Main, Sector 2, HSR Layout, Bengaluru",
+        orderPrefix: "GL-",
+        categories: [
+          { id: "bowls", name: "Superfood Bowls" },
+          { id: "salads", name: "Fresh Salads" },
+          { id: "juices", name: "Cold Pressed" }
+        ],
+        menuItems: [
+          { id: "gl-1", category: "bowls", title: "Mediterranean Quinoa Bowl", subtitle: "Organic quinoa, chickpeas, kalamata olives & lemon tahini", price: 340, image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&auto=format&fit=crop&q=60", isVeg: true },
+          { id: "gl-2", category: "bowls", title: "Acai Berry Protein Bowl", subtitle: "Pure Amazonian acai with chia, granola & fresh berries", price: 380, image: "https://images.unsplash.com/photo-1590301157890-4810ed352733?w=400&auto=format&fit=crop&q=60", isVeg: true },
+          { id: "gl-3", category: "juices", title: "Pure Glow Green Juice", subtitle: "Celery, cucumber, green apple, ginger & lemon", price: 190, image: "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=400&auto=format&fit=crop&q=60", isVeg: true }
+        ],
+        offers: [
+          { code: "HEALTH20", title: "20% Off Healthy Bowls", discountType: "pct", value: 20, minOrder: 250, description: "Save 20% on fresh salad bowls" }
+        ]
+      }
+    };
+
+    // --- 2. ACTIVE SESSION STATE ---
+    const session = {
+      restaurantId: "rest-1",
+      tableNumber: 1,
+      restaurant: null,
+      categories: [],
+      menuItems: [],
+      offers: [],
+      cart: [], // [{ id, title, price, qty }]
+      appliedOffer: null,
+      activeCategory: "all",
+      searchQuery: "",
+      dietFilter: "all" // 'all' | 'veg' | 'nonveg'
+    };
+
+    // --- 3. INITIALIZATION PIPELINE ---
+    async function initQrMenu() {
+      // 1. Parse URL Query Parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const restParam = urlParams.get("rest");
+      const storeParam = urlParams.get("store");
+      const tableParam = urlParams.get("table");
+
+      if (tableParam) {
+        const parsedTbl = parseInt(tableParam, 10);
+        if (!isNaN(parsedTbl) && parsedTbl > 0) {
+          session.tableNumber = parsedTbl;
+        }
+      }
+
+      // Determine Target Restaurant
+      if (restParam) {
+        session.restaurantId = restParam;
+      } else if (storeParam) {
+        // Match by store name
+        for (const [key, pack] of Object.entries(OUTLET_PACKS)) {
+          if (pack.name.toLowerCase().includes(decodeURIComponent(storeParam).toLowerCase())) {
+            session.restaurantId = key;
+            break;
+          }
+        }
+      }
+
+      // 2. Hydrate Restaurant Data (Local Storage + Fallback Packs + Backend API)
+      hydrateRestaurantData(session.restaurantId);
+
+      // 3. Render Views
+      renderHeader();
+      renderOffers();
+      renderCategories();
+      renderMenuItems();
+      updateCartUI();
+
+      // 4. Connect to Supabase Cloud Engine & Realtime Sync
+      await syncCloudMenuData(session.restaurantId, session.tableNumber);
+    }
+
+    function hydrateRestaurantData(rId) {
+      // Try reading from POS localStorage first
+      const savedRest = JSON.parse(localStorage.getItem(`platepilot_${rId}_restaurant`) || "null");
+      const savedCats = JSON.parse(localStorage.getItem(`platepilot_${rId}_categories`) || "null");
+      const savedMenu = JSON.parse(localStorage.getItem(`platepilot_${rId}_menu`) || "null");
+      const savedOffers = JSON.parse(localStorage.getItem(`platepilot_${rId}_offers`) || "null");
+      const savedSettings = JSON.parse(localStorage.getItem(`platepilot_${rId}_settings`) || "null");
+
+      const defaultPack = OUTLET_PACKS[rId] || OUTLET_PACKS["rest-1"];
+
+      session.restaurant = savedRest || {
+        name: defaultPack.name,
+        cuisine: defaultPack.cuisine,
+        address: defaultPack.address,
+        orderPrefix: defaultPack.orderPrefix
+      };
+
+      session.settings = savedSettings || {
+        taxRate: (savedRest && savedRest.taxRate !== undefined) ? parseFloat(savedRest.taxRate) : 5.0,
+        taxEnabled: (savedRest && savedRest.taxEnabled !== undefined) ? savedRest.taxEnabled : true,
+        taxLabel: (savedRest && savedRest.taxLabel) ? savedRest.taxLabel : "GST (5%)"
+      };
+
+      session.categories = (savedCats && savedCats.length > 0) ? savedCats : defaultPack.categories;
+      session.menuItems = (savedMenu && savedMenu.length > 0) ? savedMenu : defaultPack.menuItems;
+      session.offers = (savedOffers && savedOffers.length > 0) ? savedOffers : defaultPack.offers;
+    }
+
+    async function syncCloudMenuData(rId, tableNum) {
+      // 1. Fetch from Supabase Cloud if configured
+      if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG && window.PlatePilotCloud.CONFIG.isConfigured) {
+        try {
+          // Fetch Restaurant details
+          const restaurants = await window.PlatePilotCloud.fetchRestaurants();
+          if (Array.isArray(restaurants) && restaurants.length > 0) {
+            const found = restaurants.find(r => r.id === rId);
+            if (found) {
+              session.restaurant = {
+                name: found.name,
+                cuisine: found.cuisine || "Speciality Dine-In",
+                address: found.address || "",
+                orderPrefix: found.order_prefix || found.orderPrefix || "PP-",
+                taxRate: found.tax_rate !== undefined ? parseFloat(found.tax_rate) : 5.0,
+                taxEnabled: found.tax_enabled !== undefined ? found.tax_enabled : true,
+                taxLabel: found.tax_label || "GST (5%)"
+              };
+              localStorage.setItem(`platepilot_${rId}_restaurant`, JSON.stringify(session.restaurant));
+            }
+          }
+
+          // Fetch Menu Data (categories, menu items, active offers)
+          const menuData = await window.PlatePilotCloud.fetchMenuData(rId);
+          if (menuData) {
+            if (Array.isArray(menuData.categories) && menuData.categories.length > 0) {
+              session.categories = menuData.categories.map(c => ({
+                id: c.id,
+                name: c.name,
+                sortOrder: c.sort_order || 0
+              }));
+              localStorage.setItem(`platepilot_${rId}_categories`, JSON.stringify(session.categories));
+            }
+
+            if (Array.isArray(menuData.menuItems) && menuData.menuItems.length > 0) {
+              session.menuItems = menuData.menuItems.map(it => ({
+                id: it.id,
+                title: it.title || it.name || "Special Dish",
+                subtitle: it.subtitle || "",
+                category: it.category_id || it.category || "all",
+                price: parseFloat(it.price || 0),
+                cost: parseFloat(it.cost || 0),
+                stock: parseInt(it.stock || 50),
+                inStock: it.in_stock !== false && it.inStock !== false,
+                isVeg: it.is_veg !== false && it.isVeg !== false,
+                popular: Boolean(it.popular),
+                tags: Array.isArray(it.tags) ? it.tags : [],
+                image: it.image_url || it.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&auto=format&fit=crop&q=60"
+              }));
+              localStorage.setItem(`platepilot_${rId}_menu`, JSON.stringify(session.menuItems));
+            }
+
+            if (Array.isArray(menuData.offers) && menuData.offers.length > 0) {
+              session.offers = menuData.offers.map(o => ({
+                code: o.code,
+                title: o.title,
+                discountType: o.discount_type || o.discountType || "pct",
+                value: parseFloat(o.value || 0),
+                minOrder: parseFloat(o.min_order || o.minOrder || 0),
+                description: o.description || "",
+                active: o.active !== false
+              }));
+              localStorage.setItem(`platepilot_${rId}_offers`, JSON.stringify(session.offers));
+            }
+          }
+
+          // Fetch Live Tax Settings
+          const taxCfg = await window.PlatePilotCloud.fetchStoreTaxSettings(rId);
+          if (taxCfg) {
+            session.settings = {
+              taxRate: taxCfg.taxRate !== undefined ? parseFloat(taxCfg.taxRate) : 5.0,
+              taxEnabled: taxCfg.taxEnabled !== undefined ? taxCfg.taxEnabled : true,
+              taxLabel: taxCfg.taxLabel || "GST (5%)"
+            };
+            localStorage.setItem(`platepilot_${rId}_settings`, JSON.stringify(session.settings));
+          }
+
+          // Re-render UI with latest live cloud data
+          renderHeader();
+          renderOffers();
+          renderCategories();
+          renderMenuItems();
+          updateCartUI();
+        } catch (cloudErr) {
+          console.warn("[PlatePilot QR] Supabase Cloud sync notice:", cloudErr.message);
+        }
+      }
+
+      // 2. Also try localhost if in local developer mode
+      try {
+        const res = await fetch(`http://localhost:5000/api/qr/${rId}/table/${tableNum}`, { signal: AbortSignal.timeout(1500) });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.success) {
+            if (data.restaurant) session.restaurant = { ...session.restaurant, ...data.restaurant };
+            if (data.categories?.length) session.categories = data.categories;
+            if (data.menuItems?.length) session.menuItems = data.menuItems;
+            if (data.offers?.length) session.offers = data.offers;
+            renderHeader();
+            renderOffers();
+            renderCategories();
+            renderMenuItems();
+          }
+        }
+      } catch (e) {}
+
+      // 3. Connect Realtime WebSocket & Hybrid Poller for instant Stock & Tax updates
+      initRealtimeSubscription(rId);
+    }
+
+    function initRealtimeSubscription(rId) {
+      if (!window.PlatePilotCloud || !window.PlatePilotCloud.subscribeToCloud) return;
+
+      window.PlatePilotCloud.subscribeToCloud(rId, {
+        onMenuItemUpdate: (updatedItem) => {
+          if (!updatedItem) return;
+          console.log("[QR Menu Realtime] Received menu item update:", updatedItem);
+          const idx = session.menuItems.findIndex(it => it.id === updatedItem.id);
+          if (idx !== -1) {
+            const prevStock = session.menuItems[idx].inStock;
+            const newStock = updatedItem.in_stock !== false;
+
+            session.menuItems[idx] = {
+              ...session.menuItems[idx],
+              title: updatedItem.title || updatedItem.name || session.menuItems[idx].title,
+              subtitle: updatedItem.subtitle !== undefined ? updatedItem.subtitle : session.menuItems[idx].subtitle,
+              price: updatedItem.price !== undefined ? parseFloat(updatedItem.price) : session.menuItems[idx].price,
+              inStock: newStock,
+              image: updatedItem.image_url || updatedItem.image || session.menuItems[idx].image
+            };
+
+            // If item became sold out and is in cart, remove it and warn user
+            if (prevStock !== false && newStock === false) {
+              const inCart = session.cart.find(c => c.id === updatedItem.id);
+              if (inCart) {
+                session.cart = session.cart.filter(c => c.id !== updatedItem.id);
+                updateCartUI();
+                showToast(`"${session.menuItems[idx].title}" is sold out! Removed from cart.`, "warning");
+              }
+            }
+
+            renderMenuItems();
+          }
+        },
+        onMenuItemInsert: (newItem) => {
+          if (!newItem) return;
+          const exists = session.menuItems.some(it => it.id === newItem.id);
+          if (!exists) {
+            session.menuItems.push({
+              id: newItem.id,
+              title: newItem.title || newItem.name || "Special Dish",
+              subtitle: newItem.subtitle || "",
+              category: newItem.category_id || newItem.category || "all",
+              price: parseFloat(newItem.price || 0),
+              inStock: newItem.in_stock !== false,
+              isVeg: newItem.is_veg !== false,
+              image: newItem.image_url || newItem.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&auto=format&fit=crop&q=60"
+            });
+            renderCategories();
+            renderMenuItems();
+          }
+        },
+        onMenuItemDelete: (oldItem) => {
+          if (!oldItem || !oldItem.id) return;
+          session.menuItems = session.menuItems.filter(it => it.id !== oldItem.id);
+          session.cart = session.cart.filter(c => c.id !== oldItem.id);
+          renderCategories();
+          renderMenuItems();
+          updateCartUI();
+        },
+        onQrSettingsChange: (newSettings) => {
+          if (!newSettings) return;
+          console.log("[QR Menu Realtime] Received tax settings update:", newSettings);
+          if (newSettings.tax_enabled !== undefined || newSettings.taxEnabled !== undefined) {
+            session.settings = {
+              ...session.settings,
+              taxEnabled: newSettings.tax_enabled !== undefined ? Boolean(newSettings.tax_enabled) : Boolean(newSettings.taxEnabled),
+              taxRate: parseFloat(newSettings.tax_rate ?? newSettings.taxRate ?? 5.0),
+              taxLabel: newSettings.tax_label || newSettings.taxLabel || "GST"
+            };
+            updateCartUI();
+          }
+        }
+      });
+
+      // Cross-tab broadcast listener for local devices
+      try {
+        const syncChannel = new BroadcastChannel("platepilot_qr_sync");
+        syncChannel.onmessage = (evt) => {
+          if (evt.data && evt.data.type === "MENU_UPDATE") {
+            hydrateRestaurantData(rId);
+            renderCategories();
+            renderMenuItems();
+          }
+        };
+      } catch (e) {}
+    }
+
+    // --- 4. VIEW RENDERING ---
+    function renderHeader() {
+      const rest = session.restaurant || OUTLET_PACKS["rest-1"];
+      const tStr = String(session.tableNumber).padStart(2, "0");
+
+      const restNameEl = document.getElementById("rest-display-name");
+      if (restNameEl) restNameEl.textContent = rest.name;
+      const restCuisineEl = document.getElementById("rest-display-cuisine");
+      if (restCuisineEl) restCuisineEl.textContent = rest.cuisine || "Speciality Dine-In";
+
+      const heroName = document.getElementById("hero-rest-name");
+      if (heroName) heroName.textContent = rest.name;
+      const heroAddr = document.getElementById("hero-rest-address");
+      if (heroAddr) heroAddr.textContent = rest.address || "Dine-in Service Counter";
+
+      const topTblEl = document.getElementById("top-table-badge");
+      if (topTblEl) topTblEl.textContent = `Table ${tStr}`;
+      const drawerTblEl = document.getElementById("drawer-table-label");
+      if (drawerTblEl) drawerTblEl.textContent = `Table ${tStr} • Direct Kitchen Queue`;
+      
+      const initials = (rest.name || "PP").substring(0, 2).toUpperCase();
+      const logoEl = document.getElementById("rest-logo-badge");
+      if (logoEl) logoEl.textContent = initials;
+      document.title = `${rest.name} • Table ${tStr} Menu`;
+    }
+
+    function renderOffers() {
+      const container = document.getElementById("offers-carousel");
+      const wrapper = document.getElementById("offers-strip-container");
+      if (!container) return;
+
+      const activeOffers = (session.offers || []).filter(o => o.active !== false);
+      if (activeOffers.length === 0) {
+        wrapper.classList.add("hidden");
+        return;
+      }
+      wrapper.classList.remove("hidden");
+
+      container.innerHTML = activeOffers.map(o => {
+        const discText = o.discountType === 'pct' ? `${o.value}% OFF` : `${formatPrice(o.value)} OFF`;
+        return `
+          <div onclick="applyOfferCode('${o.code}')" class="min-w-[210px] p-2.5 rounded-2xl bg-gradient-to-r from-amber-50 to-brand-50 border border-brand-200/80 flex items-center justify-between gap-2 shadow-2xs hover:border-brand-400 cursor-pointer transition-all active:scale-95 shrink-0">
+            <div class="min-w-0">
+              <span class="px-2 py-0.5 rounded-md bg-brand-500 text-white font-headline font-black text-[10px] tracking-wide inline-block">${o.code}</span>
+              <p class="font-headline font-bold text-xs text-neutral-900 mt-1 truncate">${o.title}</p>
+              <p class="text-[10px] text-neutral-500 truncate">${discText} ${o.minOrder ? `above ${formatPrice(o.minOrder)}` : ''}</p>
+            </div>
+            <span class="material-symbols-outlined text-brand-600 text-[20px] shrink-0">add_circle</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderCategories() {
+      const nav = document.getElementById("category-nav-bar");
+      if (!nav) return;
+
+      let html = `
+        <button type="button" onclick="filterByCategory('all')" class="cat-pill px-3.5 py-1.5 rounded-full font-headline font-bold text-xs whitespace-nowrap transition-all cursor-pointer ${session.activeCategory === 'all' ? 'bg-brand-500 text-white shadow-xs' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'}">
+          All Dishes (${session.menuItems.length})
+        </button>
+      `;
+
+      session.categories.forEach(cat => {
+        const count = session.menuItems.filter(it => it.category === cat.id).length;
+        const isActive = session.activeCategory === cat.id;
+        html += `
+          <button type="button" onclick="filterByCategory('${cat.id}')" class="cat-pill px-3.5 py-1.5 rounded-full font-headline font-bold text-xs whitespace-nowrap transition-all cursor-pointer ${isActive ? 'bg-brand-500 text-white shadow-xs' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'}">
+            ${cat.name} (${count})
+          </button>
+        `;
+      });
+
+      nav.innerHTML = html;
+    }
+
+    function renderMenuItems() {
+      const container = document.getElementById("menu-items-container");
+      if (!container) return;
+
+      let items = session.menuItems || [];
+
+      // Filter by Category
+      if (session.activeCategory !== "all") {
+        items = items.filter(it => it.category === session.activeCategory);
+      }
+
+      // Filter by Diet
+      if (session.dietFilter === "veg") {
+        items = items.filter(it => it.isVeg !== false);
+      } else if (session.dietFilter === "nonveg") {
+        items = items.filter(it => it.isVeg === false);
+      }
+
+      // Filter by Search Query
+      if (session.searchQuery.trim()) {
+        const q = session.searchQuery.toLowerCase().trim();
+        items = items.filter(it => 
+          it.title.toLowerCase().includes(q) || 
+          (it.subtitle || "").toLowerCase().includes(q)
+        );
+      }
+
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div class="py-12 text-center text-neutral-400 space-y-2">
+            <span class="material-symbols-outlined text-[44px] text-neutral-300">search_off</span>
+            <p class="font-headline font-bold text-neutral-700 text-sm">No dishes found</p>
+            <p class="text-xs">Try adjusting your filters or search keywords.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Group items by category for structured layout
+      const categoriesToRender = session.activeCategory === "all" 
+        ? session.categories 
+        : session.categories.filter(c => c.id === session.activeCategory);
+
+      let html = "";
+      categoriesToRender.forEach(cat => {
+        const catItems = items.filter(it => it.category === cat.id);
+        if (catItems.length === 0) return;
+
+        html += `
+          <div class="space-y-3">
+            <div class="flex items-center justify-between pb-1.5 border-b border-neutral-100">
+              <h3 class="font-headline font-extrabold text-[15px] text-neutral-900">${cat.name}</h3>
+              <span class="text-[11px] font-semibold text-neutral-400">${catItems.length} items</span>
+            </div>
+
+            <div class="space-y-3">
+              ${catItems.map(item => renderItemCard(item)).join("")}
+            </div>
+          </div>
+        `;
+      });
+
+      // Handle items that might not have matched any registered category
+      const uncategorized = items.filter(it => !categoriesToRender.some(c => c.id === it.category));
+      if (uncategorized.length > 0) {
+        html += `
+          <div class="space-y-3">
+            <h3 class="font-headline font-extrabold text-[15px] text-neutral-900 pb-1.5 border-b border-neutral-100">Specialities</h3>
+            <div class="space-y-3">
+              ${uncategorized.map(item => renderItemCard(item)).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function renderItemCard(item) {
+      const isAvailable = item.inStock !== false && item.in_stock !== false;
+      const cartEntry = session.cart.find(c => c.id === item.id);
+      const qty = cartEntry ? cartEntry.qty : 0;
+      const isVeg = item.isVeg !== false;
+      const imgUrl = item.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&auto=format&fit=crop&q=60";
+
+      return `
+        <div class="p-3 bg-white rounded-2xl border ${isAvailable ? 'border-neutral-200/80 hover:border-brand-200' : 'border-neutral-200/50 bg-neutral-50/50 opacity-85'} flex items-center justify-between gap-3 shadow-2xs transition-all">
+          
+          <!-- Dish Description -->
+          <div class="flex-1 min-w-0 pr-1">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="w-3.5 h-3.5 rounded-sm border ${isVeg ? 'border-emerald-600' : 'border-rose-600'} flex items-center justify-center p-0.5 shrink-0" title="${isVeg ? 'Pure Vegetarian' : 'Non-Vegetarian'}">
+                <span class="w-2 h-2 rounded-full ${isVeg ? 'bg-emerald-600' : 'bg-rose-600'}"></span>
+              </span>
+              <h4 class="font-headline font-bold text-[14px] ${isAvailable ? 'text-neutral-900' : 'text-neutral-500'} leading-tight truncate">${item.title}</h4>
+            </div>
+
+            <p class="text-xs text-neutral-500 line-clamp-2 leading-relaxed">${item.subtitle || 'Freshly prepared specialty'}</p>
+            
+            <div class="mt-2 flex items-center gap-2">
+              <span class="font-headline font-extrabold text-[15px] ${isAvailable ? 'text-neutral-900' : 'text-neutral-400'}">${formatPrice(item.price)}</span>
+              ${!isAvailable ? `
+                <span class="px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 font-headline font-black text-[10px] tracking-wide uppercase inline-flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                  Sold Out
+                </span>
+              ` : ''}
+            </div>
+          </div>
+
+          <!-- Dish Photo & Qty CTA Button -->
+          <div class="relative w-24 h-24 shrink-0 flex flex-col items-center">
+            <div class="relative w-24 h-20 rounded-xl overflow-hidden shadow-2xs border border-neutral-100 bg-neutral-100">
+              <img src="${imgUrl}" alt="${item.title}" class="w-full h-full object-cover ${!isAvailable ? 'grayscale opacity-60' : ''}" loading="lazy" />
+              ${!isAvailable ? `
+                <div class="absolute inset-0 bg-neutral-900/40 backdrop-blur-[1px] flex items-center justify-center">
+                  <span class="px-1.5 py-0.5 rounded bg-rose-600 text-white font-headline font-black text-[9px] uppercase tracking-wider shadow-sm">SOLD OUT</span>
+                </div>
+              ` : ''}
+            </div>
+            
+            <div class="absolute -bottom-1">
+              ${!isAvailable ? `
+                <span class="h-7 px-2.5 rounded-lg bg-neutral-100 border border-neutral-300 text-neutral-400 font-headline font-bold text-[10px] flex items-center justify-center select-none shadow-2xs">
+                  UNAVAILABLE
+                </span>
+              ` : (qty === 0 ? `
+                <button type="button" onclick="changeItemQty('${item.id}', 1)" class="h-7 px-4 rounded-lg bg-white border border-brand-300 text-brand-600 font-headline font-extrabold text-xs shadow-md hover:bg-brand-500 hover:text-white transition-all cursor-pointer active:scale-95">
+                  ADD
+                </button>
+              ` : `
+                <div class="h-7 px-1.5 rounded-lg bg-brand-500 text-white font-headline font-extrabold text-xs shadow-md flex items-center gap-2">
+                  <button type="button" onclick="changeItemQty('${item.id}', -1)" class="w-5 h-5 flex items-center justify-center hover:bg-white/20 rounded active:scale-90 cursor-pointer">&minus;</button>
+                  <span class="text-xs font-mono font-bold">${qty}</span>
+                  <button type="button" onclick="changeItemQty('${item.id}', 1)" class="w-5 h-5 flex items-center justify-center hover:bg-white/20 rounded active:scale-90 cursor-pointer">&plus;</button>
+                </div>
+              `)}
+            </div>
+          </div>
+
+        </div>
+      `;
+    }
+
+    // --- 5. CART & INTERACTIVITY ---
+    function changeItemQty(itemId, delta) {
+      const item = session.menuItems.find(it => it.id === itemId);
+      if (!item) return;
+
+      if (delta > 0 && (item.inStock === false || item.in_stock === false)) {
+        showToast(`"${item.title}" is currently out of stock.`, "warning");
+        return;
+      }
+
+      const existing = session.cart.find(c => c.id === itemId);
+      if (existing) {
+        existing.qty += delta;
+        if (existing.qty <= 0) {
+          session.cart = session.cart.filter(c => c.id !== itemId);
+        }
+      } else if (delta > 0) {
+        session.cart.push({
+          id: item.id,
+          title: item.title,
+          price: item.price,
+          qty: 1
+        });
+      }
+
+      renderMenuItems();
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      const totalItems = session.cart.reduce((sum, it) => sum + it.qty, 0);
+      const subtotal = session.cart.reduce((sum, it) => sum + (it.price * it.qty), 0);
+
+      const floatBar = document.getElementById("floating-cart-bar");
+      if (totalItems > 0) {
+        floatBar.classList.remove("hidden");
+        document.getElementById("float-cart-count").textContent = totalItems;
+        document.getElementById("float-cart-total").textContent = formatPrice(subtotal);
+        document.getElementById("float-cart-items-summary").textContent = `${totalItems} dish${totalItems > 1 ? 'es' : ''} in cart`;
+      } else {
+        floatBar.classList.add("hidden");
+      }
+
+      // Calculate Discounts
+      let discount = 0;
+      if (session.appliedOffer) {
+        if (session.appliedOffer.minOrder && subtotal < session.appliedOffer.minOrder) {
+          session.appliedOffer = null; // Auto-remove if minimum not met
+        } else {
+          discount = session.appliedOffer.discountType === 'pct' 
+            ? (subtotal * session.appliedOffer.value) / 100 
+            : session.appliedOffer.value;
+          discount = Math.min(discount, subtotal);
+        }
+      }
+
+      const isTaxEnabled = session.settings ? session.settings.taxEnabled !== false : true;
+      const taxRate = isTaxEnabled ? (parseFloat(session.settings?.taxRate) ?? (session.restaurant?.taxRate !== undefined ? parseFloat(session.restaurant.taxRate) : 5.0)) : 0;
+      const taxLabel = session.settings?.taxLabel || (taxRate > 0 ? `GST (${taxRate}%)` : "Tax Exempt");
+
+      const tax = (subtotal - discount) * (taxRate / 100);
+      const grandTotal = Math.max(0, subtotal - discount + tax);
+
+      // Update Drawer Bill
+      document.getElementById("bill-subtotal").textContent = `₹${subtotal.toFixed(2)}`;
+      const taxLabelEl = document.getElementById("bill-tax-label");
+      if (taxLabelEl) taxLabelEl.textContent = taxLabel;
+      document.getElementById("bill-tax").textContent = `₹${tax.toFixed(2)}`;
+      document.getElementById("bill-grand-total").textContent = `₹${grandTotal.toFixed(2)}`;
+
+      const discRow = document.getElementById("bill-discount-row");
+      if (discount > 0 && session.appliedOffer) {
+        discRow.classList.remove("hidden");
+        document.getElementById("bill-discount-label").textContent = `Promo (${session.appliedOffer.code})`;
+        document.getElementById("bill-discount-val").textContent = `-₹${discount.toFixed(2)}`;
+      } else {
+        discRow.classList.add("hidden");
+      }
+    }
+
+    function openCheckoutDrawer() {
+      renderDrawerItems();
+      updateCartUI();
+      document.getElementById("drawer-checkout").classList.remove("hidden");
+    }
+
+    function closeCheckoutDrawer() {
+      document.getElementById("drawer-checkout").classList.add("hidden");
+    }
+
+    function renderDrawerItems() {
+      const container = document.getElementById("drawer-items-list");
+      if (!container) return;
+
+      if (session.cart.length === 0) {
+        container.innerHTML = `<p class="text-xs text-neutral-400 py-4 text-center">Your cart is empty.</p>`;
+        return;
+      }
+
+      container.innerHTML = session.cart.map(it => `
+        <div class="flex items-center justify-between p-2.5 bg-neutral-50 rounded-xl border border-neutral-200/80 text-xs">
+          <div class="min-w-0 pr-2">
+            <p class="font-headline font-bold text-neutral-900 truncate">${it.title}</p>
+            <p class="text-[11px] text-neutral-500 font-mono">${formatPrice(it.price)} each</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="font-headline font-extrabold text-neutral-900">${formatPrice(it.price * it.qty)}</span>
+            <div class="flex items-center gap-1.5 bg-white border border-neutral-300 rounded-lg p-0.5">
+              <button type="button" onclick="changeItemQty('${it.id}', -1); renderDrawerItems();" class="w-5 h-5 flex items-center justify-center font-bold text-neutral-600 hover:text-rose-600">&minus;</button>
+              <span class="font-mono font-bold text-xs px-1">${it.qty}</span>
+              <button type="button" onclick="changeItemQty('${it.id}', 1); renderDrawerItems();" class="w-5 h-5 flex items-center justify-center font-bold text-neutral-600 hover:text-brand-600">&plus;</button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function clearCart() {
+      session.cart = [];
+      session.appliedOffer = null;
+      renderMenuItems();
+      updateCartUI();
+      closeCheckoutDrawer();
+      showToast("Cart cleared");
+    }
+
+    // --- 6. PROMO CODE ENGINE ---
+    function applyOfferCode(code) {
+      const offer = (session.offers || []).find(o => o.code.toUpperCase() === code.toUpperCase());
+      if (!offer) {
+        showToast("Invalid promo code", "warning");
+        return;
+      }
+
+      const subtotal = session.cart.reduce((sum, it) => sum + (it.price * it.qty), 0);
+      if (offer.minOrder && subtotal < offer.minOrder) {
+        showToast(`Add ${formatPrice(offer.minOrder - subtotal)} more to unlock code ${offer.code}!`, "local_offer");
+        return;
+      }
+
+      session.appliedOffer = offer;
+      updateCartUI();
+      showToast(`Promo ${offer.code} Applied!`, "verified");
+
+      const input = document.getElementById("input-coupon-code");
+      if (input) input.value = offer.code;
+      const tag = document.getElementById("coupon-applied-tag");
+      if (tag) tag.classList.remove("hidden");
+    }
+
+    function handleApplyCoupon() {
+      const code = document.getElementById("input-coupon-code")?.value.trim().toUpperCase();
+      if (!code) {
+        showToast("Enter a coupon code");
+        return;
+      }
+      applyOfferCode(code);
+    }
+
+    // --- 7. ORDER SUBMISSION & REAL-TIME POS NOTIFICATION ---
+    async function submitDineInOrder() {
+      if (session.cart.length === 0) {
+        showToast("Your cart is empty. Please add items.", "error");
+        return;
+      }
+
+      const custName = document.getElementById("input-cust-name")?.value.trim();
+      if (!custName) {
+        showToast("Please enter your name for the kitchen ticket", "warning");
+        document.getElementById("input-cust-name")?.focus();
+        return;
+      }
+
+      const custPhone = document.getElementById("input-cust-phone")?.value.trim() || "";
+      const cookingNote = document.getElementById("input-cooking-note")?.value.trim() || "";
+      const paymentPref = document.querySelector('input[name="payment_choice"]:checked')?.value || "counter";
+
+      const submitBtn = document.getElementById("btn-confirm-order");
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add("opacity-70", "cursor-not-allowed");
+        submitBtn.innerHTML = `
+          <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+          <span>Sending to Kitchen...</span>
+        `;
+      }
+
+      const tStr = String(session.tableNumber).padStart(2, "0");
+      const rest = session.restaurant || OUTLET_PACKS["rest-1"];
+      const prefix = rest.orderPrefix || "PP-";
+
+      const subtotal = session.cart.reduce((sum, it) => sum + (it.price * it.qty), 0);
+      let discount = 0;
+      if (session.appliedOffer) {
+        discount = session.appliedOffer.discountType === 'pct' 
+          ? (subtotal * session.appliedOffer.value) / 100 
+          : session.appliedOffer.value;
+        discount = Math.min(discount, subtotal);
+      }
+      const isTaxEnabled = session.settings ? session.settings.taxEnabled !== false : true;
+      const taxRate = isTaxEnabled ? (parseFloat(session.settings?.taxRate) ?? (session.restaurant?.taxRate !== undefined ? parseFloat(session.restaurant.taxRate) : 5.0)) : 0;
+      const tax = parseFloat(((subtotal - discount) * (taxRate / 100)).toFixed(2));
+      const grandTotal = parseFloat((subtotal - discount + tax).toFixed(2));
+
+      // Retrieve existing orders and find highest numeric sequence for collision-proof order numbers
+      const savedOrders = JSON.parse(localStorage.getItem(`platepilot_${session.restaurantId}_orders`) || "[]");
+      let maxNum = 100;
+      const usedIds = new Set();
+      for (const ord of savedOrders) {
+        if (!ord || !ord.id) continue;
+        const idStr = String(ord.id).trim().toUpperCase();
+        usedIds.add(idStr);
+        const m = idStr.match(/(\d+)/);
+        if (m) {
+          const n = parseInt(m[1], 10);
+          if (!isNaN(n) && n > maxNum && n < 999999) maxNum = n;
+        }
+      }
+      let nextNum = maxNum + 1;
+      let orderId = `${prefix}${nextNum}`;
+      while (usedIds.has(orderId.toUpperCase())) {
+        nextNum++;
+        orderId = `${prefix}${nextNum}`;
+      }
+
+      const newOrderTicket = {
+        id: orderId,
+        type: `Dine-in • Table ${tStr}`,
+        timeAgo: "Just now",
+        receivedTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        customer: custName + (custPhone ? ` (+91 ${custPhone})` : ""),
+        customerName: custName,
+        customerPhone: custPhone,
+        paymentStatus: paymentPref === "counter" ? "PENDING (Pay at Counter/UPI)" : "PREPAID (UPI)",
+        items: session.cart.map(c => ({ qty: c.qty, name: c.title, price: c.price })),
+        subtotal: grandTotal,
+        discount: discount > 0 ? {
+          label: session.appliedOffer?.code || "Offer",
+          amount: parseFloat(discount.toFixed(2))
+        } : null,
+        notes: cookingNote,
+        channel: `QR Table ${tStr}`,
+        status: "active",
+        needsAcceptance: true
+      };
+
+      // 1. SAVE TO LOCALSTORAGE FOR INSTANT CROSS-TAB POS ACCESS
+      savedOrders.unshift(newOrderTicket);
+      localStorage.setItem(`platepilot_${session.restaurantId}_orders`, JSON.stringify(savedOrders));
+
+      // Legacy fallback for rest-1
+      if (session.restaurantId === "rest-1") {
+        localStorage.setItem("roast_orders", JSON.stringify(savedOrders));
+      }
+
+      // 2. DISPATCH REAL-TIME CROSS-TAB EVENT TO MERCHANT POS (RINGS AUDIO BELL)
+      const eventPayload = {
+        orderId,
+        restaurantId: session.restaurantId,
+        tableNumber: session.tableNumber,
+        customerName: custName,
+        total: grandTotal,
+        itemsCount: session.cart.length,
+        timestamp: Date.now()
+      };
+
+      localStorage.setItem("platepilot_new_qr_order", JSON.stringify(eventPayload));
+
+      try {
+        const syncChannel = new BroadcastChannel("platepilot_qr_sync");
+        syncChannel.postMessage({ type: "NEW_QR_ORDER", payload: eventPayload });
+      } catch (e) {}
+
+      // 3. SEND TO SUPABASE CLOUD IF CONFIGURED
+      try {
+        if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG && window.PlatePilotCloud.CONFIG.isConfigured) {
+          await window.PlatePilotCloud.placeOrder({
+            id: orderId,
+            restaurantId: session.restaurantId,
+            tableNumber: session.tableNumber,
+            orderType: "Dine-in",
+            customerName: custName,
+            customerPhone: custPhone,
+            paymentMethod: paymentPref === "counter" ? "Cash" : "UPI",
+            paymentStatus: paymentPref === "counter" ? "PENDING" : "PAID",
+            status: "active",
+            subtotal: subtotal,
+            discount: discount,
+            tax: tax,
+            total: grandTotal,
+            notes: cookingNote,
+            source: "qr",
+            channel: `QR Table ${tStr}`,
+            needsAcceptance: true,
+            items: session.cart.map(c => ({ id: c.id, qty: c.qty, price: c.price, name: c.title }))
+          });
+        }
+      } catch (err) {
+        console.warn("Supabase placeOrder error:", err);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove("opacity-70", "cursor-not-allowed");
+          submitBtn.innerHTML = `
+            <span class="material-symbols-outlined text-[20px]">check_circle</span>
+            <span>Send Order to Kitchen</span>
+          `;
+        }
+      }
+
+      // 4. SEND TO BACKEND REST API IF RUNNING
+      try {
+        fetch(`http://localhost:5000/api/qr/${session.restaurantId}/order`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tableNumber: session.tableNumber,
+            customerName: custName,
+            customerPhone: custPhone,
+            items: session.cart.map(c => ({ id: c.id, qty: c.qty, price: c.price })),
+            offerCode: session.appliedOffer?.code || null,
+            paymentMethod: paymentPref,
+            notes: cookingNote
+          })
+        }).catch(() => {});
+      } catch (e) {}
+
+      // 4. DISPLAY ORDER SUCCESS MODAL
+      closeCheckoutDrawer();
+      session.activeOrderId = orderId;
+
+      const orderIdEl = document.getElementById("confirmed-order-id");
+      if (orderIdEl) orderIdEl.textContent = `Order #${orderId}`;
+      const tblBadgeEl = document.getElementById("confirmed-table-badge");
+      if (tblBadgeEl) tblBadgeEl.textContent = `Table ${tStr}`;
+
+      openOrderConfirmedModal();
+
+      // Play soft feedback audio tone on mobile
+      playOrderSuccessTone();
+
+      // Reset Cart for fresh state
+      session.cart = [];
+      session.appliedOffer = null;
+      renderMenuItems();
+      updateCartUI();
+    }
+
+    function placeNewOrder() {
+      closeOrderConfirmedModal();
+      session.cart = [];
+      session.appliedOffer = null;
+      const noteInput = document.getElementById("input-cooking-note");
+      if (noteInput) noteInput.value = "";
+      renderMenuItems();
+      updateCartUI();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      showToast("Ready for a new order! Browse the menu below.", "restaurant");
+    }
+
+    function orderMoreItems() {
+      placeNewOrder();
+    }
+
+    function openOrderConfirmedModal() {
+      const modal = document.getElementById("modal-order-confirmed");
+      if (modal) modal.classList.remove("hidden");
+    }
+
+    function closeOrderConfirmedModal() {
+      const modal = document.getElementById("modal-order-confirmed");
+      if (modal) modal.classList.add("hidden");
+    }
+
+    // --- 8. FILTERS & SEARCH ---
+    function filterByCategory(catId) {
+      session.activeCategory = catId;
+      renderCategories();
+      renderMenuItems();
+    }
+
+    function setDietFilter(diet) {
+      session.dietFilter = diet;
+      document.querySelectorAll(".diet-btn").forEach(btn => {
+        btn.classList.remove("bg-brand-500", "text-white");
+        btn.classList.add("bg-neutral-100", "text-neutral-600");
+      });
+
+      const activeBtn = document.getElementById(`diet-${diet}-btn`);
+      if (activeBtn) {
+        activeBtn.classList.remove("bg-neutral-100", "text-neutral-600");
+        activeBtn.classList.add("bg-brand-500", "text-white");
+      }
+
+      renderMenuItems();
+    }
+
+    function handleSearchInput(val) {
+      session.searchQuery = val;
+      const clearBtn = document.getElementById("search-clear-btn");
+      if (clearBtn) {
+        if (val) clearBtn.classList.remove("hidden");
+        else clearBtn.classList.add("hidden");
+      }
+      renderMenuItems();
+    }
+
+    function clearSearch() {
+      const input = document.getElementById("menu-search-input");
+      if (input) input.value = "";
+      handleSearchInput("");
+    }
+
+    // --- 9. HELPERS (TOAST, MODALS, AUDIO) ---
+    function formatPrice(val) {
+      const num = Number(val) || 0;
+      return Number.isInteger(num) ? `₹${num}` : `₹${num.toFixed(2)}`;
+    }
+
+    function openWifiModal() {
+      document.getElementById("modal-wifi")?.classList.remove("hidden");
+    }
+    function closeWifiModal() {
+      document.getElementById("modal-wifi")?.classList.add("hidden");
+    }
+
+    let toastTimer = null;
+    function showToast(msg, icon = "check_circle") {
+      const pill = document.getElementById("toast-pill");
+      const msgEl = document.getElementById("toast-msg");
+      const iconEl = document.getElementById("toast-icon");
+      if (!pill || !msgEl) return;
+
+      msgEl.textContent = msg;
+      if (iconEl) iconEl.textContent = icon;
+
+      pill.classList.remove("hidden");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        pill.classList.add("hidden");
+      }, 2800);
+    }
+
+    function playOrderSuccessTone() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.12); // A5
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.46);
+      } catch (e) {}
+    }
+
+    // Boot
+    document.addEventListener("DOMContentLoaded", initQrMenu);
+  </script>
+</body>
+</html>

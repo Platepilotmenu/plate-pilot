@@ -110,6 +110,59 @@
     body.has-impersonation-bar main {
       padding-top: 6.25rem;
     }
+
+    /* Print Styles for Single & Batch Table QR Tent Cards */
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #print-tent-card-surface, #print-tent-card-surface *,
+      #batch-print-cards-grid, #batch-print-cards-grid * {
+        visibility: visible !important;
+      }
+      #modal-qr-card-print, #modal-batch-qr-print {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        background: transparent !important;
+        overflow: visible !important;
+        display: block !important;
+        padding: 0 !important;
+      }
+      #print-tent-card-surface {
+        position: absolute !important;
+        left: 50% !important;
+        top: 30px !important;
+        transform: translateX(-50%) !important;
+        border: 2px solid #f97316 !important;
+        border-radius: 20px !important;
+        padding: 24px !important;
+        width: 320px !important;
+        box-shadow: none !important;
+      }
+      #batch-print-container {
+        background: transparent !important;
+        padding: 0 !important;
+        overflow: visible !important;
+      }
+      #batch-print-cards-grid {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 20px !important;
+      }
+      .print-tent-card {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        border: 2px dashed #999 !important;
+        box-shadow: none !important;
+      }
+    }
   </style>
 
   <!-- Supabase Cloud Engine & Realtime Sync Client -->
@@ -878,16 +931,62 @@
           </label>
         </div>
 
-        <!-- Table Count Configuration -->
-        <div class="flex items-center justify-between bg-orange-50/70 border border-orange-100 p-3 rounded-xl flex-wrap gap-2">
-          <div class="flex flex-col">
-            <span class="font-headline text-[13px] text-neutral-900 font-bold">Number of Dine-in Tables</span>
-            <span class="text-[11px] text-neutral-500">Add or adjust tables; each gets its own unique scannable QR</span>
+        <!-- Public QR Menu Web Hosting / Domain Configuration -->
+        <div class="bg-gradient-to-r from-orange-50/90 to-amber-50/70 border border-orange-200/90 p-3.5 rounded-xl space-y-2.5">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex flex-col">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-headline text-[13px] text-neutral-900 font-bold">Public QR Menu Hosting &amp; Domain</span>
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-headline font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">100% Free • GitHub Pages / Custom Domain</span>
+              </div>
+              <span class="text-[11px] text-neutral-500 mt-0.5 leading-relaxed">
+                Customer phones scanning printed table QRs open this public HTTPS web URL. No paid hosting needed — runs free on GitHub Pages! You can also paste your own custom domain here.
+              </span>
+            </div>
+            <button type="button" onclick="testPublicQrUrl()" class="shrink-0 h-8 px-2.5 rounded-lg bg-white border border-neutral-200 hover:border-orange-400 text-neutral-700 font-headline text-[11px] font-bold flex items-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer" title="Open and test in new browser tab">
+              <span class="material-symbols-outlined text-[15px] text-orange-600">travel_explore</span>
+              <span>Test URL</span>
+            </button>
           </div>
+
           <div class="flex items-center gap-2">
-            <button type="button" onclick="changeTableCount(-1)" class="w-9 h-9 rounded-xl bg-white border border-orange-200 text-orange-600 font-headline font-bold text-[18px] flex items-center justify-center hover:bg-orange-50 active:scale-90 transition-all cursor-pointer shadow-xs">-</button>
-            <span id="setting-table-count-display" class="font-headline font-numeric text-[16px] font-bold text-neutral-900 min-w-[32px] text-center">6</span>
-            <button type="button" onclick="changeTableCount(1)" class="w-9 h-9 rounded-xl bg-white border border-orange-200 text-orange-600 font-headline font-bold text-[18px] flex items-center justify-center hover:bg-orange-50 active:scale-90 transition-all cursor-pointer shadow-xs">+</button>
+            <div class="relative flex-1">
+              <span class="material-symbols-outlined absolute left-3 top-2 text-neutral-400 text-[18px]">public</span>
+              <input 
+                type="url" 
+                id="setting-public-qr-url" 
+                placeholder="https://rajattomarsingh-create.github.io/plate-pilot/qr-menu.html"
+                class="w-full h-9 pl-9 pr-3 text-xs bg-white rounded-lg border border-neutral-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none font-mono text-neutral-800 transition-all"
+              />
+            </div>
+            <button type="button" onclick="savePublicQrUrl()" class="h-9 px-3 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-headline text-[11px] font-bold shadow-xs active:scale-95 transition-all cursor-pointer">
+              Save
+            </button>
+            <button type="button" onclick="resetPublicQrUrl()" class="h-9 px-2.5 rounded-lg bg-white border border-neutral-200 hover:bg-neutral-50 text-neutral-600 font-headline text-[11px] font-semibold active:scale-95 transition-all cursor-pointer" title="Reset to GitHub Pages Default">
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Count Configuration & Batch Actions -->
+        <div class="flex items-center justify-between bg-orange-50/70 border border-orange-100 p-3 rounded-xl flex-wrap gap-2.5">
+          <div class="flex items-center gap-3">
+            <div class="flex flex-col">
+              <span class="font-headline text-[13px] text-neutral-900 font-bold">Number of Dine-in Tables</span>
+              <span class="text-[11px] text-neutral-500">Each table gets its own unique scannable QR</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="changeTableCount(-1)" class="w-8 h-8 rounded-xl bg-white border border-orange-200 text-orange-600 font-headline font-bold text-[16px] flex items-center justify-center hover:bg-orange-50 active:scale-90 transition-all cursor-pointer shadow-xs">-</button>
+              <span id="setting-table-count-display" class="font-headline font-numeric text-[15px] font-bold text-neutral-900 min-w-[28px] text-center">6</span>
+              <button type="button" onclick="changeTableCount(1)" class="w-8 h-8 rounded-xl bg-white border border-orange-200 text-orange-600 font-headline font-bold text-[16px] flex items-center justify-center hover:bg-orange-50 active:scale-90 transition-all cursor-pointer shadow-xs">+</button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="openBatchTablePrint()" class="h-9 px-3 rounded-xl bg-neutral-900 hover:bg-black text-white font-headline text-[12px] font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer" title="Print All Table Tent Cards at once">
+              <span class="material-symbols-outlined text-[17px] text-orange-400">print</span>
+              <span>Batch Print Tent Cards</span>
+            </button>
           </div>
         </div>
 
@@ -3215,14 +3314,53 @@
       </div>
 
       <!-- Action Buttons -->
-      <div class="p-3 bg-neutral-50 border-t border-neutral-100 flex gap-2">
-        <button onclick="closeQrCardPrint()" class="flex-1 h-10 border border-neutral-200 rounded-xl font-headline font-semibold text-[13px] text-neutral-700 hover:bg-neutral-100 cursor-pointer">
+      <div class="p-3 bg-neutral-50 border-t border-neutral-100 flex gap-2 flex-wrap">
+        <button onclick="closeQrCardPrint()" class="flex-1 min-w-[70px] h-10 border border-neutral-200 rounded-xl font-headline font-semibold text-[13px] text-neutral-700 hover:bg-neutral-100 cursor-pointer">
           Close
         </button>
-        <button onclick="window.print()" class="flex-1 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-headline font-bold text-[13px] shadow-sm flex items-center justify-center gap-1.5 cursor-pointer">
+        <button onclick="downloadCurrentTableQrPng()" class="h-10 px-3 bg-white border border-neutral-200 hover:border-orange-400 text-neutral-700 rounded-xl font-headline font-bold text-[12px] flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs" title="Download Table QR as high-res PNG image">
+          <span class="material-symbols-outlined text-[17px] text-orange-600">download</span>
+          <span>Download PNG</span>
+        </button>
+        <button onclick="printSingleTentCard()" class="flex-1 min-w-[100px] h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-headline font-bold text-[13px] shadow-sm flex items-center justify-center gap-1.5 cursor-pointer">
           <span class="material-symbols-outlined text-[18px]">print</span>
           <span>Print Card</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: BATCH TABLE TENT CARDS PRINT ================= -->
+  <div id="modal-batch-qr-print" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-orange-200 flex flex-col max-h-[92vh]">
+      <div class="p-4 bg-neutral-900 text-white flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span class="material-symbols-outlined text-orange-400 text-[22px]">print</span>
+          <div>
+            <h3 class="font-headline font-bold text-[16px] leading-tight">Batch Table Tent Cards • Ready to Print</h3>
+            <span class="text-xs text-neutral-400" id="batch-print-summary">All Dine-in Tables</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="printBatchTentCards()" class="h-9 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-headline font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-[18px]">print</span>
+            <span>Print All Cards</span>
+          </button>
+          <button onclick="closeBatchTablePrint()" class="w-8 h-8 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 cursor-pointer">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-6 overflow-y-auto bg-neutral-100" id="batch-print-container">
+        <div id="batch-print-cards-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <!-- Injected via openBatchTablePrint() -->
+        </div>
+      </div>
+
+      <div class="p-3.5 bg-white border-t border-neutral-200 flex items-center justify-between text-xs text-neutral-500 shrink-0">
+        <span>💡 Select &quot;Landscape&quot; or &quot;Portrait&quot; in print preview. Standard A4/Letter paper with cut lines supported.</span>
+        <button onclick="closeBatchTablePrint()" class="h-8 px-4 border border-neutral-200 rounded-lg hover:bg-neutral-50 font-semibold cursor-pointer">Close</button>
       </div>
     </div>
   </div>
@@ -8131,23 +8269,58 @@
       const rest = (appState.onboardedRestaurants || []).find(r => r.id === rId) || appState.restaurant || { name: "Restaurant" };
       const restName = encodeURIComponent(rest.name || "Restaurant");
 
-      // Robust base URL extraction that works on http://, https://, and local file:///
-      let baseUrl = window.location.href.split("?")[0].split("#")[0];
-      if (!baseUrl || baseUrl === "null") {
-        baseUrl = window.location.origin + window.location.pathname;
+      // Check user-configured public QR URL, or auto-detect, or fallback to free GitHub Pages URL
+      let baseUrl = (appState.settings && appState.settings.publicQrBaseUrl ? appState.settings.publicQrBaseUrl.trim() : "");
+      
+      if (!baseUrl) {
+        if (typeof window !== "undefined" && window.location && (window.location.protocol === "http:" || window.location.protocol === "https:") && !window.location.hostname.includes("localhost") && !window.location.hostname.includes("127.0.0.1")) {
+          let currentUrl = window.location.href.split("?")[0].split("#")[0];
+          if (currentUrl.endsWith("index.html")) {
+            baseUrl = currentUrl.replace(/index\.html$/, "qr-menu.html");
+          } else if (currentUrl.endsWith("/")) {
+            baseUrl = currentUrl + "qr-menu.html";
+          } else {
+            const lastSlash = currentUrl.lastIndexOf("/");
+            baseUrl = (lastSlash !== -1 ? currentUrl.substring(0, lastSlash + 1) : "") + "qr-menu.html";
+          }
+        } else {
+          baseUrl = "https://rajattomarsingh-create.github.io/plate-pilot/qr-menu.html";
+        }
       }
 
-      let qrPageUrl = baseUrl;
-      if (qrPageUrl.endsWith("index.html")) {
-        qrPageUrl = qrPageUrl.replace(/index\.html$/, "qr-menu.html");
-      } else if (qrPageUrl.endsWith("/")) {
-        qrPageUrl = qrPageUrl + "qr-menu.html";
-      } else {
-        const lastSlash = qrPageUrl.lastIndexOf("/");
-        qrPageUrl = (lastSlash !== -1 ? qrPageUrl.substring(0, lastSlash + 1) : "") + "qr-menu.html";
-      }
+      const separator = baseUrl.includes("?") ? "&" : "?";
+      return `${baseUrl}${separator}rest=${encodeURIComponent(rId)}&table=${tableNum}&store=${restName}`;
+    }
 
-      return `${qrPageUrl}?rest=${encodeURIComponent(rId)}&table=${tableNum}&store=${restName}`;
+    function savePublicQrUrl() {
+      const input = document.getElementById("setting-public-qr-url");
+      let val = input ? input.value.trim() : "";
+      if (!val) {
+        val = "https://rajattomarsingh-create.github.io/plate-pilot/qr-menu.html";
+        if (input) input.value = val;
+      }
+      if (!appState.settings) appState.settings = {};
+      appState.settings.publicQrBaseUrl = val;
+      saveState();
+      renderTableQrCards();
+      showToast("Public QR Menu Web URL saved!", "public");
+    }
+
+    function resetPublicQrUrl() {
+      const defaultUrl = "https://rajattomarsingh-create.github.io/plate-pilot/qr-menu.html";
+      const input = document.getElementById("setting-public-qr-url");
+      if (input) input.value = defaultUrl;
+      if (!appState.settings) appState.settings = {};
+      appState.settings.publicQrBaseUrl = defaultUrl;
+      saveState();
+      renderTableQrCards();
+      showToast("Reset to GitHub Pages default URL!", "restart_alt");
+    }
+
+    function testPublicQrUrl() {
+      const url = getTableQrOrderUrl(1);
+      window.open(url, "_blank");
+      showToast("Opening Table 1 QR Menu in new browser tab...", "open_in_new");
     }
 
     function openTableQrInNewTab(tableNum = 1, restId = null) {
@@ -8253,6 +8426,98 @@
       `;
     }
 
+    async function downloadTableQrPng(tableNum = 1, restId = null) {
+      const url = getTableQrOrderUrl(tableNum, restId);
+      const tStr = String(tableNum).padStart(2, "0");
+      const rId = restId || appState.activeRestaurantId || "rest-1";
+      const rest = (appState.onboardedRestaurants || []).find(r => r.id === rId) || appState.restaurant || { name: "Restaurant" };
+      const filename = `${(rest.name || 'platepilot').replace(/[^a-z0-9]/gi, '_').toLowerCase()}_table_${tStr}_qr.png`;
+
+      showToast(`Generating Table ${tStr} high-res QR graphic...`, "qr_code");
+
+      try {
+        const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(url)}&margin=10&format=png`;
+        const res = await fetch(qrImgUrl);
+        if (!res.ok) throw new Error("Network fetch failed");
+        const blob = await res.blob();
+
+        const img = new Image();
+        const blobUrl = URL.createObjectURL(blob);
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = 700;
+          canvas.height = 840;
+          const ctx = canvas.getContext("2d");
+
+          // White Card Background
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // Top Accent Bar
+          ctx.fillStyle = "#F97316";
+          ctx.fillRect(0, 0, canvas.width, 14);
+
+          // Restaurant Name Header
+          ctx.fillStyle = "#1C1917";
+          ctx.font = "bold 32px 'Space Grotesk', 'Plus Jakarta Sans', sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText((rest.name || "Plate Pilot Speciality").toUpperCase(), 350, 70);
+
+          // Table Number Badge
+          ctx.fillStyle = "#F97316";
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(240, 95, 220, 48, 24);
+          } else {
+            ctx.rect(240, 95, 220, 48);
+          }
+          ctx.fill();
+
+          ctx.fillStyle = "#FFFFFF";
+          ctx.font = "bold 24px 'Space Grotesk', 'Plus Jakarta Sans', sans-serif";
+          ctx.fillText(`TABLE ${tStr}`, 350, 128);
+
+          // QR Code Graphic
+          ctx.drawImage(img, 50, 165, 600, 600);
+
+          // Scan Instructions
+          ctx.fillStyle = "#4B5563";
+          ctx.font = "600 20px 'Work Sans', sans-serif";
+          ctx.fillText("Scan with mobile camera to view live menu & order", 350, 792);
+
+          ctx.fillStyle = "#9CA3AF";
+          ctx.font = "500 14px 'Work Sans', sans-serif";
+          ctx.fillText("Instant Kitchen Dispatch • Plate Pilot Cloud", 350, 818);
+
+          canvas.toBlob((finalBlob) => {
+            if (!finalBlob) throw new Error("Canvas blob error");
+            const link = document.createElement("a");
+            link.download = filename;
+            link.href = URL.createObjectURL(finalBlob);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(blobUrl);
+            showToast(`Table ${tStr} QR PNG downloaded!`, "download_done");
+          }, "image/png");
+        };
+        img.onerror = () => { throw new Error("Image load failed"); };
+        img.src = blobUrl;
+      } catch (err) {
+        // Fallback: direct download link
+        const directUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(url)}&margin=10&format=png`;
+        const link = document.createElement("a");
+        link.href = directUrl;
+        link.target = "_blank";
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast(`Table ${tStr} QR opened for download.`, "download");
+      }
+    }
+
     function renderTableQrCards() {
       const grid = document.getElementById("settings-table-qr-grid");
       if (!grid) return;
@@ -8268,6 +8533,14 @@
 
       const summary = document.getElementById("setting-qr-tables-summary");
       if (summary) summary.textContent = `${count} Tables Active`;
+
+      // Hydrate Public QR URL input
+      const publicUrlInput = document.getElementById("setting-public-qr-url");
+      if (publicUrlInput) {
+        publicUrlInput.value = (appState.settings && appState.settings.publicQrBaseUrl) 
+          ? appState.settings.publicQrBaseUrl 
+          : "https://rajattomarsingh-create.github.io/plate-pilot/qr-menu.html";
+      }
 
       let html = "";
       for (let i = 1; i <= count; i++) {
@@ -8306,6 +8579,9 @@
               <button type="button" onclick="openQrCardPrint(${i})" class="h-8 px-2 rounded-lg bg-white border border-neutral-200 hover:border-orange-300 text-neutral-700 font-headline text-[11px] font-semibold flex items-center justify-center gap-1 active:scale-95 transition-all cursor-pointer" title="Print Dine-in Tent Card">
                 <span class="material-symbols-outlined text-[15px]">print</span>
               </button>
+              <button type="button" onclick="downloadTableQrPng(${i})" class="h-8 px-2 rounded-lg bg-white border border-neutral-200 hover:border-orange-400 text-neutral-700 font-headline text-[11px] font-semibold flex items-center justify-center gap-1 active:scale-95 transition-all cursor-pointer" title="Download High-Res Table ${tStr} QR PNG">
+                <span class="material-symbols-outlined text-[15px] text-orange-600">download</span>
+              </button>
               <button type="button" onclick="copyTableOrderLink(${i})" class="h-8 px-2.5 rounded-lg bg-orange-50 border border-orange-200 hover:bg-orange-100 text-orange-700 font-headline text-[11px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-all cursor-pointer" title="Copy Table QR Menu Web Link">
                 <span class="material-symbols-outlined text-[15px]">link</span>
                 <span class="hidden sm:inline">Copy Link</span>
@@ -8318,7 +8594,10 @@
       grid.innerHTML = html;
     }
 
+    let activeTentTableNum = 1;
+
     function openQrCardPrint(tableNum) {
+      activeTentTableNum = tableNum;
       const tStr = String(tableNum).padStart(2, "0");
       const restName = appState.restaurant?.name || "Roast & Cart Speciality";
       const restEl = document.getElementById("print-tent-rest-name");
@@ -8336,6 +8615,72 @@
 
     function closeQrCardPrint() {
       document.getElementById("modal-qr-card-print")?.classList.add("hidden");
+    }
+
+    function printSingleTentCard() {
+      window.print();
+    }
+
+    function downloadCurrentTableQrPng() {
+      downloadTableQrPng(activeTentTableNum);
+    }
+
+    function openBatchTablePrint() {
+      const count = appState.qrOrdering?.tableCount || 6;
+      const rest = appState.restaurant || { name: "Restaurant" };
+      const modal = document.getElementById("modal-batch-qr-print");
+      const container = document.getElementById("batch-print-cards-grid");
+      const summary = document.getElementById("batch-print-summary");
+
+      if (summary) {
+        summary.textContent = `${count} Dine-in Tables • ${rest.name || 'Plate Pilot'}`;
+      }
+
+      if (container) {
+        let cardsHtml = "";
+        for (let i = 1; i <= count; i++) {
+          const tStr = String(i).padStart(2, "0");
+          const url = getTableQrOrderUrl(i);
+          const encodedUrl = encodeURIComponent(url);
+
+          cardsHtml += `
+            <div class="print-tent-card p-4 bg-white border-2 border-dashed border-neutral-300 rounded-2xl flex flex-col items-center text-center space-y-2 break-inside-avoid shadow-xs relative">
+              <div class="flex items-center gap-1.5 text-orange-600 font-headline font-bold text-xs tracking-wide uppercase">
+                <span class="material-symbols-outlined text-[16px]">restaurant_menu</span>
+                <span class="truncate max-w-[170px]">${rest.name || 'Plate Pilot Speciality'}</span>
+              </div>
+
+              <div class="px-3 py-0.5 rounded-full bg-orange-500 text-white font-headline font-extrabold text-xs tracking-wider">
+                TABLE ${tStr}
+              </div>
+
+              <p class="text-[10px] text-neutral-500 font-medium">Scan camera to view live menu &amp; order</p>
+
+              <div class="p-1.5 bg-white rounded-xl border border-neutral-200 shadow-2xs">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodedUrl}&margin=4" 
+                     alt="Table ${tStr} QR" 
+                     class="w-32 h-32 object-contain" />
+              </div>
+
+              <div class="flex items-center justify-between w-full pt-1 border-t border-neutral-100 text-[9px] text-neutral-400">
+                <span>Dine-in Order</span>
+                <span>Table ${tStr}</span>
+              </div>
+            </div>
+          `;
+        }
+        container.innerHTML = cardsHtml;
+      }
+
+      if (modal) modal.classList.remove("hidden");
+    }
+
+    function closeBatchTablePrint() {
+      document.getElementById("modal-batch-qr-print")?.classList.add("hidden");
+    }
+
+    function printBatchTentCards() {
+      window.print();
     }
 
     // =========================================================================

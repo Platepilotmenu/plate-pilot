@@ -589,8 +589,8 @@
       renderMenuItems();
       updateCartUI();
 
-      // 4. Try syncing with backend API if online
-      fetchBackendMenuData(session.restaurantId, session.tableNumber);
+      // 4. Connect to Supabase Cloud Engine & Realtime Sync
+      await syncCloudMenuData(session.restaurantId, session.tableNumber);
     }
 
     function hydrateRestaurantData(rId) {
@@ -621,9 +621,97 @@
       session.offers = (savedOffers && savedOffers.length > 0) ? savedOffers : defaultPack.offers;
     }
 
-    async function fetchBackendMenuData(rId, tableNum) {
+    async function syncCloudMenuData(rId, tableNum) {
+      // 1. Fetch from Supabase Cloud if configured
+      if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG && window.PlatePilotCloud.CONFIG.isConfigured) {
+        try {
+          // Fetch Restaurant details
+          const restaurants = await window.PlatePilotCloud.fetchRestaurants();
+          if (Array.isArray(restaurants) && restaurants.length > 0) {
+            const found = restaurants.find(r => r.id === rId);
+            if (found) {
+              session.restaurant = {
+                name: found.name,
+                cuisine: found.cuisine || "Speciality Dine-In",
+                address: found.address || "",
+                orderPrefix: found.order_prefix || found.orderPrefix || "PP-",
+                taxRate: found.tax_rate !== undefined ? parseFloat(found.tax_rate) : 5.0,
+                taxEnabled: found.tax_enabled !== undefined ? found.tax_enabled : true,
+                taxLabel: found.tax_label || "GST (5%)"
+              };
+              localStorage.setItem(`platepilot_${rId}_restaurant`, JSON.stringify(session.restaurant));
+            }
+          }
+
+          // Fetch Menu Data (categories, menu items, active offers)
+          const menuData = await window.PlatePilotCloud.fetchMenuData(rId);
+          if (menuData) {
+            if (Array.isArray(menuData.categories) && menuData.categories.length > 0) {
+              session.categories = menuData.categories.map(c => ({
+                id: c.id,
+                name: c.name,
+                sortOrder: c.sort_order || 0
+              }));
+              localStorage.setItem(`platepilot_${rId}_categories`, JSON.stringify(session.categories));
+            }
+
+            if (Array.isArray(menuData.menuItems) && menuData.menuItems.length > 0) {
+              session.menuItems = menuData.menuItems.map(it => ({
+                id: it.id,
+                title: it.title || it.name || "Special Dish",
+                subtitle: it.subtitle || "",
+                category: it.category_id || it.category || "all",
+                price: parseFloat(it.price || 0),
+                cost: parseFloat(it.cost || 0),
+                stock: parseInt(it.stock || 50),
+                inStock: it.in_stock !== false && it.inStock !== false,
+                isVeg: it.is_veg !== false && it.isVeg !== false,
+                popular: Boolean(it.popular),
+                tags: Array.isArray(it.tags) ? it.tags : [],
+                image: it.image_url || it.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&auto=format&fit=crop&q=60"
+              }));
+              localStorage.setItem(`platepilot_${rId}_menu`, JSON.stringify(session.menuItems));
+            }
+
+            if (Array.isArray(menuData.offers) && menuData.offers.length > 0) {
+              session.offers = menuData.offers.map(o => ({
+                code: o.code,
+                title: o.title,
+                discountType: o.discount_type || o.discountType || "pct",
+                value: parseFloat(o.value || 0),
+                minOrder: parseFloat(o.min_order || o.minOrder || 0),
+                description: o.description || "",
+                active: o.active !== false
+              }));
+              localStorage.setItem(`platepilot_${rId}_offers`, JSON.stringify(session.offers));
+            }
+          }
+
+          // Fetch Live Tax Settings
+          const taxCfg = await window.PlatePilotCloud.fetchStoreTaxSettings(rId);
+          if (taxCfg) {
+            session.settings = {
+              taxRate: taxCfg.taxRate !== undefined ? parseFloat(taxCfg.taxRate) : 5.0,
+              taxEnabled: taxCfg.taxEnabled !== undefined ? taxCfg.taxEnabled : true,
+              taxLabel: taxCfg.taxLabel || "GST (5%)"
+            };
+            localStorage.setItem(`platepilot_${rId}_settings`, JSON.stringify(session.settings));
+          }
+
+          // Re-render UI with latest live cloud data
+          renderHeader();
+          renderOffers();
+          renderCategories();
+          renderMenuItems();
+          updateCartUI();
+        } catch (cloudErr) {
+          console.warn("[PlatePilot QR] Supabase Cloud sync notice:", cloudErr.message);
+        }
+      }
+
+      // 2. Also try localhost if in local developer mode
       try {
-        const res = await fetch(`http://localhost:5000/api/qr/${rId}/table/${tableNum}`);
+        const res = await fetch(`http://localhost:5000/api/qr/${rId}/table/${tableNum}`, { signal: AbortSignal.timeout(1500) });
         if (res.ok) {
           const data = await res.json();
           if (data && data.success) {
@@ -637,9 +725,98 @@
             renderMenuItems();
           }
         }
-      } catch (e) {
-        // Offline / local mode is completely normal and fully handled
-      }
+      } catch (e) {}
+
+      // 3. Connect Realtime WebSocket & Hybrid Poller for instant Stock & Tax updates
+      initRealtimeSubscription(rId);
+    }
+
+    function initRealtimeSubscription(rId) {
+      if (!window.PlatePilotCloud || !window.PlatePilotCloud.subscribeToCloud) return;
+
+      window.PlatePilotCloud.subscribeToCloud(rId, {
+        onMenuItemUpdate: (updatedItem) => {
+          if (!updatedItem) return;
+          console.log("[QR Menu Realtime] Received menu item update:", updatedItem);
+          const idx = session.menuItems.findIndex(it => it.id === updatedItem.id);
+          if (idx !== -1) {
+            const prevStock = session.menuItems[idx].inStock;
+            const newStock = updatedItem.in_stock !== false;
+
+            session.menuItems[idx] = {
+              ...session.menuItems[idx],
+              title: updatedItem.title || updatedItem.name || session.menuItems[idx].title,
+              subtitle: updatedItem.subtitle !== undefined ? updatedItem.subtitle : session.menuItems[idx].subtitle,
+              price: updatedItem.price !== undefined ? parseFloat(updatedItem.price) : session.menuItems[idx].price,
+              inStock: newStock,
+              image: updatedItem.image_url || updatedItem.image || session.menuItems[idx].image
+            };
+
+            // If item became sold out and is in cart, remove it and warn user
+            if (prevStock !== false && newStock === false) {
+              const inCart = session.cart.find(c => c.id === updatedItem.id);
+              if (inCart) {
+                session.cart = session.cart.filter(c => c.id !== updatedItem.id);
+                updateCartUI();
+                showToast(`"${session.menuItems[idx].title}" is sold out! Removed from cart.`, "warning");
+              }
+            }
+
+            renderMenuItems();
+          }
+        },
+        onMenuItemInsert: (newItem) => {
+          if (!newItem) return;
+          const exists = session.menuItems.some(it => it.id === newItem.id);
+          if (!exists) {
+            session.menuItems.push({
+              id: newItem.id,
+              title: newItem.title || newItem.name || "Special Dish",
+              subtitle: newItem.subtitle || "",
+              category: newItem.category_id || newItem.category || "all",
+              price: parseFloat(newItem.price || 0),
+              inStock: newItem.in_stock !== false,
+              isVeg: newItem.is_veg !== false,
+              image: newItem.image_url || newItem.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&auto=format&fit=crop&q=60"
+            });
+            renderCategories();
+            renderMenuItems();
+          }
+        },
+        onMenuItemDelete: (oldItem) => {
+          if (!oldItem || !oldItem.id) return;
+          session.menuItems = session.menuItems.filter(it => it.id !== oldItem.id);
+          session.cart = session.cart.filter(c => c.id !== oldItem.id);
+          renderCategories();
+          renderMenuItems();
+          updateCartUI();
+        },
+        onQrSettingsChange: (newSettings) => {
+          if (!newSettings) return;
+          console.log("[QR Menu Realtime] Received tax settings update:", newSettings);
+          if (newSettings.tax_enabled !== undefined || newSettings.taxEnabled !== undefined) {
+            session.settings = {
+              ...session.settings,
+              taxEnabled: newSettings.tax_enabled !== undefined ? Boolean(newSettings.tax_enabled) : Boolean(newSettings.taxEnabled),
+              taxRate: parseFloat(newSettings.tax_rate ?? newSettings.taxRate ?? 5.0),
+              taxLabel: newSettings.tax_label || newSettings.taxLabel || "GST"
+            };
+            updateCartUI();
+          }
+        }
+      });
+
+      // Cross-tab broadcast listener for local devices
+      try {
+        const syncChannel = new BroadcastChannel("platepilot_qr_sync");
+        syncChannel.onmessage = (evt) => {
+          if (evt.data && evt.data.type === "MENU_UPDATE") {
+            hydrateRestaurantData(rId);
+            renderCategories();
+            renderMenuItems();
+          }
+        };
+      } catch (e) {}
     }
 
     // --- 4. VIEW RENDERING ---
@@ -797,13 +974,14 @@
     }
 
     function renderItemCard(item) {
+      const isAvailable = item.inStock !== false && item.in_stock !== false;
       const cartEntry = session.cart.find(c => c.id === item.id);
       const qty = cartEntry ? cartEntry.qty : 0;
       const isVeg = item.isVeg !== false;
       const imgUrl = item.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&auto=format&fit=crop&q=60";
 
       return `
-        <div class="p-3 bg-white rounded-2xl border border-neutral-200/80 hover:border-brand-200 flex items-center justify-between gap-3 shadow-2xs transition-all">
+        <div class="p-3 bg-white rounded-2xl border ${isAvailable ? 'border-neutral-200/80 hover:border-brand-200' : 'border-neutral-200/50 bg-neutral-50/50 opacity-85'} flex items-center justify-between gap-3 shadow-2xs transition-all">
           
           <!-- Dish Description -->
           <div class="flex-1 min-w-0 pr-1">
@@ -811,22 +989,39 @@
               <span class="w-3.5 h-3.5 rounded-sm border ${isVeg ? 'border-emerald-600' : 'border-rose-600'} flex items-center justify-center p-0.5 shrink-0" title="${isVeg ? 'Pure Vegetarian' : 'Non-Vegetarian'}">
                 <span class="w-2 h-2 rounded-full ${isVeg ? 'bg-emerald-600' : 'bg-rose-600'}"></span>
               </span>
-              <h4 class="font-headline font-bold text-[14px] text-neutral-900 leading-tight truncate">${item.title}</h4>
+              <h4 class="font-headline font-bold text-[14px] ${isAvailable ? 'text-neutral-900' : 'text-neutral-500'} leading-tight truncate">${item.title}</h4>
             </div>
 
             <p class="text-xs text-neutral-500 line-clamp-2 leading-relaxed">${item.subtitle || 'Freshly prepared specialty'}</p>
             
             <div class="mt-2 flex items-center gap-2">
-              <span class="font-headline font-extrabold text-[15px] text-neutral-900">${formatPrice(item.price)}</span>
+              <span class="font-headline font-extrabold text-[15px] ${isAvailable ? 'text-neutral-900' : 'text-neutral-400'}">${formatPrice(item.price)}</span>
+              ${!isAvailable ? `
+                <span class="px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 font-headline font-black text-[10px] tracking-wide uppercase inline-flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                  Sold Out
+                </span>
+              ` : ''}
             </div>
           </div>
 
           <!-- Dish Photo & Qty CTA Button -->
           <div class="relative w-24 h-24 shrink-0 flex flex-col items-center">
-            <img src="${imgUrl}" alt="${item.title}" class="w-24 h-20 rounded-xl object-cover shadow-2xs border border-neutral-100" loading="lazy" />
+            <div class="relative w-24 h-20 rounded-xl overflow-hidden shadow-2xs border border-neutral-100 bg-neutral-100">
+              <img src="${imgUrl}" alt="${item.title}" class="w-full h-full object-cover ${!isAvailable ? 'grayscale opacity-60' : ''}" loading="lazy" />
+              ${!isAvailable ? `
+                <div class="absolute inset-0 bg-neutral-900/40 backdrop-blur-[1px] flex items-center justify-center">
+                  <span class="px-1.5 py-0.5 rounded bg-rose-600 text-white font-headline font-black text-[9px] uppercase tracking-wider shadow-sm">SOLD OUT</span>
+                </div>
+              ` : ''}
+            </div>
             
             <div class="absolute -bottom-1">
-              ${qty === 0 ? `
+              ${!isAvailable ? `
+                <span class="h-7 px-2.5 rounded-lg bg-neutral-100 border border-neutral-300 text-neutral-400 font-headline font-bold text-[10px] flex items-center justify-center select-none shadow-2xs">
+                  UNAVAILABLE
+                </span>
+              ` : (qty === 0 ? `
                 <button type="button" onclick="changeItemQty('${item.id}', 1)" class="h-7 px-4 rounded-lg bg-white border border-brand-300 text-brand-600 font-headline font-extrabold text-xs shadow-md hover:bg-brand-500 hover:text-white transition-all cursor-pointer active:scale-95">
                   ADD
                 </button>
@@ -836,7 +1031,7 @@
                   <span class="text-xs font-mono font-bold">${qty}</span>
                   <button type="button" onclick="changeItemQty('${item.id}', 1)" class="w-5 h-5 flex items-center justify-center hover:bg-white/20 rounded active:scale-90 cursor-pointer">&plus;</button>
                 </div>
-              `}
+              `)}
             </div>
           </div>
 
@@ -848,6 +1043,11 @@
     function changeItemQty(itemId, delta) {
       const item = session.menuItems.find(it => it.id === itemId);
       if (!item) return;
+
+      if (delta > 0 && (item.inStock === false || item.in_stock === false)) {
+        showToast(`"${item.title}" is currently out of stock.`, "warning");
+        return;
+      }
 
       const existing = session.cart.find(c => c.id === itemId);
       if (existing) {
@@ -1016,6 +1216,16 @@
       const cookingNote = document.getElementById("input-cooking-note")?.value.trim() || "";
       const paymentPref = document.querySelector('input[name="payment_choice"]:checked')?.value || "counter";
 
+      const submitBtn = document.getElementById("btn-confirm-order");
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add("opacity-70", "cursor-not-allowed");
+        submitBtn.innerHTML = `
+          <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+          <span>Sending to Kitchen...</span>
+        `;
+      }
+
       const tStr = String(session.tableNumber).padStart(2, "0");
       const rest = session.restaurant || OUTLET_PACKS["rest-1"];
       const prefix = rest.orderPrefix || "PP-";
@@ -1104,8 +1314,8 @@
 
       // 3. SEND TO SUPABASE CLOUD IF CONFIGURED
       try {
-        if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG.isConfigured) {
-          window.PlatePilotCloud.placeOrder({
+        if (window.PlatePilotCloud && window.PlatePilotCloud.CONFIG && window.PlatePilotCloud.CONFIG.isConfigured) {
+          await window.PlatePilotCloud.placeOrder({
             id: orderId,
             restaurantId: session.restaurantId,
             tableNumber: session.tableNumber,
@@ -1128,6 +1338,15 @@
         }
       } catch (err) {
         console.warn("Supabase placeOrder error:", err);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove("opacity-70", "cursor-not-allowed");
+          submitBtn.innerHTML = `
+            <span class="material-symbols-outlined text-[20px]">check_circle</span>
+            <span>Send Order to Kitchen</span>
+          `;
+        }
       }
 
       // 4. SEND TO BACKEND REST API IF RUNNING
